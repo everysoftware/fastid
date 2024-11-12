@@ -3,9 +3,9 @@ from typing import Any
 import humanize
 from sqladmin import ModelView
 
-from app.clients.models import ClientOrm
-from app.db import SSOAccountOrm, UserOrm
-from app.db.utils import naive_utc
+from app.db import OAuthAccountOrm, UserOrm
+from app.domain.types import naive_utc
+from app.apps.models import AppOrm
 
 
 def time_format(m: Any, a: Any) -> Any:
@@ -53,37 +53,37 @@ class UserAdmin(BaseView, model=UserOrm):
     ]
 
 
-class ClientAdmin(BaseView, model=ClientOrm):
-    name = "Client"
-    name_plural = "Clients"
+class OAuthClientAdmin(BaseView, model=AppOrm):
+    name = "OAuth Client"
+    name_plural = "OAuth Clients"
     icon = "fa-solid fa-cube"
 
     column_list = [
-        ClientOrm.id,
-        ClientOrm.name,
-        ClientOrm.is_active,
-        ClientOrm.created_at,
-        ClientOrm.updated_at,
+        AppOrm.id,
+        AppOrm.name,
+        AppOrm.is_active,
+        AppOrm.created_at,
+        AppOrm.updated_at,
     ]
 
     column_searchable_list = [
-        ClientOrm.name,
+        AppOrm.name,
     ]
 
 
-class SSOAccountAdmin(BaseView, model=SSOAccountOrm):
-    name = "SSO Account"
-    name_plural = "SSO Accounts"
+class OAuthAccountAdmin(BaseView, model=OAuthAccountOrm):
+    name = "OAuth Account"
+    name_plural = "OAuth Accounts"
     icon = "fa-brands fa-google"
 
     column_list = [
-        SSOAccountOrm.id,
-        SSOAccountOrm.user_id,
-        SSOAccountOrm.provider,
-        SSOAccountOrm.email,
-        SSOAccountOrm.display_name,
-        SSOAccountOrm.created_at,
-        SSOAccountOrm.updated_at,
+        OAuthAccountOrm.id,
+        OAuthAccountOrm.user_id,
+        OAuthAccountOrm.provider,
+        OAuthAccountOrm.email,
+        OAuthAccountOrm.display_name,
+        OAuthAccountOrm.created_at,
+        OAuthAccountOrm.updated_at,
     ]
 
     column_searchable_list = [

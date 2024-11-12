@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 
-from app.config import settings
+from app.runner.config import settings
 from app.frontend.auth import router as auth_router
 
 app = FastAPI(title=f"{settings.app_display_name} Frontend")

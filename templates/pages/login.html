@@ -50,7 +50,7 @@
                                 class="btn btn-primary btn-lg btn-block">Login
                         </button>
                         <a data-mdb-ripple-init class="btn btn-primary btn-lg btn-block"
-                           style="background-color: #3b5998" href="#!"
+                           style="background-color: #3b5998" href="/register"
                            role="button">Create an account</a>
 
                         <div class="divider d-flex align-items-center my-4">
@@ -58,23 +58,26 @@
                         </div>
 
                         <div class="row d-flex align-items-center justify-content-center">
-                            <button type="button" data-mdb-button-init data-mdb-ripple-init
+                            <a data-mdb-button-init data-mdb-ripple-init
                                     style="background-color: #F44336"
+                                    href="{{ google_login_url }}"
                                     class="btn btn-primary btn-floating mx-2">
                                 <i class="fab fa-google"></i>
-                            </button>
+                            </a>
 
-                            <button type="button" data-mdb-button-init data-mdb-ripple-init
+                            <a data-mdb-button-init data-mdb-ripple-init
                                     style="background-color: #03A9F4"
+                                    href="{{ telegram_login_url }}"
                                     class="btn btn-primary btn-floating mx-2">
                                 <i class="fab fa-telegram"></i>
-                            </button>
+                            </a>
 
-                            <button type="button" data-mdb-button-init data-mdb-ripple-init
+                            <a data-mdb-button-init data-mdb-ripple-init
                                     style="background-color: #EA4335"
+                                    href="{{ yandex_login_url }}"
                                     class="btn btn-primary btn-floating mx-2">
                                 <i class="fab fa-yandex"></i>
-                            </button>
+                            </a>
                         </div>
                     </form>
                 </div>

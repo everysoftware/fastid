@@ -1,9 +1,11 @@
+import datetime
 from enum import Enum
-from typing import Any, Self
-from uuid import UUID
+from typing import Any
 
 from sqlalchemy import BigInteger, Enum as SAEnum, MetaData, Uuid, inspect
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+from app.domain.types import UUID, naive_utc, generate_uuid
 
 type_map = {
     int: BigInteger,
@@ -31,10 +33,32 @@ class BaseOrm(DeclarativeBase):
             for c in inspect(self).mapper.column_attrs  # noqa
         }
 
-    def update(self, **data: Any) -> Self:
-        for name, value in data.items():
-            setattr(self, name, value)
-        return self
-
     def __repr__(self) -> str:
         return repr(self.dump())
+
+
+class Mixin:
+    pass
+
+
+class IDMixin(Mixin):
+    id: Mapped[UUID] = mapped_column(
+        primary_key=True,
+        default=generate_uuid,
+        sort_order=-100,
+    )
+
+
+class AuditMixin(Mixin):
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        default=naive_utc, sort_order=100
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        default=naive_utc,
+        onupdate=naive_utc,
+        sort_order=101,
+    )
+
+
+class BaseEntityOrm(BaseOrm, IDMixin, AuditMixin):
+    __abstract__ = True
