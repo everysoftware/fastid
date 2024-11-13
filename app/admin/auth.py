@@ -2,7 +2,7 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette import status
 from starlette.requests import Request
 
-from app.runner.testing import api_client
+from app.api.testing import api_client
 
 
 class AdminAuth(AuthenticationBackend):

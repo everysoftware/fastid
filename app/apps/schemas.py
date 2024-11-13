@@ -2,7 +2,7 @@ from typing import Any, Sequence
 
 from pydantic import field_validator, AnyHttpUrl
 
-from app.domain.schemas import DomainModel, BaseModel
+from app.base.schemas import EntityDTO, BaseModel
 
 
 class AppBase(BaseModel):
@@ -19,7 +19,7 @@ class AppBase(BaseModel):
         return v
 
 
-class App(DomainModel, AppBase):
+class AppDTO(EntityDTO, AppBase):
     pass
 
 

@@ -1,4 +1,4 @@
-from typing import assert_never, Annotated
+from typing import assert_never, Annotated, Any
 
 from fastapi import APIRouter, Form
 from starlette import status
@@ -6,22 +6,22 @@ from starlette import status
 from app.auth.dependencies import (
     AuthDep,
 )
-from app.auth.exceptions import NoPermission, UserAlreadyExists
-from app.auth.schemas import UserCreate, User
+from app.auth.exceptions import NoPermission
+from app.auth.schemas import UserCreate, UserDTO
 from app.authlib.dependencies import auth_backend
 from app.authlib.schemas import BearerToken, OAuth2TokenRequest, OAuth2Grant
-from app.domain.types import UUID
+from app.base.types import UUID
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", status_code=status.HTTP_201_CREATED, response_model=UserDTO
+)
 async def register(
     service: AuthDep,
     dto: UserCreate,
-) -> User:
-    if dto.email and (await service.get_by_email(dto.email)):
-        raise UserAlreadyExists()
+) -> Any:
     return await service.register(dto)
 
 

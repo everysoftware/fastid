@@ -11,7 +11,7 @@ from pydantic import (
     model_validator,
 )
 
-from app.domain.schemas import BaseModel
+from app.base.schemas import BaseModel
 
 
 class TokenConfig(BaseModel):

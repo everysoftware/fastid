@@ -1,6 +1,6 @@
 from starlette import status
 
-from app.runner.exceptions import ClientError
+from app.api.exceptions import ClientError
 
 
 class OAuth2Error(Exception):

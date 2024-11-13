@@ -3,7 +3,7 @@ from typing import Literal
 import pydantic
 from pydantic import AnyHttpUrl, ConfigDict
 
-from app.domain.schemas import BaseModel
+from app.base.schemas import BaseModel
 
 type AnyUrl = pydantic.AnyHttpUrl | str
 
@@ -18,7 +18,7 @@ class DiscoveryDocument(BaseModel):
 
 class OAuthCallback(BaseModel):
     code: str
-    redirect_uri: AnyHttpUrl
+    redirect_uri: AnyHttpUrl | None = None
     state: str | None = None
     scope: str | None = None
     code_verifier: str | None = None

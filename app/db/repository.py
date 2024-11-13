@@ -4,22 +4,20 @@ from typing import TypeVar, Any, ClassVar, Sequence, cast
 from sqlalchemy import select, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.base import BaseEntityOrm
+from app.base.models import Entity
+from app.base.pagination import Page, Pagination, LimitOffset
+from app.base.repository import IRepository
+from app.base.sorting import Sorting
+from app.base.specification import ISpecification
+from app.base.types import UUID
 from app.db.exceptions import NoResultFound
-from app.domain.pagination import Page, Pagination, LimitOffset
-from app.domain.repository import IRepository
-from app.domain.schemas import DomainModel
-from app.domain.sorting import Sorting
-from app.domain.specification import ISpecification
-from app.domain.types import UUID
 
-T = TypeVar("T", bound=DomainModel)
-S = TypeVar("S", bound=Select[tuple[Any, ...]])
+T = TypeVar("T", bound=Entity)
+S = TypeVar("S", bound=Select[Any])
 
 
 class AlchemyRepository(IRepository[T], ABC):
-    model_type: ClassVar[type[DomainModel]]
-    entity_type: ClassVar[type[BaseEntityOrm]]
+    model_type: ClassVar[type[Entity]]
 
     def __init__(
         self,
@@ -28,15 +26,14 @@ class AlchemyRepository(IRepository[T], ABC):
         self.session = session
 
     async def add(self, model: T) -> T:
-        entity = self.entity_type(**model.model_dump())
-        self.session.add(entity)
+        self.session.add(model)
         return model
 
     async def get(self, id: UUID) -> T | None:
-        entity = await self.session.get(self.entity_type, id)
-        if entity is None:
+        model = await self.session.get(self.model_type, id)
+        if model is None:
             return None
-        return self._to_model(entity)
+        return cast(T, model)
 
     async def get_one(self, id: UUID) -> T:
         model = await self.get(id)
@@ -51,7 +48,7 @@ class AlchemyRepository(IRepository[T], ABC):
             pagination=LimitOffset(limit=1),
         )
         result = await self.session.scalars(stmt)
-        return self._to_model(result.first())
+        return result.first()
 
     async def find_one(self, criteria: ISpecification) -> T:
         model = await self.find(criteria)
@@ -59,14 +56,8 @@ class AlchemyRepository(IRepository[T], ABC):
             raise NoResultFound()
         return model
 
-    async def update(self, model: T) -> T:
-        entity = self._to_entity(model)
-        await self.session.merge(entity)
-        return model
-
     async def remove(self, model: T) -> T:
-        entity = await self.session.get_one(self.entity_type, model.id)
-        await self.session.delete(entity)
+        await self.session.delete(model)
         return model
 
     async def get_many(
@@ -85,19 +76,11 @@ class AlchemyRepository(IRepository[T], ABC):
         )
         return self._to_page(result.all())
 
-    def _to_model(self, entity: Any | None) -> T | None:
-        if entity is None:
-            return None
-        return cast(T, self.model_type.model_validate(entity))
-
-    def _to_entity(self, model: T) -> Any:
-        return self.entity_type(**model.model_dump())
-
     def _to_page(self, entities: Sequence[Any]) -> Page[T]:  # noqa
-        return Page[T](items=entities)
+        return Page(items=entities)
 
-    def _select(self) -> Select[tuple[Any]]:
-        return select(self.entity_type)
+    def _select(self) -> Select[tuple[T]]:
+        return select(self.model_type)
 
     @staticmethod
     def _apply_criteria(stmt: S, criteria: ISpecification) -> S:
@@ -110,9 +93,9 @@ class AlchemyRepository(IRepository[T], ABC):
         return stmt
 
     def _apply_sorting(self, stmt: S, sorting: Sorting) -> S:
-        for entry in sorting.entries():
-            attr = getattr(self.entity_type, entry.field)
-            return stmt.order_by(
+        for entry in sorting.render(self.model_type):
+            attr = getattr(self.model_type, entry.field)
+            stmt = stmt.order_by(
                 attr.asc() if entry.order == "asc" else attr.desc()
             )
         return stmt

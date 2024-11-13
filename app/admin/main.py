@@ -1,21 +1,33 @@
+from typing import Any
+
 from fastapi import FastAPI
 from sqladmin import Admin
+from sqlalchemy import Engine
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.admin.auth import admin_auth
 from app.admin.views import OAuthAccountAdmin, UserAdmin, OAuthClientAdmin
-from app.runner.config import settings
-from app.db.connection import async_engine
+from app.db.connection import engine
+from app.plugins.base import Plugin
 
-app = FastAPI()
-admin = Admin(
-    app,
-    async_engine,
-    authentication_backend=admin_auth,
-    base_url="/",
-    favicon_url="/static/assets/favicon.ico",
-    title=f"Admin | {settings.app_display_name}",
-)
 
-admin.add_view(UserAdmin)
-admin.add_view(OAuthClientAdmin)
-admin.add_view(OAuthAccountAdmin)
+class AdminPlugin(Plugin):
+    plugin_name = "admin"
+
+    def __init__(
+        self, engine: Engine | AsyncEngine, **admin_kwargs: Any
+    ) -> None:
+        self.engine = engine
+        self.admin_kwargs = admin_kwargs
+
+    def install(self, app: FastAPI) -> None:
+        admin = Admin(
+            app,
+            engine,
+            authentication_backend=admin_auth,
+            **self.admin_kwargs,
+        )
+
+        admin.add_view(UserAdmin)
+        admin.add_view(OAuthClientAdmin)
+        admin.add_view(OAuthAccountAdmin)

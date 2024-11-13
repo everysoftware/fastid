@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
-from app.domain.uow import IUnitOfWork
-from app.social_login.repositories import OAuthAccountRepository
+from app.base.uow import IUnitOfWork
+from app.social.repositories import OAuthAccountRepository
 from app.apps.repositories import AppRepository
 from app.auth.repositories import UserRepository
 

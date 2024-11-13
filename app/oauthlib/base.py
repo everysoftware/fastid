@@ -1,4 +1,3 @@
-import logging
 from abc import ABC
 from typing import (
     Any,
@@ -7,17 +6,18 @@ from urllib.parse import urlencode
 
 import httpx
 
-from .exceptions import OAuth2Error
-from .interfaces import IOAuth2
-from .pkce import get_pkce_challenge_pair
-from .schemas import (
+from app.oauthlib.exceptions import OAuth2Error
+from app.oauthlib.interfaces import IOAuth2
+from app.oauthlib.pkce import get_pkce_challenge_pair
+from app.oauthlib.schemas import (
     OAuthCallback,
     OAuthBearerToken,
     AnyUrl,
 )
-from .utils import generate_random_state
+from app.oauthlib.utils import generate_random_state
+from app.obs.logger import logger_factory
 
-logger = logging.getLogger(__name__)
+logger = logger_factory.create(__name__)
 
 
 class BaseOAuth2(IOAuth2, ABC):

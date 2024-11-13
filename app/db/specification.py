@@ -3,7 +3,7 @@ from typing import Any
 
 from sqlalchemy import Select
 
-from app.domain.specification import ISpecification
+from app.base.specification import ISpecification
 
 
 class AlchemySpec(ISpecification, ABC):

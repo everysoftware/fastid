@@ -1,6 +1,6 @@
 from starlette import status
 
-from app.runner.exceptions import ClientError, Unauthorized
+from app.api.exceptions import ClientError, Unauthorized
 
 
 class NoTokenProvided(Unauthorized):

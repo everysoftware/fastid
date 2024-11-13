@@ -3,19 +3,19 @@ import secrets
 import string
 from typing import assert_never, Mapping, Any
 
-from app.auth.schemas import User
+from app.auth.schemas import UserDTO
+from app.authlib.config import auth_settings
+from app.base.service import UseCases
 from app.cache.dependencies import CacheDep
-from app.runner.config import settings
 from app.db.dependencies import UOWDep
 from app.mail.dependencies import MailDep
 from app.mail.schemas import MailMessage
 from app.notifications.exceptions import WrongCode
 from app.notifications.schemas import NotifyMethod, NotifyResponse
-from app.domain.service import BaseUseCase
 from app.telegram.dependencies import BotDep
 
 
-class NotificationUseCases(BaseUseCase):
+class NotificationUseCases(UseCases):
     def __init__(
         self, uow: UOWDep, mail: MailDep, bot: BotDep, cache: CacheDep
     ) -> None:
@@ -25,7 +25,7 @@ class NotificationUseCases(BaseUseCase):
         self.cache = cache
 
     @staticmethod
-    def resolve_method(user: User) -> NotifyMethod:
+    def resolve_method(user: UserDTO) -> NotifyMethod:
         fields: Mapping[str, NotifyMethod] = {
             "telegram_id": "telegram",
             "email": "email",
@@ -36,7 +36,7 @@ class NotificationUseCases(BaseUseCase):
         assert False
 
     def get_sync_response(
-        self, user: User, method: NotifyMethod | None = None
+        self, user: UserDTO, method: NotifyMethod | None = None
     ) -> NotifyResponse:
         if method is None:
             method = self.resolve_method(user)
@@ -45,7 +45,7 @@ class NotificationUseCases(BaseUseCase):
     async def notify(
         self,
         method: NotifyMethod,
-        user: User,
+        user: UserDTO,
         template: str,
         content: dict[str, Any] | None = None,
     ) -> None:
@@ -64,16 +64,16 @@ class NotificationUseCases(BaseUseCase):
             case _:
                 assert_never(method)
 
-    async def create_otc(self, user: User) -> str:
+    async def create_otc(self, user: UserDTO) -> str:
         code = "".join(
-            random.choices(string.digits, k=settings.auth.code_length)
+            random.choices(string.digits, k=auth_settings.code_length)
         )
         await self.cache.set(
-            f"codes:{user.id}", code, expire=settings.auth.code_expires_in
+            f"codes:{user.id}", code, expire=auth_settings.code_expires_in
         )
         return code
 
-    async def send_otc(self, method: NotifyMethod, user: User) -> None:
+    async def send_otc(self, method: NotifyMethod, user: UserDTO) -> None:
         code = await self.create_otc(user)
         await self.notify(
             method,
@@ -82,7 +82,7 @@ class NotificationUseCases(BaseUseCase):
             content={"code": code, "text": f"Your verification code: {code}"},
         )
 
-    async def validate_otc(self, user: User, code: str) -> None:
+    async def validate_otc(self, user: UserDTO, code: str) -> None:
         user_code = await self.cache.get(f"otc:{user.id}", cast=str)
         if user_code is None:
             raise WrongCode()

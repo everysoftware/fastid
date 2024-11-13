@@ -1,7 +1,7 @@
 from typing import Literal
 
-from app.domain.schemas import BaseModel
-from app.domain.types import UUID
+from app.base.schemas import BaseModel
+from app.base.types import UUID
 
 NotifyMethod = Literal["telegram", "email"]
 

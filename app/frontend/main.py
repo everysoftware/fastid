@@ -1,13 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from starlette.staticfiles import StaticFiles
 
-from app.runner.config import settings
 from app.frontend.auth import router as auth_router
-
-app = FastAPI(title=f"{settings.app_display_name} Frontend")
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
+from app.plugins.base import Plugin
 
 routers = [auth_router]
-for router in routers:
-    app.include_router(router)
+
+
+class FrontendPlugin(Plugin):
+    plugin_name = "frontend"
+
+    def install(self, app: FastAPI) -> None:
+        app.mount("/static", StaticFiles(directory="static"), name="static")
+
+        main_router = APIRouter()
+        for router in routers:
+            main_router.include_router(router)
+
+        app.include_router(main_router)

@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.auth.schemas import User
+from app.auth.models import User
 from app.auth.service import AuthUseCases
-from app.domain.types import UUID
+from app.base.types import UUID
 
 AuthDep = Annotated[AuthUseCases, Depends()]
 

@@ -1,37 +1,40 @@
 from typing import assert_never
 
-from app.auth.exceptions import UserEmailNotFound, UserNotFound, WrongPassword
+from app.auth.exceptions import UserNotFound, UserAlreadyExists
+from app.auth.models import User
 from app.auth.repositories import IsActiveUser
 from app.auth.schemas import (
     UserUpdate,
     Role,
     UserCreate,
-    User,
 )
 from app.authlib.schemas import OAuth2TokenRequest
+from app.base.pagination import Pagination, Page
+from app.base.service import UseCases
+from app.base.sorting import Sorting
+from app.base.types import UUID
 from app.db.dependencies import UOWDep
-from app.domain.pagination import Page, Pagination
-from app.domain.sorting import Sorting
-from app.domain.types import UUID
-from app.domain.service import BaseUseCase
 
 
-class AuthUseCases(BaseUseCase):
+class AuthUseCases(UseCases):
     def __init__(self, uow: UOWDep) -> None:
         self.uow = uow
 
     async def register(self, dto: UserCreate) -> User:
-        user = User.from_model(dto)
-        user.hash_password()
-        return await self.uow.users.add(user)
+        user = await self.uow.users.find(IsActiveUser(dto.email))
+        if user is not None:
+            raise UserAlreadyExists()
+        user = User.from_create(dto)
+        user = await self.uow.users.add(user)
+        await self.uow.commit()
+        return user
 
-    async def get_by_email(self, email: str) -> User | None:
-        return await self.uow.users.find(IsActiveUser(email))
-
-    async def get_one_by_email(self, email: str) -> User:
-        user = await self.get_by_email(email)
-        if not user:
-            raise UserEmailNotFound()
+    async def authenticate(self, form: OAuth2TokenRequest) -> User:
+        assert form.username is not None and form.password is not None
+        user = await self.uow.users.find(IsActiveUser(form.username))
+        if user is None:
+            raise UserNotFound()
+        user.verify_password(form.password)
         return user
 
     async def get(self, user_id: UUID) -> User | None:
@@ -39,26 +42,22 @@ class AuthUseCases(BaseUseCase):
 
     async def get_one(self, user_id: UUID) -> User:
         user = await self.get(user_id)
-        if not user:
+        if user is None:
             raise UserNotFound()
         return user
 
-    async def update(
+    async def update_profile(
         self,
         user: User,
         dto: UserUpdate,
     ) -> User:
         user.merge_model(dto)
-        return await self.uow.users.update(user)
+        await self.uow.commit()
+        return user
 
     async def delete(self, user: User) -> User:
-        return await self.uow.users.remove(user)
-
-    async def authenticate(self, form: OAuth2TokenRequest) -> User:
-        assert form.username is not None and form.password is not None
-        user = await self.get_one_by_email(form.username)
-        if not user.verify_password(form.password):
-            raise WrongPassword()
+        await self.uow.users.remove(user)
+        await self.uow.commit()
         return user
 
     async def get_many(
@@ -76,4 +75,5 @@ class AuthUseCases(BaseUseCase):
                 user.grant_superuser()
             case _:
                 assert_never(role)
-        return await self.uow.users.add(user)
+        await self.uow.commit()
+        return user

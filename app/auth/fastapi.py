@@ -8,15 +8,15 @@ auth_flows = [
         tokenUrl="auth/token", scheme_name="Password", auto_error=False
     ),
     OAuth2AuthorizationCodeBearer(
-        authorizationUrl="oauth/google/login",
-        tokenUrl="oauth/google/token",
+        authorizationUrl="oauth/login/google",
+        tokenUrl="oauth/token/google",
         refreshUrl="auth/token",
         scheme_name="GoogleOAuth",
         auto_error=False,
     ),
     OAuth2AuthorizationCodeBearer(
-        authorizationUrl="oauth/yandex/login",
-        tokenUrl="oauth/yandex/token",
+        authorizationUrl="oauth/login/yandex",
+        tokenUrl="oauth/token/yandex",
         refreshUrl="auth/token",
         scheme_name="YandexOAuth",
         auto_error=False,

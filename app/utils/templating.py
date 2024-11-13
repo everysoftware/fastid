@@ -1,12 +1,13 @@
 from fastapi.templating import Jinja2Templates
 
-from app.runner.config import settings
+from app.api.config import api_settings
+from app.apps.config import apps_settings
 
-FRONTEND_URL = settings.oauth.primary_url
+FRONTEND_URL = apps_settings.default_primary_url
 
 templates = Jinja2Templates(directory="templates/pages")
 
-templates.env.globals["app_display_name"] = settings.app_display_name
+templates.env.globals["app_display_name"] = api_settings.title
 templates.env.globals["google_login_url"] = (
     f"{FRONTEND_URL}/oauth/google/login"
 )

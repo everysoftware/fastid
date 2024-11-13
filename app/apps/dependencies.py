@@ -4,7 +4,8 @@ from fastapi import Depends
 from pydantic import AnyHttpUrl
 
 from app.apps.exceptions import InvalidRedirectURI
-from app.apps.schemas import App
+from app.apps.models import App
+from app.apps.schemas import AppDTO
 from app.apps.service import AppUseCases
 
 AppsDep = Annotated[AppUseCases, Depends()]
@@ -15,7 +16,7 @@ async def get_oauth_client(service: AppsDep, client_id: str) -> App:
 
 
 async def valid_redirect_uri(
-    client: Annotated[App, Depends(get_oauth_client)],
+    client: Annotated[AppDTO, Depends(get_oauth_client)],
     redirect_uri: AnyHttpUrl,
 ) -> AnyHttpUrl:
     if redirect_uri.host not in {uri.host for uri in client.redirect_uris}:

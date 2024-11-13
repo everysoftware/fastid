@@ -5,7 +5,7 @@ from pydantic import AnyHttpUrl
 
 from app.authlib.dependencies import UserDep
 from app.apps.dependencies import get_oauth_client, valid_redirect_uri
-from app.apps.schemas import App
+from app.apps.schemas import AppDTO
 from app.utils.templating import templates
 
 router = APIRouter()
@@ -15,7 +15,7 @@ router = APIRouter()
 def authorize(
     request: Request,
     user: UserDep,
-    client: Annotated[App, Depends(get_oauth_client)],
+    client: Annotated[AppDTO, Depends(get_oauth_client)],
     response_type: Literal["code"],
     redirect_uri: Annotated[AnyHttpUrl, Depends(valid_redirect_uri)],
     state: str | None = None,
@@ -28,7 +28,7 @@ def authorize(
 def me(
     request: Request,
     user: UserDep,
-    client: Annotated[App, Depends(get_oauth_client)],
+    client: Annotated[AppDTO, Depends(get_oauth_client)],
     response_type: Literal["code"],
     redirect_uri: Annotated[AnyHttpUrl, Depends(valid_redirect_uri)],
     state: str | None = None,

@@ -1,7 +1,7 @@
 import smtplib
 from email.message import Message
 
-from app.runner.config import settings
+from app.mail.config import mail_settings
 
 
 class MailClient:
@@ -9,10 +9,10 @@ class MailClient:
 
     def __init__(self) -> None:
         self.client = smtplib.SMTP_SSL(
-            settings.mail.smtp_host, settings.mail.smtp_port
+            mail_settings.smtp_host, mail_settings.smtp_port
         )
         self.client.login(
-            settings.mail.smtp_username, settings.mail.smtp_password
+            mail_settings.smtp_username, mail_settings.smtp_password
         )
 
     def send(self, message: Message) -> None:

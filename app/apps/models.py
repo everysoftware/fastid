@@ -2,10 +2,10 @@ import uuid
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.base import BaseEntityOrm
+from app.base.models import Entity
 
 
-class AppOrm(BaseEntityOrm):
+class App(Entity):
     __tablename__ = "apps"
 
     name: Mapped[str]

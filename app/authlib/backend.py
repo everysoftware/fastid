@@ -1,9 +1,9 @@
 import uuid
 from abc import ABC, abstractmethod
 
+from app.auth.models import User
 from app.authlib.schemas import JWTClaims, BearerToken
 from app.authlib.tokens import ITokenManager
-from app.auth.schemas import User
 
 
 class IOAuth2Backend(ABC):

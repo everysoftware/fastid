@@ -3,11 +3,10 @@ from typing import Any
 
 from sqlalchemy import Select
 
-from app.auth.models import UserOrm
-from app.auth.schemas import User
+from app.auth.models import User
+from app.base.repository import IRepository
 from app.db.repository import AlchemyRepository
 from app.db.specification import AlchemySpec
-from app.domain.repository import IRepository
 
 
 class IUserRepository(IRepository[User], ABC):
@@ -16,7 +15,6 @@ class IUserRepository(IRepository[User], ABC):
 
 class UserRepository(IUserRepository, AlchemyRepository[User]):
     model_type = User
-    entity_type = UserOrm
 
 
 class IsActiveUser(AlchemySpec):
@@ -24,6 +22,4 @@ class IsActiveUser(AlchemySpec):
         self.email = email
 
     def apply[T: Select[Any]](self, stmt: T) -> T:
-        return stmt.where(
-            UserOrm.email == self.email, UserOrm.is_active.is_(True)
-        )
+        return stmt.where(User.email == self.email, User.is_active.is_(True))

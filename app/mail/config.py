@@ -1,4 +1,4 @@
-from app.domain.schemas import BaseSettings
+from app.base.schemas import BaseSettings
 
 
 class MailSettings(BaseSettings):
@@ -7,3 +7,6 @@ class MailSettings(BaseSettings):
     smtp_username: str = ""
     smtp_password: str = ""
     smtp_from_name: str = "FastAPI"
+
+
+mail_settings = MailSettings()

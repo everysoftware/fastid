@@ -3,22 +3,23 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from app.api.config import api_settings
+from app.auth.dependencies import AuthDep
+from app.auth.models import User
 from app.authlib.backend import OAuth2Backend
+from app.authlib.config import auth_settings
 from app.authlib.schemas import TokenConfig
 from app.authlib.tokens import TokenManager
 from app.authlib.transports import HeaderTransport, CookieTransport, AuthBus
-from app.runner.config import settings
-from app.domain.types import UUID
-from app.auth.dependencies import AuthDep
-from app.auth.schemas import User
+from app.base.types import UUID
 
 access_config = TokenConfig(
     type="access",
-    issuer=settings.auth.jwt_issuer,
-    algorithm=settings.auth.jwt_algorithm,
-    private_key=settings.auth.jwt_private_key.read_text(),
-    public_key=settings.auth.jwt_public_key.read_text(),
-    expires_in=datetime.timedelta(seconds=settings.auth.jwt_access_expire),
+    issuer=api_settings.discovery_name,
+    algorithm=auth_settings.jwt_algorithm,
+    private_key=auth_settings.jwt_private_key.read_text(),
+    public_key=auth_settings.jwt_public_key.read_text(),
+    expires_in=datetime.timedelta(seconds=auth_settings.jwt_access_expire),
 )
 
 token_manager = TokenManager(access_config)

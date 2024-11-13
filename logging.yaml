@@ -38,7 +38,7 @@ loggers:
     handlers:
       - uninstrumented
     propagate: yes
-  uvicorn.error:  # Lifespan
+  uvicorn.error:  # lifespan
     level: INFO
     handlers:
       - uninstrumented
