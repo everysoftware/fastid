@@ -8,7 +8,8 @@ Agents:
 
 * Resource owner (user), e.g. Petya
 * Client (application), e.g. SuperApp
-* Resource server (provider), e.g. Google
+* Authorization server, e.g. Google
+* Resource server (provider), e.g. Google Photos
 """
 
 from enum import StrEnum, auto
