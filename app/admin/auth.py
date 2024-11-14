@@ -24,7 +24,7 @@ class AdminAuth(AuthenticationBackend):
                 token = await auth.authorize(form)
             except ClientError:
                 return False
-        request.session.update({"token": token})
+        request.session.update({"at": token.access_token})
         return True
 
     async def logout(self, request: Request) -> bool:
@@ -33,20 +33,17 @@ class AdminAuth(AuthenticationBackend):
         return True
 
     async def authenticate(self, request: Request) -> bool:
-        token = request.session.get("token")
+        token = request.session.get("at")
         if not token:
             return False
-
         async with AlchemyUOW(session_factory) as uow:
             auth = AuthUseCases(uow)
             try:
                 user = await auth.get_userinfo(token)
             except ClientError:
                 return False
-
         if not user.is_superuser:
             return False
-
         return True
 
 

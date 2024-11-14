@@ -54,8 +54,8 @@ class UserAdmin(BaseView, model=User):
 
 
 class OAuthClientAdmin(BaseView, model=App):
-    name = "OAuth Client"
-    name_plural = "OAuth Clients"
+    name = "App"
+    name_plural = "Apps"
     icon = "fa-solid fa-cube"
 
     column_list = [
