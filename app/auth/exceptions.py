@@ -3,18 +3,9 @@ from starlette import status
 from app.api.exceptions import ClientError, Unauthorized
 
 
-class NoTokenProvided(Unauthorized):
-    message = "No access token provided"
-    error_code = "no_token_provided"
-
-
-class InvalidToken(Unauthorized):
-    message = "Invalid token"
-    error_code = "invalid_token"
-
-
-class InvalidTokenType(Unauthorized):
-    error_code = "invalid_token_type"
+class NotSupportedGrant(Unauthorized):
+    message = "Not supported grant type"
+    error_code = "not_supported_grant"
 
 
 class NoPermission(ClientError):

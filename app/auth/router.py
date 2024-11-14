@@ -3,16 +3,20 @@ from typing import Any
 from fastapi import APIRouter
 from starlette import status
 
-from app.auth.dependencies import AuthDep
-from app.auth.schemas import UserDTO, UserUpdate
-from app.authlib.dependencies import UserDep
+from app.auth.dependencies import AuthDep, UserDep
+from app.auth.schemas import UserDTO, UserUpdate, UserCreate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/me", response_model=UserDTO, status_code=status.HTTP_200_OK)
-def me(user: UserDep) -> Any:
-    return user
+@router.post(
+    "/register", status_code=status.HTTP_201_CREATED, response_model=UserDTO
+)
+async def register(
+    service: AuthDep,
+    dto: UserCreate,
+) -> Any:
+    return await service.register(dto)
 
 
 @router.patch("/me", response_model=UserDTO, status_code=status.HTTP_200_OK)
@@ -21,7 +25,7 @@ async def patch(
     user: UserDep,
     dto: UserUpdate,
 ) -> Any:
-    return await service.update_profile(user, dto)
+    return await service.update(user, dto)
 
 
 @router.delete("/me", response_model=UserDTO, status_code=status.HTTP_200_OK)

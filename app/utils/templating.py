@@ -7,7 +7,7 @@ FRONTEND_URL = apps_settings.default_primary_url
 
 templates = Jinja2Templates(directory="templates/pages")
 
-templates.env.globals["app_display_name"] = api_settings.title
+templates.env.globals["app_title"] = api_settings.title
 templates.env.globals["google_login_url"] = (
     f"{FRONTEND_URL}/oauth/google/login"
 )

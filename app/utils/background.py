@@ -5,7 +5,7 @@ from app.apps.models import App
 from app.apps.repositories import IsAppExists
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
-from app.authlib.config import auth_settings
+from app.auth.config import auth_settings
 from app.cache.dependencies import redis_client
 from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW

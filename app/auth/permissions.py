@@ -1,7 +1,6 @@
-from app.auth.dependencies import AuthDep
+from app.auth.dependencies import AuthDep, UserDep
 from app.auth.exceptions import NoPermission
 from app.auth.models import User
-from app.authlib.dependencies import UserDep
 
 
 class Requires:

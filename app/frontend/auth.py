@@ -3,7 +3,7 @@ from typing import Literal, Annotated
 from fastapi import APIRouter, Request, Response, Depends
 from pydantic import AnyHttpUrl
 
-from app.authlib.dependencies import UserDep
+from app.auth.dependencies import UserDep
 from app.apps.dependencies import get_oauth_client, valid_redirect_uri
 from app.apps.schemas import AppDTO
 from app.utils.templating import templates

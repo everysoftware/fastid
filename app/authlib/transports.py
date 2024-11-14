@@ -6,7 +6,7 @@ from fastapi import Response
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.requests import Request
 
-from app.auth.exceptions import NoTokenProvided
+from app.authlib.exceptions import NoTokenProvided
 
 
 class Transport(ABC):

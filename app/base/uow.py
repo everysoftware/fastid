@@ -6,7 +6,7 @@ from typing import Self, Any
 
 from app.apps.repositories import IAppRepository
 from app.auth.repositories import IUserRepository
-from app.social.repositories import IOAuthAccountRepository
+from app.oauth.repositories import IOAuthAccountRepository
 
 
 class IUnitOfWork(ABC):

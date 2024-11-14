@@ -1,14 +1,23 @@
-from typing import assert_never
-
-from app.auth.exceptions import UserNotFound, UserAlreadyExists
+from app.auth.exceptions import (
+    UserNotFound,
+    UserAlreadyExists,
+    NotSupportedGrant,
+)
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
 from app.auth.schemas import (
     UserUpdate,
-    Role,
     UserCreate,
+    OAuth2TokenRequest,
 )
-from app.authlib.schemas import OAuth2TokenRequest
+from app.authlib.dependencies import token_backend
+from app.authlib.oauth import (
+    OAuth2TokenRequestForm,
+    OAuth2Grant,
+    OAuth2PasswordGrantForm,
+    OAuth2RefreshTokenGrantForm,
+)
+from app.authlib.schemas import TokenResponse
 from app.base.pagination import Pagination, Page
 from app.base.service import UseCases
 from app.base.sorting import Sorting
@@ -29,16 +38,23 @@ class AuthUseCases(UseCases):
         await self.uow.commit()
         return user
 
-    async def authenticate(self, form: OAuth2TokenRequest) -> User:
-        assert form.username is not None and form.password is not None
-        user = await self.uow.users.find(IsActiveUser(form.username))
-        if user is None:
-            raise UserNotFound()
-        user.verify_password(form.password)
-        return user
-
-    async def get(self, user_id: UUID) -> User | None:
-        return await self.uow.users.get(user_id)
+    async def authorize(self, form: OAuth2TokenRequest) -> TokenResponse:
+        match form.grant_type:
+            case OAuth2Grant.password:
+                token = await self._authorize_password(
+                    form.as_password_grant()
+                )
+            case OAuth2Grant.authorization_code:
+                token = await self._authorize_code(
+                    form.as_authorization_code_grant()
+                )
+            case OAuth2Grant.refresh_token:
+                token = await self._refresh_token(
+                    form.as_refresh_token_grant()
+                )
+            case _:
+                raise NotSupportedGrant()
+        return token
 
     async def get_one(self, user_id: UUID) -> User:
         user = await self.get(user_id)
@@ -46,7 +62,14 @@ class AuthUseCases(UseCases):
             raise UserNotFound()
         return user
 
-    async def update_profile(
+    async def get_userinfo(self, token: str) -> User:
+        payload = token_backend.validate_at(token)
+        return await self.get_one(UUID(payload.sub))
+
+    async def get(self, user_id: UUID) -> User | None:
+        return await self.uow.users.get(user_id)
+
+    async def update(
         self,
         user: User,
         dto: UserUpdate,
@@ -67,13 +90,36 @@ class AuthUseCases(UseCases):
             pagination=pagination, sorting=sorting
         )
 
-    async def grant(self, user: User, role: Role) -> User:
-        match role:
-            case Role.user:
-                user.revoke_superuser()
-            case Role.superuser:
-                user.grant_superuser()
-            case _:
-                assert_never(role)
+    async def grant_superuser(self, user: User) -> User:
+        user.grant_superuser()
         await self.uow.commit()
         return user
+
+    async def revoke_superuser(self, user: User) -> User:
+        user.revoke_superuser()
+        await self.uow.commit()
+        return user
+
+    async def _authorize_password(
+        self, form: OAuth2PasswordGrantForm
+    ) -> TokenResponse:
+        user = await self.uow.users.find(IsActiveUser(form.username))
+        if user is None:
+            raise UserNotFound()
+        user.verify_password(form.password)
+        user.verify_scopes(form.scopes)
+        at = token_backend.create_at(user.id, scope=form.scope)
+        return token_backend.to_response(at=at)
+
+    @staticmethod
+    async def _refresh_token(
+        form: OAuth2RefreshTokenGrantForm,
+    ) -> TokenResponse:
+        content = token_backend.validate_rt(form.refresh_token)
+        at = token_backend.create_at(content.sub, scope=content.scope)
+        return token_backend.to_response(at=at)
+
+    async def _authorize_code(
+        self, form: OAuth2TokenRequestForm
+    ) -> TokenResponse:
+        raise NotImplementedError()

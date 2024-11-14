@@ -21,4 +21,11 @@ auth_flows = [
         scheme_name="YandexOAuth",
         auto_error=False,
     ),
+    OAuth2AuthorizationCodeBearer(
+        authorizationUrl="oauth/login/telegram",
+        tokenUrl="oauth/token/telegram",
+        refreshUrl="auth/token",
+        scheme_name="TelegramOAuth",
+        auto_error=False,
+    ),
 ]

@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.admin.auth import admin_auth
 from app.admin.views import OAuthAccountAdmin, UserAdmin, OAuthClientAdmin
-from app.db.connection import engine
 from app.plugins.base import Plugin
 
 
@@ -23,7 +22,7 @@ class AdminPlugin(Plugin):
     def install(self, app: FastAPI) -> None:
         admin = Admin(
             app,
-            engine,
+            self.engine,
             authentication_backend=admin_auth,
             **self.admin_kwargs,
         )

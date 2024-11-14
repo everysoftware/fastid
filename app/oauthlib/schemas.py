@@ -18,10 +18,10 @@ class DiscoveryDocument(BaseModel):
 
 class OAuthCallback(BaseModel):
     code: str
-    redirect_uri: AnyHttpUrl | None = None
     state: str | None = None
     scope: str | None = None
     code_verifier: str | None = None
+    redirect_uri: AnyHttpUrl | None = None
 
     @property
     def scopes(self) -> list[str] | None:
@@ -53,10 +53,6 @@ class OpenID(BaseModel):
     last_name: str | None = None
     display_name: str | None = None
     picture: str | None = None
-
-
-class AuthorizationURL(BaseModel):
-    url: str
 
 
 class TelegramCallback(BaseModel):

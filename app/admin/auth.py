@@ -1,28 +1,30 @@
 from sqladmin.authentication import AuthenticationBackend
-from starlette import status
 from starlette.requests import Request
 
-from app.api.testing import api_client
+from app.api.exceptions import ClientError
+from app.auth.schemas import OAuth2TokenRequest
+from app.auth.service import AuthUseCases
+from app.authlib.oauth import OAuth2Grant
+from app.db.connection import session_factory
+from app.db.uow import AlchemyUOW
 
 
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         data = await request.form()
-        form = {
-            "grant_type": "password",
-            "username": data["username"],
-            "password": data["password"],
-            "scope": "admin",
-        }
-        response = api_client.post(
-            "/api/v1/auth/token",
-            data=form,  # type: ignore[arg-type]
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        form = OAuth2TokenRequest(
+            grant_type=OAuth2Grant.password,
+            username=data["username"],
+            password=data["password"],
+            scope="admin",
         )
-        if response.status_code != status.HTTP_200_OK:
-            return False
-        token = response.json()
-        request.session.update({"token": token["access_token"]})
+        async with AlchemyUOW(session_factory) as uow:
+            auth = AuthUseCases(uow)
+            try:
+                token = await auth.authorize(form)
+            except ClientError:
+                return False
+        request.session.update({"token": token})
         return True
 
     async def logout(self, request: Request) -> bool:
@@ -34,14 +36,17 @@ class AdminAuth(AuthenticationBackend):
         token = request.session.get("token")
         if not token:
             return False
-        response = api_client.get(
-            "/api/v1/users/me", headers={"Authorization": f"Bearer {token}"}
-        )
-        if response.status_code != status.HTTP_200_OK:
+
+        async with AlchemyUOW(session_factory) as uow:
+            auth = AuthUseCases(uow)
+            try:
+                user = await auth.get_userinfo(token)
+            except ClientError:
+                return False
+
+        if not user.is_superuser:
             return False
-        user = response.json()
-        if not user["is_superuser"]:
-            return False
+
         return True
 
 

@@ -3,15 +3,17 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 from starlette import status
 
+from app.auth.dependencies import UserDep, user_dep
 from app.auth.permissions import Requires
-from app.authlib.dependencies import UserDep
 from app.base.pagination import LimitOffset, PageDTO
 from app.base.sorting import Sorting
-from app.social.dependencies import SocialLoginDep, get_account
-from app.social.models import OAuthAccount
-from app.social.schemas import OAuthAccountDTO
+from app.oauth.dependencies import SocialLoginDep, get_account
+from app.oauth.models import OAuthAccount
+from app.oauth.schemas import OAuthAccountDTO
 
-router = APIRouter(prefix="/oauth/accounts", tags=["OAuth"])
+router = APIRouter(
+    dependencies=[user_dep], prefix="/oauth/accounts", tags=["OAuth"]
+)
 
 
 @router.get(

@@ -56,7 +56,7 @@ class TelegramFactory(OAuthFactory):
             raise ProviderNotAllowed()
         return TelegramOAuth(
             telegram_settings.client_secret,
-            f"{api_settings.oauth_callback_url}/telegram",
+            f"{api_settings.v1_url}/oauth/redirect/telegram",
         )
 
 

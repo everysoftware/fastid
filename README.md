@@ -1,16 +1,14 @@
 # FastID
 
-Authorization server with OAuth2, permissions, user management, etc.
+OAuth2 authorization server with social login, user management, permissions, etc.
 
 ## Features
 
-- Secure **JWT authorization**
-- Scalable Google, Telegram and Yandex **single sign-on**
-- **One-time code** confirmation (Email & Telegram)
-- Extendable **permission system**
-- Powerful **user management**: CRUD, search, roles, etc.
-- **Admin panel** with authorization and CRUD operations
-- **Grafana dashboard** with metrics, tracing & logging
+- OAuth2-satisfying token authorization
+- Social login: Google, Telegram & Yandex
+- One-time code confirmation: Email & Telegram
+- Protected admin panel to manage users, connected apps, etc.
+- Fully-observable: logging, tracing & metrics
 
 ## Installation
 

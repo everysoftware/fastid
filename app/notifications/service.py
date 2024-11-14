@@ -4,7 +4,7 @@ import string
 from typing import assert_never, Mapping, Any
 
 from app.auth.schemas import UserDTO
-from app.authlib.config import auth_settings
+from app.auth.config import auth_settings
 from app.base.service import UseCases
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep

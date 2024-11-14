@@ -7,7 +7,7 @@ from app.base.repository import IRepository
 from app.base.types import UUID
 from app.db.repository import AlchemyRepository
 from app.db.specification import AlchemySpec
-from app.social.models import OAuthAccount
+from app.oauth.models import OAuthAccount
 
 
 class IOAuthAccountRepository(IRepository[OAuthAccount], ABC):

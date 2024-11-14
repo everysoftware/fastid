@@ -3,6 +3,6 @@
 from app.apps.models import App
 from app.auth.models import User
 from app.base.models import BaseOrm
-from app.social.models import OAuthAccount
+from app.oauth.models import OAuthAccount
 
 __all__ = ["BaseOrm", "User", "OAuthAccount", "App"]

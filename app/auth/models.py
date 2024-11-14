@@ -1,9 +1,9 @@
-from typing import Self
+from typing import Self, Iterable
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import mapped_column, Mapped
 
-from app.auth.exceptions import WrongPassword
+from app.auth.exceptions import WrongPassword, NoPermission
 from app.auth.schemas import UserCreate
 from app.base.models import Entity
 from app.base.types import generate_uuid
@@ -78,3 +78,19 @@ class User(Entity):
 
     def verify(self) -> None:
         self.is_verified = True
+
+    def assert_superuser(self) -> None:
+        if not self.is_superuser:
+            raise NoPermission()
+
+    def assert_active(self) -> None:
+        if not self.is_active:
+            raise NoPermission()
+
+    def assert_verified(self) -> None:
+        if not self.is_verified:
+            raise NoPermission()
+
+    def verify_scopes(self, scopes: Iterable[str]) -> None:
+        if "admin" in scopes and not self.is_superuser:
+            raise NoPermission()

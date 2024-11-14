@@ -1,23 +1,25 @@
 from app.auth.models import User
+from app.authlib.dependencies import token_backend
+from app.authlib.schemas import TokenResponse
 from app.base.pagination import Pagination, Page
 from app.base.service import UseCases
 from app.base.sorting import Sorting
 from app.base.types import UUID
 from app.db.dependencies import UOWDep
-from app.oauthlib.dependencies import OAuthName, OAuthDep
-from app.oauthlib.schemas import OAuthCallback, OpenIDBearer
-from app.social.exceptions import (
+from app.oauth.exceptions import (
     OAuthAccountNotFound,
     OAuthAlreadyConnected,
 )
-from app.social.models import OAuthAccount
-from app.social.repositories import (
+from app.oauth.models import OAuthAccount
+from app.oauth.repositories import (
     IsAccountBelongToUser,
     IsAccountConnected,
 )
+from app.oauthlib.dependencies import OAuthName, OAuthDep
+from app.oauthlib.schemas import OAuthCallback, OpenIDBearer, TelegramCallback
 
 
-class SocialLoginUseCases(UseCases):
+class OAuthUseCases(UseCases):
     def __init__(self, uow: UOWDep, oauth: OAuthDep) -> None:
         self.uow = uow
         self.oauth = oauth
@@ -28,8 +30,8 @@ class SocialLoginUseCases(UseCases):
         return await oauth.login()
 
     async def authorize(
-        self, oauth_name: OAuthName, callback: OAuthCallback
-    ) -> User:
+        self, oauth_name: OAuthName, callback: OAuthCallback | TelegramCallback
+    ) -> TokenResponse:
         open_id = await self._callback(oauth_name, callback)
         account = await self.uow.oauth_accounts.find(
             IsAccountConnected(open_id.provider, open_id.id)
@@ -39,7 +41,8 @@ class SocialLoginUseCases(UseCases):
         else:
             user = await self._authorize_new(open_id)
         await self.uow.commit()
-        return user
+        at = token_backend.create_at(user.id)
+        return token_backend.to_response(at)
 
     async def connect(
         self, user: User, oauth_name: OAuthName, callback: OAuthCallback
@@ -85,7 +88,7 @@ class SocialLoginUseCases(UseCases):
         return account
 
     async def _callback(
-        self, oauth_name: OAuthName, callback: OAuthCallback
+        self, oauth_name: OAuthName, callback: OAuthCallback | TelegramCallback
     ) -> OpenIDBearer:
         factory = self.oauth.get_factory(oauth_name)
         oauth = factory.create()

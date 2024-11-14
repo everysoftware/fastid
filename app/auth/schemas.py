@@ -5,6 +5,7 @@ from pydantic import (
     EmailStr,
 )
 
+from app.authlib.oauth import OAuth2GeneralForm
 from app.base.schemas import BaseModel, EntityDTO
 
 
@@ -41,3 +42,26 @@ class TokenType(StrEnum):
 class Role(StrEnum):
     user = auto()
     superuser = auto()
+
+
+class Scope(StrEnum):
+    """
+    Scopes are strings that are used to specify what access rights an access token has.
+    """
+
+    profile = auto()
+    """
+    Access to the user's profile.
+    """
+    openid = auto()
+    """
+    Access to the user's ID Token. This is required for OpenID Connect.
+    """
+    admin = auto()
+    """
+    Access to the admin panel.
+    """
+
+
+class OAuth2TokenRequest(OAuth2GeneralForm):
+    pass
