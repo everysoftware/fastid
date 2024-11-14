@@ -2,15 +2,15 @@
 
 Customizable and ready-to-use authorization server written in Python
 
-## Features
+## Key features
 
-✅ Complies with OpenID Connect
-✅ Login via social networks. Support for Google, Telegram and Yandex at the moment
-✅ One-time codes. Support for e-mail & telegram at the moment
-✅ Admin panel to manage users & connected apps
-✅ Plugin system to extend the functionality
-✅ Metrics & tracing complied with OpenTelemetry
-✅ Written in Python using FastAPI
+* Complies with OpenID Connect ✅
+* Login via social networks. Support for Google, Telegram and Yandex at the moment ✅
+* One-time codes. Support for e-mail & telegram at the moment ✅
+* Admin panel to manage users & connected apps ✅
+* Plugin system to extend the functionality ✅
+* Metrics & tracing complied with OpenTelemetry ✅
+* Written in Python using FastAPI ✅
 
 ## Installation
 
