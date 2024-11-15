@@ -1,6 +1,6 @@
 # FastID
 
-Customizable and ready-to-use authorization server written in Python
+Customizable and ready-to-use identity server written in Python
 
 ## Key features
 

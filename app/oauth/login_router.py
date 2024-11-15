@@ -10,7 +10,7 @@ from app.main import logging
 from app.oauth.dependencies import SocialLoginDep
 from app.oauthlib.dependencies import OAuthName
 from app.oauthlib.schemas import OAuthCallback, TelegramCallback
-from app.utils.templating import templates
+from app.frontend.templating import templates
 
 logger = logging.get_logger(__name__)
 router = APIRouter(prefix="/oauth", tags=["OAuth"])

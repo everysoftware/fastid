@@ -1,6 +1,7 @@
 from abc import ABC
 from typing import (
     Any,
+    ClassVar,
 )
 from urllib.parse import urlencode
 
@@ -21,10 +22,10 @@ logger = logging.get_logger(__name__)
 
 
 class BaseOAuth2(IOAuth2, ABC):
-    use_state: bool = True
-    use_pkce: bool = False
-    code_challenge_method: str = "S256"
-    code_challenge_length: int = 96
+    use_state: ClassVar[bool] = True
+    use_pkce: ClassVar[bool] = False
+    code_challenge_method: ClassVar[str] = "S256"
+    code_challenge_length: ClassVar[int] = 96
 
     generated_state: str | None = None
     code_challenge: str | None = None

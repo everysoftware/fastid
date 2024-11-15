@@ -4,7 +4,7 @@ from typing import Annotated, assert_never
 
 from fastapi import Depends
 
-from app.main.config import api_settings
+from app.main.config import main_settings
 from app.oauthlib.config import (
     google_settings,
     yandex_settings,
@@ -35,7 +35,7 @@ class GoogleFactory(OAuthFactory):
         return GoogleOAuth(
             google_settings.client_id,
             google_settings.client_secret,
-            f"{api_settings.oauth_callback_url}/google",
+            f"{main_settings.oauth_callback_url}/google",
         )
 
 
@@ -46,7 +46,7 @@ class YandexFactory(OAuthFactory):
         return YandexOAuth(
             yandex_settings.client_id,
             yandex_settings.client_secret,
-            f"{api_settings.oauth_callback_url}/yandex",
+            f"{main_settings.oauth_callback_url}/yandex",
         )
 
 
@@ -56,7 +56,7 @@ class TelegramFactory(OAuthFactory):
             raise ProviderNotAllowed()
         return TelegramOAuth(
             telegram_settings.client_secret,
-            f"{api_settings.v1_url}/oauth/redirect/telegram",
+            f"{main_settings.api_url}/oauth/redirect/telegram",
         )
 
 

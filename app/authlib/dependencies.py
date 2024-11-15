@@ -1,6 +1,6 @@
 import datetime
 
-from app.main.config import api_settings
+from app.main.config import main_settings
 from app.auth.config import auth_settings
 from app.authlib.backend import BackendConfig, TokenBackend
 from app.authlib.schemas import TypeParams
@@ -10,7 +10,7 @@ conf = BackendConfig()
 conf.add_type(
     "access",
     TypeParams(
-        issuer=api_settings.discovery_name,
+        issuer=main_settings.discovery_name,
         algorithm=auth_settings.jwt_algorithm,
         private_key=auth_settings.jwt_private_key.read_text(),
         public_key=auth_settings.jwt_public_key.read_text(),

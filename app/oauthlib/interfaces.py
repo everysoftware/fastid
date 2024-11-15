@@ -1,12 +1,12 @@
 import abc
-from typing import Any, overload, Literal, cast, Sequence
+from typing import Any, overload, Literal, cast, Sequence, ClassVar
 
 from .exceptions import OAuth2Error
 from .schemas import AnyUrl, OAuthBearerToken, OpenID, DiscoveryDocument
 
 
 class IOAuth2(abc.ABC):
-    provider: str = NotImplemented
+    provider: ClassVar[str] = NotImplemented
     client_id: str = NotImplemented
     client_secret: str = NotImplemented
     redirect_uri: AnyUrl | None = NotImplemented

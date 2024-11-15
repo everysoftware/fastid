@@ -21,7 +21,12 @@
             <div class="row d-flex align-items-center justify-content-center h-100">
                 <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
                     <form id="loginForm" class="needs-validation" novalidate>
-                        <h2 class="text-center mb-4">{{ app_display_name }}</h2>
+                        <div class="text-center mb-4">
+                            <img src="{{ logo_url }}" alt="App Logo"
+                                 class="img-fluid" style="max-width: 150px;">
+                        </div>
+
+                        <h2 class="text-center mb-4">{{ app_title }}</h2>
                         <!-- Email input -->
                         <div data-mdb-input-init class="form-outline mb-4">
                             <input type="email" id="email" class="form-control form-control-lg" required/>
@@ -58,24 +63,24 @@
                         </div>
 
                         <div class="row d-flex align-items-center justify-content-center">
-                            <a data-mdb-button-init data-mdb-ripple-init
-                                    style="background-color: #F44336"
-                                    href="{{ google_login_url }}"
-                                    class="btn btn-primary btn-floating mx-2">
+                            <a data-mdb-ripple-init=""
+                               class="btn btn-primary btn-floating mx-2"
+                               style="background-color: #F44336"
+                               href="{{ google_login_url }}" role="button" aria-label="Google">
                                 <i class="fab fa-google"></i>
                             </a>
 
-                            <a data-mdb-button-init data-mdb-ripple-init
-                                    style="background-color: #03A9F4"
-                                    href="{{ telegram_login_url }}"
-                                    class="btn btn-primary btn-floating mx-2">
+                            <a data-mdb-ripple-init
+                               style="background-color: #03A9F4"
+                               href="{{ telegram_login_url }}"
+                               class="btn btn-primary btn-floating mx-2">
                                 <i class="fab fa-telegram"></i>
                             </a>
 
-                            <a data-mdb-button-init data-mdb-ripple-init
-                                    style="background-color: #EA4335"
-                                    href="{{ yandex_login_url }}"
-                                    class="btn btn-primary btn-floating mx-2">
+                            <a data-mdb-ripple-init
+                               style="background-color: #EA4335"
+                               href="{{ yandex_login_url }}"
+                               class="btn btn-primary btn-floating mx-2">
                                 <i class="fab fa-yandex"></i>
                             </a>
                         </div>
