@@ -2,8 +2,10 @@ from typing import Sequence
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic_settings import SettingsConfigDict
 
-from app.plugins.base import Plugin
+from app.base.schemas import BaseSettings
+from app.main.modules import Plugin
 
 
 class CORSPlugin(Plugin):
@@ -27,3 +29,14 @@ class CORSPlugin(Plugin):
             allow_methods=["*"],
             allow_headers=["*"],
         )
+
+
+class CORSSettings(BaseSettings):
+    enabled: bool = False
+    origins: Sequence[str] = ("*",)
+    origin_regex: str | None = None
+
+    model_config = SettingsConfigDict(env_prefix="cors_")
+
+
+cors_settings = CORSSettings()

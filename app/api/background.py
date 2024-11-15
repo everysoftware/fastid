@@ -3,9 +3,9 @@ from typing import Self, Any
 from app.apps.config import apps_settings
 from app.apps.models import App
 from app.apps.repositories import IsAppExists
+from app.auth.config import auth_settings
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
-from app.auth.config import auth_settings
 from app.cache.dependencies import redis_client
 from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW
@@ -16,14 +16,13 @@ class Background:
         self.uow = AlchemyUOW(session_factory)
         self.redis = redis_client
 
-    async def __aenter__(self) -> Self:
-        await self.uow.__aenter__()
-        return self
+    async def on_startup(self) -> None:
+        await self.healthcheck()
+        await self.register_users()
+        await self.register_apps()
 
-    async def __aexit__(
-        self, exc_type: type[Exception], exc_val: Exception, exc_tb: Any
-    ) -> None:
-        await self.uow.__aexit__(exc_type, exc_val, exc_tb)
+    async def on_shutdown(self) -> None:
+        pass
 
     async def healthcheck(self) -> None:
         await self.redis.ping()
@@ -68,3 +67,12 @@ class Background:
                 redirect_uris=";".join(apps_settings.default_redirect_uris),
             )
             await self.uow.apps.add(app)
+
+    async def __aenter__(self) -> Self:
+        await self.uow.__aenter__()
+        return self
+
+    async def __aexit__(
+        self, exc_type: type[Exception], exc_val: Exception, exc_tb: Any
+    ) -> None:
+        await self.uow.__aexit__(exc_type, exc_val, exc_tb)

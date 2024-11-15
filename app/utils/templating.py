@@ -1,6 +1,6 @@
 from fastapi.templating import Jinja2Templates
 
-from app.api.config import api_settings
+from app.main.config import api_settings
 from app.apps.config import apps_settings
 
 FRONTEND_URL = apps_settings.default_primary_url

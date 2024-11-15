@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.config import api_settings
+from app.main.config import api_settings
 from app.db.connection import (
     get_async_engine,
     get_async_session_factory,

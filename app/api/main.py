@@ -1,36 +1,53 @@
-from app.admin.main import AdminPlugin
-from app.api.config import api_settings
-from app.api.factory import app_factory
-from app.db.connection import engine
-from app.frontend.main import FrontendPlugin
-from app.obs.config import obs_settings
-from app.obs.metrics import MetricsPlugin
-from app.obs.tracing import TracingPlugin
-from app.plugins.config import cors_settings
-from app.plugins.cors import CORSPlugin
+from typing import Sequence, Any
 
-app = app_factory(
-    title=api_settings.title,
-    version=api_settings.version,
-    root_path=api_settings.root_path,
-    plugins=[
-        CORSPlugin(
-            origins=cors_settings.origins,
-            origin_regex=cors_settings.origin_regex,
-        ),
-        MetricsPlugin(app_name=api_settings.discovery_name),
-        AdminPlugin(
-            engine,
-            favicon_url=f"{api_settings.root_path}/static/assets/favicon.ico",
-            title=f"Admin | {api_settings.title}",
-        ),
-        FrontendPlugin(),
-        # Must be last
-        TracingPlugin(
-            app_name=api_settings.discovery_name,
-            export_url=obs_settings.tempo_url,
-            instrument=["logger", "httpx", "sqlalchemy"],
-            engine=engine,
-        ),
-    ],
-)
+from fastapi import FastAPI
+
+from app.api.background import Background
+from app.api.exceptions import add_exception_handlers
+from app.api.routing import api_router
+from app.main import logging
+from app.main.modules import Module, Plugin
+
+logger = logging.get_logger(__name__)
+
+
+class APIModule(Module):
+    module_name = "api"
+
+    def __init__(
+        self,
+        title: str = "Unnamed App",
+        version: str = "0.1.0",
+        base_url: str = "/api/v1",
+        plugins: Sequence[Plugin] = (),
+        **fastapi_kwargs: Any,
+    ) -> None:
+        self.title = title
+        self.version = version
+        self.base_url = base_url
+        self.plugins = plugins
+        self.fastapi_kwargs = fastapi_kwargs
+
+    async def on_startup(self, app: FastAPI) -> None:
+        async with Background() as background:
+            await background.on_startup()
+
+    async def on_shutdown(self, app: FastAPI) -> None:
+        async with Background() as background:
+            await background.on_shutdown()
+
+    def install(self, app: FastAPI) -> None:
+        api_app = FastAPI(
+            title=self.title,
+            version=self.version,
+            **self.fastapi_kwargs,
+        )
+        api_app.include_router(api_router)
+        add_exception_handlers(api_app)
+        for plugin in self.plugins:
+            plugin.install(api_app)
+        installed = [plugin.plugin_name for plugin in self.plugins]
+        logger.info(
+            "API plugins (%d): %s", len(installed), ", ".join(installed)
+        )
+        app.mount(self.base_url, api_app)

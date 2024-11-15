@@ -4,7 +4,7 @@ from typing import Annotated, assert_never
 
 from fastapi import Depends
 
-from app.api.config import api_settings
+from app.main.config import api_settings
 from app.oauthlib.config import (
     google_settings,
     yandex_settings,

@@ -5,9 +5,9 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from app.base.schemas import ErrorResponse, INTERNAL_ERR
-from app.obs.logger import logger_factory
+from app.main import logging
 
-logger = logger_factory.create(__name__)
+logger = logging.get_logger(__name__)
 
 
 class ClientError(Exception):
@@ -82,6 +82,6 @@ def unhandled_exception_handler(
     )
 
 
-def setup_exceptions(app: FastAPI) -> None:
+def add_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(ClientError, backend_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, unhandled_exception_handler)

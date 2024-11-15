@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 
 import httpx
 
+from app.main import logging
 from app.oauthlib.exceptions import OAuth2Error
 from app.oauthlib.interfaces import IOAuth2
 from app.oauthlib.pkce import get_pkce_challenge_pair
@@ -15,9 +16,8 @@ from app.oauthlib.schemas import (
     AnyUrl,
 )
 from app.oauthlib.utils import generate_random_state
-from app.obs.logger import logger_factory
 
-logger = logger_factory.create(__name__)
+logger = logging.get_logger(__name__)
 
 
 class BaseOAuth2(IOAuth2, ABC):

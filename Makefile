@@ -5,7 +5,7 @@ LOGS_SINCE = 10m
 .PHONY: run
 run:
 	docker-compose up db redis -d
-	uvicorn $(APP_PATH):app --host 0.0.0.0 --port 8000 --log-config logging.yaml
+	uvicorn $(APP_PATH):app --host 0.0.0.0 --port 8000
 
 .PHONY: up
 up:

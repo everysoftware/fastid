@@ -1,6 +1,6 @@
 import datetime
 
-from app.api.config import api_settings
+from app.main.config import api_settings
 from app.auth.config import auth_settings
 from app.authlib.backend import BackendConfig, TokenBackend
 from app.authlib.schemas import TypeParams

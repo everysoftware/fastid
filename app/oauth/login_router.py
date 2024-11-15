@@ -6,13 +6,13 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from app.authlib.schemas import TokenResponse
+from app.main import logging
 from app.oauth.dependencies import SocialLoginDep
 from app.oauthlib.dependencies import OAuthName
 from app.oauthlib.schemas import OAuthCallback, TelegramCallback
-from app.obs.logger import logger_factory
 from app.utils.templating import templates
 
-logger = logger_factory.create(__name__)
+logger = logging.get_logger(__name__)
 router = APIRouter(prefix="/oauth", tags=["OAuth"])
 
 

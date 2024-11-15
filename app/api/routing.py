@@ -9,7 +9,7 @@ from app.auth.router import router as auth_router
 from app.base.schemas import ErrorResponse
 from app.oauth.accounts_router import router as oauth_accounts_router
 from app.oauth.login_router import router as oauth_router
-from app.public.router import router as external_router
+from app.api.public import router as external_router
 
 api_router = APIRouter(
     responses={

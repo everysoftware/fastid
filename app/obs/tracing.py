@@ -1,5 +1,6 @@
 from typing import Any, Literal, Sequence
 
+import uvicorn.logging
 from fastapi import FastAPI
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
@@ -14,7 +15,31 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.plugins.base import Plugin
+from app.main import logging
+from app.main.modules import Plugin
+
+default_formatter = uvicorn.logging.DefaultFormatter(
+    fmt="%(asctime)s %(levelprefix)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=0 span_id=0 resource.service.name=0] - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    use_colors=True,
+)
+access_formatter = uvicorn.logging.AccessFormatter(
+    fmt='%(asctime)s %(levelprefix)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s] - %(client_addr)s - "%(request_line)s" %(status_code)s',
+    datefmt="%Y-%m-%d %H:%M:%S",
+    use_colors=True,
+)
+instrumented_formatter = uvicorn.logging.DefaultFormatter(
+    fmt="%(asctime)s %(levelprefix)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s] - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    use_colors=True,
+)
+
+
+def patch_logging() -> None:
+    logging.get_handler("default").setFormatter(default_formatter)
+    logging.get_handler("access").setFormatter(access_formatter)
+    logging.get_handler("instrumented").setFormatter(instrumented_formatter)
+
 
 Instrument = Literal["logger", "httpx", "sqlalchemy"]
 
@@ -36,6 +61,7 @@ class TracingPlugin(Plugin):
         self.extra = extra
 
     def install(self, app: FastAPI) -> None:
+        patch_logging()
         resource = Resource.create(
             attributes={
                 "service.name": self.app_name,

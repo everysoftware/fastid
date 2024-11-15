@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from app.obs.prometheus import PrometheusMiddleware
-from app.plugins.base import Plugin
+from app.main.modules import Plugin
 
 
 class EndpointFilter(logging.Filter):
