@@ -3,8 +3,9 @@ from typing import Any
 import humanize
 from sqladmin import ModelView
 
-from app.db import SSOAccountOrm, UserOrm
-from app.db.utils import naive_utc
+from app.apps.models import App
+from app.base.types import naive_utc
+from app.db.models import OAuthAccount, User
 
 
 def time_format(m: Any, a: Any) -> Any:
@@ -31,42 +32,60 @@ class BaseView(ModelView):
     }
 
 
-class UserAdmin(BaseView, model=UserOrm):
+class UserAdmin(BaseView, model=User):
     name = "User"
     name_plural = "Users"
     icon = "fa-solid fa-user"
 
     column_list = [
-        UserOrm.id,
-        UserOrm.email,
-        UserOrm.first_name,
-        UserOrm.is_active,
-        UserOrm.is_superuser,
-        UserOrm.is_verified,
-        UserOrm.created_at,
-        UserOrm.updated_at,
+        User.id,
+        User.email,
+        User.first_name,
+        User.is_active,
+        User.is_superuser,
+        User.is_verified,
+        User.created_at,
+        User.updated_at,
     ]
 
     column_searchable_list = [
-        UserOrm.email,
+        User.email,
     ]
 
 
-class SSOAccountAdmin(BaseView, model=SSOAccountOrm):
-    name = "SSO Account"
-    name_plural = "SSO Accounts"
+class OAuthClientAdmin(BaseView, model=App):
+    name = "App"
+    name_plural = "Apps"
+    icon = "fa-solid fa-cube"
+
+    column_list = [
+        App.id,
+        App.name,
+        App.is_active,
+        App.created_at,
+        App.updated_at,
+    ]
+
+    column_searchable_list = [
+        App.name,
+    ]
+
+
+class OAuthAccountAdmin(BaseView, model=OAuthAccount):
+    name = "OAuth Account"
+    name_plural = "OAuth Accounts"
     icon = "fa-brands fa-google"
 
     column_list = [
-        SSOAccountOrm.id,
-        SSOAccountOrm.user_id,
-        SSOAccountOrm.provider,
-        SSOAccountOrm.email,
-        SSOAccountOrm.display_name,
-        SSOAccountOrm.created_at,
-        SSOAccountOrm.updated_at,
+        OAuthAccount.id,
+        OAuthAccount.user_id,
+        OAuthAccount.provider,
+        OAuthAccount.email,
+        OAuthAccount.display_name,
+        OAuthAccount.created_at,
+        OAuthAccount.updated_at,
     ]
 
     column_searchable_list = [
-        UserOrm.email,
+        User.email,
     ]

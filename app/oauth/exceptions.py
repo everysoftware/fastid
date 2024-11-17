@@ -1,43 +1,21 @@
 from starlette import status
 
-from app.exceptions import BackendError
+from app.api.exceptions import ClientError
 
 
-class NotSupported(NotImplementedError):
-    def __init__(self) -> None:
-        super().__init__("Provider not supported")
+class OAuthAccountNotFound(ClientError):
+    message = "OAuth account with this id not found"
+    error_code = "oauth_account_not_found"
+    status_code = status.HTTP_404_NOT_FOUND
 
 
-class Unauthorized(RuntimeError):
-    def __init__(self) -> None:
-        super().__init__(
-            "Authorization data not found. Did you forget to call 'login'?"
-        )
+class OAuthAlreadyConnected(ClientError):
+    message = "OAuth account is in use"
+    error_code = "oauth_already_associated"
+    status_code = status.HTTP_400_BAD_REQUEST
 
 
-class SSOError(BackendError):
-    pass
-
-
-class SSOLoginError(SSOError):
-    message = "SSO login error"
-    error_code = "sso_login_error"
-    status_code = status.HTTP_401_UNAUTHORIZED
-
-
-class SSODisabled(SSOError):
-    message = "SSO via this provider is disabled"
-    error_code = "sso_disabled"
-    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-
-
-class InvalidTelegramHash(BackendError):
-    message = "Invalid Telegram data hash"
-    error_code = "invalid_telegram_hash"
-    status_code = status.HTTP_401_UNAUTHORIZED
-
-
-class TelegramAuthDataExpired(BackendError):
-    message = "Telegram auth data expired"
-    error_code = "telegram_auth_data_expired"
-    status_code = status.HTTP_401_UNAUTHORIZED
+class UserTelegramNotFound(ClientError):
+    message = "User with this telegram id not found"
+    error_code = "telegram_id_not_found"
+    status_code = status.HTTP_400_BAD_REQUEST

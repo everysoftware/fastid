@@ -1,61 +1,48 @@
 from __future__ import annotations
 
-from typing import Any, cast, Self
+from typing import cast
 
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
-    AsyncSessionTransaction,
 )
 
-from app.sso_accounts.repositories import SSOAccountRepository
-from app.users.repositories import UserRepository
+from app.base.uow import IUnitOfWork
+from app.oauth.repositories import OAuthAccountRepository
+from app.apps.repositories import AppRepository
+from app.auth.repositories import UserRepository
 
 
-class UOW:
-    session_factory: async_sessionmaker[AsyncSession]
-    session: AsyncSession
-    transaction: AsyncSessionTransaction
+class AlchemyUOW(IUnitOfWork):
+    _session_factory: async_sessionmaker[AsyncSession]
+    _session: AsyncSession
 
     users: UserRepository
-    sso_accounts: SSOAccountRepository
+    oauth_accounts: OAuthAccountRepository
+    apps: AppRepository
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]):
-        self.session_factory = session_factory
+    def __init__(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        self._session_factory = session_factory
+
+    async def begin(self) -> None:
+        self._session = self._session_factory()
+        self.users = UserRepository(self._session)
+        self.oauth_accounts = OAuthAccountRepository(self._session)
+        self.apps = AppRepository(self._session)
 
     @property
-    def is_opened(self) -> bool:
-        if not self.session:
+    def is_active(self) -> bool:
+        if not self._session:
             return False
-        return cast(bool, self.session.is_active)
-
-    async def on_open(self) -> None:
-        self.users = UserRepository(self.session)
-        self.sso_accounts = SSOAccountRepository(self.session)
-
-    async def open(self) -> None:
-        self.session = self.session_factory()
-        await self.session.__aenter__()
-        self.transaction = self.session.begin()
-        await self.transaction.__aenter__()
-        await self.on_open()
-
-    async def close(self, type_: Any, value: Any, traceback: Any) -> None:
-        await self.transaction.__aexit__(type_, value, traceback)
-        await self.session.__aexit__(type_, value, traceback)
-
-    async def flush(self) -> None:
-        await self.session.flush()
-
-    async def rollback(self) -> None:
-        await self.session.rollback()
+        return cast(bool, self._session.is_active)
 
     async def commit(self) -> None:
-        await self.session.commit()
+        await self._session.commit()
 
-    async def __aenter__(self) -> Self:
-        await self.open()
-        return self
+    async def rollback(self) -> None:
+        await self._session.rollback()
 
-    async def __aexit__(self, type_: Any, value: Any, traceback: Any) -> None:
-        await self.close(type_, value, traceback)
+    async def close(self) -> None:
+        await self._session.close()

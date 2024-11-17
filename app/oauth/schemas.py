@@ -1,59 +1,24 @@
-from typing import Literal
-
-import pydantic
-from pydantic import AnyHttpUrl, ConfigDict
-
-from app.schemas import BackendBase
-
-type AnyUrl = pydantic.AnyHttpUrl | str
+from app.base.schemas import EntityDTO, BaseModel
+from app.base.types import UUID
 
 
-class DiscoveryDocument(BackendBase):
-    authorization_endpoint: str | None = None
-    token_endpoint: str | None = None
-    userinfo_endpoint: str | None = None
-
-    model_config = ConfigDict(extra="allow")
-
-
-class SSOCallback(BackendBase):
-    code: str
-    redirect_uri: AnyHttpUrl
-    state: str | None = None
-    scope: str | None = None
-    pkce_code_verifier: str | None = None
-
-    @property
-    def scopes(self) -> list[str] | None:
-        if self.scope is not None:
-            return self.scope.split()
-        return None
-
-
-class SSOBearerToken(BackendBase):
-    access_token: str
-    token_type: Literal["Bearer", "bearer"] = "Bearer"
-    id_token: str | None = None
-    refresh_token: str | None = None
-    expires_in: int | None = None
-    scope: str | None = None
-
-    @property
-    def scopes(self) -> list[str] | None:
-        if self.scope is not None:
-            return self.scope.split()
-        return None
-
-
-class OpenID(BackendBase):
-    id: str
+class OAuthAccountBase(BaseModel):
     provider: str
-    email: pydantic.EmailStr | None = None
+
+    # Identity
+    account_id: str
+    email: str | None = None
     first_name: str | None = None
     last_name: str | None = None
     display_name: str | None = None
     picture: str | None = None
 
+    # Access
+    access_token: str | None = None
+    refresh_token: str | None = None
+    expires_in: int | None = None
+    scope: str | None = None
 
-class AuthorizationURL(BackendBase):
-    url: str
+
+class OAuthAccountDTO(EntityDTO, OAuthAccountBase):
+    user_id: UUID

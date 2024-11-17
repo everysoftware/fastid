@@ -1,60 +1,53 @@
-# Breeze Auth
+# FastID
 
-Authorization server with OAuth2, permissions, user management, etc.
+Customizable and ready-to-use identity server written in Python
 
-## Features
+![Sign In](assets/signin.png)
 
-- Secure **JWT authorization**
-- Scalable Google, Telegram and Yandex **single sign-on**
-- **One-time code** confirmation (Email & Telegram)
-- Extendable **permission system**
-- Powerful **user management**: CRUD, search, roles, etc.
-- **Admin panel** with authorization and CRUD operations
-- **Grafana dashboard** with metrics, tracing & logging
+## Key features
+
+* Complies with OpenID Connect
+* Login via social networks. Support for Google, Telegram and Yandex at the moment
+* One-time codes. Support for e-mail & telegram at the moment
+* Admin panel to manage users & connected apps
+* Module system to extend the functionality
+* Metrics & tracing complied with OpenTelemetry
+* Written in Python using FastAPI
 
 ## Installation
 
-1. Install [observability preset](https://github.com/everysoftware/fastapi-obs)
-2. Clone the repository:
+1. Clone the repository:
 
     ```bash
-    git clone https://github.com/everysoftware/fastapi-auth
+    git clone https://github.com/everysoftware/fastid
     ```
 
-3. Generate RSA keys:
+2. Generate RSA keys:
 
     ```bash
     openssl genrsa -out certs/private.pem 2048
     openssl rsa -in certs/private.pem -pubout -out certs/public.pem
     ```
 
-4. Create a `.env` file. Use the `.env.example` as a reference.
-5. Run the application:
+3. Create a `.env` file. Use the `.env.example` as a reference.
+4. Run the application:
 
     ```bash
     make up
     ```
 
+## Observability
+
+**FastID** integrates perfectly with [this preset](https://github.com/everysoftware/fastapi-obs)
+
 ## Screenshots
 
-### Swagger UI
-
-![Swagger Auth](assets/swagger_auth.png)
-![Swagger OAuth](assets/swagger_oauth.png)
-
-### Consents
-
-![Google](assets/google_consent.png)
-![Telegram](assets/telegram_consent.png)
-![Yandex](assets/yandex_consent.png)
-
-### Admin Panel
-
-![Admin Panel](assets/admin_panel.png)
-
-### Dashboards
-
-![Metrics](assets/dashboard_metrics.png)
-![Logs](assets/dashboards_logs.png)
+![Sign In](assets/signin.png)
+![Sign Up](assets/signup.png)
+![Profile](assets/profile.png)
+![Connections](assets/connections.png)
+![Admin Login](assets/admin_login.png)
+![Admin Users](assets/admin_users.png)
+![Admin Apps](assets/admin_users.png)
 
 **Made with ❤️**

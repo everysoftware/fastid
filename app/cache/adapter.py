@@ -12,7 +12,11 @@ class CacheAdapter:
         self.client = redis
         self.key = key
 
-    async def add(
+    async def keys(self, pattern: str) -> set[str]:
+        keys = await self.client.keys(f"{self.key}:{pattern}")
+        return set(keys)
+
+    async def set(
         self, key: str, value: Any, expire: int | None = None
     ) -> str:
         json_str = json.dumps(value, ensure_ascii=True)
@@ -44,10 +48,6 @@ class CacheAdapter:
         if cast is None:
             return value
         return _cast(cast, json.loads(value))  # type: ignore[valid-type]
-
-    async def keys(self, pattern: str) -> set[str]:
-        keys = await self.client.keys(f"{self.key}:{pattern}")
-        return set(keys)
 
     async def delete(self, key: str) -> Any:
         return await self.client.delete(f"{self.key}:{key}")

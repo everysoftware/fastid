@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Login | {{ app_title }} {% endblock %}
+
+{% block style %}
+    .divider:after,
+    .divider:before {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #eee;
+    }
+{% endblock %}
+{% block scripts %}
+    <script type="module" src="/static/js/auth.js"></script>
+{% endblock %}
+
+{% block main %}
+
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <!-- Brand -->
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="{{ favicon_url }}" alt="App Logo" class="img-fluid me-2" style="max-width: 30px;">
+                <span class="fw-bold">{{ app_title }}</span>
+            </a>
+
+            <!-- Toggle button -->
+            <button
+                    class="navbar-toggler"
+                    type="button"
+                    data-mdb-toggle="collapse"
+                    data-mdb-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+            >
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/authorize">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <section class="vh-100">
+        <div class="container py-5 h-100">
+            <div class="row d-flex align-items-center justify-content-center h-100">
+                <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
+                    <form id="loginForm" class="needs-validation" novalidate>
+                        <h4 class="text-center mb-4">Sign in</h4>
+                        <!-- Email input -->
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <input type="email" id="email" class="form-control form-control-lg" required/>
+                            <label class="form-label" for="email">Email address</label>
+                        </div>
+
+                        <!-- Password input -->
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <input type="password" id="password" class="form-control form-control-lg"
+                                   required/>
+                            <label class="form-label" for="password">Password</label>
+                        </div>
+
+                        <!-- Submit button -->
+                        <button id="loginBtn" type="submit" data-mdb-button-init data-mdb-ripple-init
+                                class="btn btn-primary btn-lg btn-block mb-4">Login
+                        </button>
+
+                        <div class="d-flex justify-content-around align-items-center mb-4">
+                            <a href="/register">Don't have an account?</a>
+                            <a href="/recover">Forgot password?</a>
+                        </div>
+
+                        <div class="divider d-flex align-items-center my-4">
+                            <p class="text-center fw-bold mx-3 mb-0 text-muted">OR CONTINUE WITH</p>
+                        </div>
+
+                        <div class="row d-flex align-items-center justify-content-center">
+                            <a data-mdb-ripple-init=""
+                               class="btn btn-primary btn-floating mx-2"
+                               style="background-color: #F44336"
+                               href="{{ google_login_url }}" role="button" aria-label="Google">
+                                <i class="fab fa-google"></i>
+                            </a>
+
+                            <a data-mdb-ripple-init
+                               style="background-color: #03A9F4"
+                               href="{{ telegram_login_url }}"
+                               class="btn btn-primary btn-floating mx-2">
+                                <i class="fab fa-telegram"></i>
+                            </a>
+
+                            <a data-mdb-ripple-init
+                               style="background-color: #EA4335"
+                               href="{{ yandex_login_url }}"
+                               class="btn btn-primary btn-floating mx-2">
+                                <i class="fab fa-yandex"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

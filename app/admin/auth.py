@@ -1,34 +1,30 @@
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
-from app.context import users_ctx
-from app.exceptions import BackendError
-from app.users.auth import AuthorizationForm
-from app.users.schemas import GrantType
+from app.api.exceptions import ClientError
+from app.auth.schemas import OAuth2TokenRequest
+from app.auth.service import AuthUseCases
+from app.authlib.oauth import OAuth2Grant
+from app.db.connection import session_factory
+from app.db.uow import AlchemyUOW
 
 
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         data = await request.form()
-        form = AuthorizationForm(
-            grant_type=GrantType.password,
-            username=data["username"],  # type: ignore[arg-type]
-            password=data["password"],  # type: ignore[arg-type]
+        form = OAuth2TokenRequest(
+            grant_type=OAuth2Grant.password,
+            username=data["username"],
+            password=data["password"],
+            scope="admin",
         )
-
-        # Validate username/password credentials
-        async with users_ctx() as users:
+        async with AlchemyUOW(session_factory) as uow:
+            auth = AuthUseCases(uow)
             try:
-                user = await users.authorize_password(form)
-            except BackendError:
+                token = await auth.authorize(form)
+            except ClientError:
                 return False
-            if not user or not user.is_superuser:
-                return False
-            token = users.create_token(user)
-
-        # And update session
-        request.session.update({"token": token.access_token})
-
+        request.session.update({"at": token.access_token})
         return True
 
     async def logout(self, request: Request) -> bool:
@@ -37,19 +33,18 @@ class AdminAuth(AuthenticationBackend):
         return True
 
     async def authenticate(self, request: Request) -> bool:
-        token = request.session.get("token")
-
+        token = request.session.get("at")
         if not token:
             return False
-
-        async with users_ctx() as users:
+        async with AlchemyUOW(session_factory) as uow:
+            auth = AuthUseCases(uow)
             try:
-                user = await users.validate_token(token)
-            except BackendError:
+                user = await auth.get_userinfo(token)
+            except ClientError:
                 return False
-            if not user.is_superuser:
-                return False
+        if not user.is_superuser:
+            return False
         return True
 
 
-auth_backend = AdminAuth(secret_key="...")
+admin_auth = AdminAuth(secret_key="...")

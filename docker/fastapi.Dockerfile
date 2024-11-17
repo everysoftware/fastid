@@ -47,6 +47,7 @@ COPY ./$APP_DIR ./$APP_DIR
 COPY ./migrations ./migrations
 COPY ./alembic.ini ./
 COPY ./templates ./templates
+COPY ./static ./static
 COPY ./certs ./certs
 COPY ./logging.yaml ./
 
@@ -79,6 +80,7 @@ COPY ./$APP_DIR ./$APP_DIR
 COPY ./migrations ./migrations
 COPY ./alembic.ini ./
 COPY ./templates ./templates
+COPY ./static ./static
 COPY ./certs ./certs
 COPY ./logging.yaml ./
 
@@ -86,4 +88,4 @@ COPY ./logging.yaml ./
 COPY ./docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["gunicorn -w 4 -k app.workers.MyUvicornWorker \"$APP_DIR:app\" -b 0.0.0.0:8000"]
+CMD ["gunicorn -w 4 -k app.api.workers.MyUvicornWorker \"$APP_DIR:app\" -b 0.0.0.0:8000"]

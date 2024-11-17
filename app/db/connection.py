@@ -1,27 +1,27 @@
-from typing import Any
-
 from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
-    AsyncEngine,
-    AsyncSession,
 )
 
-from app.config import settings
+from app.db.config import db_settings
 
 
-def get_async_engine(dsn: str | URL, **kwargs: Any) -> AsyncEngine:
-    return create_async_engine(
-        dsn, echo=settings.db.db_echo, pool_pre_ping=True, **kwargs
-    )
+class DBHelper:
+    def __init__(self, url: URL | str, *, echo: bool = False) -> None:
+        self.url = url
+        self.echo = echo
+
+        self.engine = create_async_engine(
+            self.url,
+            echo=self.echo,
+            pool_pre_ping=True,
+        )
+        self.session_factory = async_sessionmaker(
+            self.engine, expire_on_commit=False
+        )
 
 
-def get_async_session_factory(
-    engine: AsyncEngine, **kwargs: Any
-) -> async_sessionmaker[AsyncSession]:
-    return async_sessionmaker(engine, expire_on_commit=False, **kwargs)
-
-
-async_engine = get_async_engine(settings.db.db_url)
-async_session_factory = get_async_session_factory(async_engine)
+db = DBHelper(db_settings.url, echo=db_settings.echo)
+engine = db.engine
+session_factory = db.session_factory

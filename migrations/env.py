@@ -6,8 +6,8 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from app.config import settings
-from app.db import BaseOrm
+from app.db.config import db_settings
+from app.db.models import BaseOrm
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -26,7 +26,7 @@ target_metadata = BaseOrm.metadata
 
 current_url = config.get_main_option("sqlalchemy.url")
 if not current_url or current_url == "driver://user:pass@localhost/dbname":
-    config.set_main_option("sqlalchemy.url", settings.db.db_url)
+    config.set_main_option("sqlalchemy.url", db_settings.url)
 
 
 # other values from the config, defined by the needs of env.py,
