@@ -5,12 +5,12 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from app.authlib.schemas import TokenResponse
+from app.authlib.dependencies import cookie_transport
+from app.frontend.templating import templates
 from app.main import logging
 from app.oauth.dependencies import SocialLoginDep
 from app.oauthlib.dependencies import OAuthName
 from app.oauthlib.schemas import OAuthCallback, TelegramCallback
-from app.frontend.templating import templates
 
 logger = logging.get_logger(__name__)
 router = APIRouter(prefix="/oauth", tags=["OAuth"])
@@ -38,14 +38,17 @@ async def oauth_callback(
     service: SocialLoginDep,
     oauth_name: OAuthName,
     request: Request,
-) -> TokenResponse:
+) -> Any:
     logger.info("OAuth callback received: request_url=%s", str(request.url))
     callback: Any
     if oauth_name != OAuthName.telegram:
         callback = OAuthCallback.model_validate(request.query_params)
     else:
         callback = TelegramCallback.model_validate(request.query_params)
-    return await service.authorize(oauth_name, callback)
+    token = await service.authorize(oauth_name, callback)
+    response = RedirectResponse(url="/authorize")
+    response = cookie_transport.set_token(response, token.access_token)
+    return response
 
 
 @router.get(

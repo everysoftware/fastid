@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import FastAPI, APIRouter
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
 from app.frontend.pages import router as auth_router
@@ -48,6 +49,11 @@ class FrontendModule(Module):
     def install(self, app: FastAPI) -> None:
         self._update_env()
         frontend_app = FastAPI(title=self.title, **self.fastapi_kwargs)
+        frontend_app.add_middleware(
+            SessionMiddleware,  # noqa
+            secret_key="...",
+            session_cookie="fastidsession",
+        )
         app.mount(
             self.static_url, StaticFiles(directory="static"), name="static"
         )

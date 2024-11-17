@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Profile | {{ app_title }} {% endblock %}
 
+{% block scripts %}
+    <script type="module" src="/static/js/profile.js"></script>
+{% endblock %}
+
 {% block main %}
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
@@ -52,7 +56,7 @@
                             <p class="text-muted">ID: {{ user.id }}</p>
 
                             <!-- Editable User Info -->
-                            <form class="w-100">
+                            <form id="editProfileForm" class="w-100">
                                 <div class="d-flex justify-content-between mb-3">
                                     <div data-mdb-input-init class="form-outline flex-grow-1 me-2">
                                         <input type="text" id="firstName" class="form-control"
@@ -61,16 +65,13 @@
                                     </div>
                                     <div data-mdb-input-init class="form-outline flex-grow-1 ms-2">
                                         <input type="text" id="lastName" class="form-control"
-                                               value="{{ user.last_name }}" required>
+                                               value="{{ user.last_name if user.last_name else '' }}">
                                         <label class="form-label" for="lastName">Last Name</label>
                                     </div>
                                 </div>
-                                <div data-mdb-input-init class="form-outline mb-3">
-                                    <input type="text" id="username" class="form-control" value="{{ user.username }}"
-                                           required>
-                                    <label class="form-label" for="username">Username</label>
-                                </div>
-                                <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+                                <button data-mdb-button-init data-mdb-ripple-init type="submit" id="editProfileBtn"
+                                        class="btn btn-primary btn-block">Save Changes
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -87,7 +88,9 @@
                                            value="{{ user.email }}" required>
                                     <label class="form-label" for="email">Email</label>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-block">Change email</button>
+                                <button data-mdb-button-init data-mdb-ripple-init type="submit"
+                                        class="btn btn-primary btn-block">Change email
+                                </button>
                             </form>
 
                             <hr class="my-4">
@@ -123,9 +126,13 @@
                                     <span class="fw-bold">Google</span>
                                 </div>
                                 {% if is_google_connected %}
-                                    <button class="btn btn-danger btn-sm">Disconnect</button>
+                                    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-danger btn-sm">
+                                        Disconnect
+                                    </button>
                                 {% else %}
-                                    <button class="btn btn-success btn-sm">Connect</button>
+                                    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-success btn-sm">
+                                        Connect
+                                    </button>
                                 {% endif %}
                             </div>
 
@@ -136,9 +143,13 @@
                                     <span class="fw-bold">Yandex</span>
                                 </div>
                                 {% if is_yandex_connected %}
-                                    <button class="btn btn-danger btn-sm">Disconnect</button>
+                                    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-danger btn-sm">
+                                        Disconnect
+                                    </button>
                                 {% else %}
-                                    <button class="btn btn-success btn-sm">Connect</button>
+                                    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-success btn-sm">
+                                        Connect
+                                    </button>
                                 {% endif %}
                             </div>
                         </div>

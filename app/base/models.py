@@ -10,7 +10,7 @@ from sqlalchemy.orm import (
 )
 
 from app.base.schemas import BaseModel
-from app.base.types import UUID, naive_utc, generate_uuid
+from app.base.types import UUID, naive_utc, uuid
 
 type_map = {
     int: BigInteger,
@@ -63,7 +63,7 @@ class Mixin:
 class UUIDMixin(Mixin):
     id: Mapped[UUID] = mapped_column(
         primary_key=True,
-        default=generate_uuid,
+        default=uuid,
         sort_order=-100,
     )
 

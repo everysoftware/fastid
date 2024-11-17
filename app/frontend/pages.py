@@ -1,11 +1,12 @@
-from typing import Any
+from typing import Any, Annotated
 
-from fastapi import APIRouter, Request, Response
-from starlette import status
-from starlette.responses import RedirectResponse
+from fastapi import APIRouter, Request, Response, Depends, status
+from fastapi.responses import RedirectResponse
 
-from app.auth.dependencies import UserDep
-from app.authlib.dependencies import cookie_transport
+from app.api.exceptions import ClientError
+from app.auth.dependencies import UserDep, AuthDep
+from app.auth.schemas import OAuth2ConsentRequest
+from app.authlib.dependencies import cookie_transport, auth_bus
 from app.frontend.templating import templates
 
 router = APIRouter()
@@ -27,12 +28,31 @@ def register(
 
 
 @router.get("/authorize")
-def authorize(
+async def authorize(
     request: Request,
+    consent: Annotated[OAuth2ConsentRequest, Depends()],
+    auth: AuthDep,
 ) -> Response:
-    response = templates.TemplateResponse(
-        "authorize.html", {"request": request}
-    )
+    # Check if consent is saved in cookies
+    if consent.redirect_uri is None:
+        consent_data = request.session.get("consent")
+        if consent_data is not None:
+            consent = OAuth2ConsentRequest.model_validate(consent_data)
+        if consent.redirect_uri is None:
+            consent.redirect_uri = "/profile"
+
+    # Check if user is already authenticated
+    try:
+        token = auth_bus.parse_request(request, auto_error=False)
+        await auth.get_userinfo(token)
+    except ClientError:
+        response = templates.TemplateResponse(
+            "authorize.html", {"request": request}
+        )
+        request.session["consent"] = consent.model_dump(mode="json")
+    else:
+        request.session.clear()
+        response = RedirectResponse(consent.redirect_uri)
     return response
 
 

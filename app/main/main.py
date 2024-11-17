@@ -48,7 +48,7 @@ if admin_settings.enabled:
     modules.append(
         AdminModule(
             engine,
-            title=f"Admin | {main_settings.title}",
+            title=f"{main_settings.title} Admin",
             favicon_url=admin_settings.favicon_url,
             logo_url=admin_settings.logo_url,
         )

@@ -8,8 +8,12 @@ from uuid_utils import uuid7
 UUID = PythonUUID
 
 
-def generate_uuid() -> UUID:
-    return UUID(uuid7().hex)
+def uuid_hex() -> str:
+    return uuid7().hex
+
+
+def uuid() -> UUID:
+    return UUID(uuid_hex())
 
 
 def naive_utc() -> datetime.datetime:

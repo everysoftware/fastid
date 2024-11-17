@@ -9,20 +9,20 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-from app.base.types import UUID, naive_utc, generate_uuid
+from app.base.types import UUID, naive_utc, uuid
 
 
 class BaseModel(PydanticBaseModel):
-    model_config = ConfigDict()
+    model_config = ConfigDict(use_enum_values=True)
 
 
 # Domain models
 class EntityDTO(BaseModel):
-    id: UUID = Field(default_factory=generate_uuid)
+    id: UUID = Field(default_factory=uuid)
     created_at: datetime.datetime = Field(default_factory=naive_utc)
     updated_at: datetime.datetime = Field(default_factory=naive_utc)
 
-    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     @overload

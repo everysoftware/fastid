@@ -23,3 +23,11 @@ class IsAppExists(AlchemySpec):
 
     def apply[T: Select[Any]](self, stmt: T) -> T:
         return stmt.where(App.client_id == self.client_id)
+
+
+class IsAppSlugExists(AlchemySpec):
+    def __init__(self, slug: str) -> None:
+        self.slug = slug
+
+    def apply[T: Select[Any]](self, stmt: T) -> T:
+        return stmt.where(App.slug == self.slug)

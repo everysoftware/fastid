@@ -5,7 +5,10 @@ from pydantic import (
     EmailStr,
 )
 
-from app.authlib.oauth import OAuth2GeneralForm
+from app.authlib.oauth import (
+    OAuth2TokenRequest as AuthlibOAuth2TokenRequest,
+    OAuth2ConsentRequest as AuthlibOAuth2ConsentRequest,
+)
 from app.base.schemas import BaseModel, EntityDTO
 
 
@@ -63,5 +66,9 @@ class Scope(StrEnum):
     """
 
 
-class OAuth2TokenRequest(OAuth2GeneralForm):
+class OAuth2TokenRequest(AuthlibOAuth2TokenRequest):
+    pass
+
+
+class OAuth2ConsentRequest(AuthlibOAuth2ConsentRequest):
     pass

@@ -13,10 +13,9 @@ Agents:
 """
 
 from enum import StrEnum, auto
-from typing import Iterable, Any
+from typing import Iterable, Sequence
 
 from pydantic import (
-    field_validator,
     ConfigDict,
 )
 
@@ -93,7 +92,7 @@ class OAuth2ConsentRequest(BaseModel):
     OAuth 2.0 Consent Request
     """
 
-    response_type: Iterable[OAuth2ResponseType]
+    response_type: str | None = None
     """
     The response type is used to specify the desired authorization processing flow.
     """
@@ -122,14 +121,16 @@ class OAuth2ConsentRequest(BaseModel):
     The code challenge method is used to verify the authorization code.
     """
 
-    @field_validator("response_type", mode="before")
-    def validate_response_type(cls, v: Any) -> Any:
-        if isinstance(v, str):
-            return {OAuth2ResponseType(s) for s in v.split(" ")}
-        return v
+    @property
+    def response_types(self) -> Sequence[OAuth2ResponseType] | None:
+        if self.response_type is not None:
+            return [
+                OAuth2ResponseType(s) for s in self.response_type.split(" ")
+            ]
+        return None
 
 
-class OAuth2TokenRequestForm(BaseModel):
+class OAuth2BaseTokenRequest(BaseModel):
     grant_type: OAuth2Grant
     """
     The grant type is used to specify the method through which a client can obtain an access token.
@@ -153,7 +154,7 @@ class OAuth2TokenRequestForm(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class OAuth2PasswordGrantForm(OAuth2TokenRequestForm):
+class OAuth2PasswordRequest(OAuth2BaseTokenRequest):
     grant_type: OAuth2Grant = OAuth2Grant.password
     username: str = "user@example.com"
     """
@@ -176,7 +177,7 @@ class OAuth2PasswordGrantForm(OAuth2TokenRequestForm):
         return self.scope.split(" ")
 
 
-class OAuth2AuthorizationCodeGrantForm(OAuth2TokenRequestForm):
+class OAuth2AuthorizationCodeRequest(OAuth2BaseTokenRequest):
     grant_type: OAuth2Grant = OAuth2Grant.authorization_code
     code: str
     """
@@ -195,7 +196,7 @@ class OAuth2AuthorizationCodeGrantForm(OAuth2TokenRequestForm):
     """
 
 
-class OAuth2RefreshTokenGrantForm(OAuth2TokenRequestForm):
+class OAuth2RefreshTokenRequest(OAuth2BaseTokenRequest):
     grant_type: OAuth2Grant = OAuth2Grant.refresh_token
     refresh_token: str
     """
@@ -203,8 +204,8 @@ class OAuth2RefreshTokenGrantForm(OAuth2TokenRequestForm):
     """
 
 
-class OAuth2GeneralForm(BaseModel):
-    grant_type: OAuth2Grant
+class OAuth2TokenRequest(BaseModel):
+    grant_type: OAuth2Grant = OAuth2Grant.password
     client_id: str = ""
     client_secret: str = ""
     username: str = ""
@@ -219,13 +220,13 @@ class OAuth2GeneralForm(BaseModel):
     def scopes(self) -> Iterable[str]:
         return self.scope.split(" ")
 
-    def as_password_grant(self) -> OAuth2PasswordGrantForm:
-        return OAuth2PasswordGrantForm.model_validate(self)
+    def as_password_grant(self) -> OAuth2PasswordRequest:
+        return OAuth2PasswordRequest.model_validate(self)
 
     def as_authorization_code_grant(
         self,
-    ) -> OAuth2AuthorizationCodeGrantForm:
-        return OAuth2AuthorizationCodeGrantForm.model_validate(self)
+    ) -> OAuth2AuthorizationCodeRequest:
+        return OAuth2AuthorizationCodeRequest.model_validate(self)
 
-    def as_refresh_token_grant(self) -> OAuth2RefreshTokenGrantForm:
-        return OAuth2RefreshTokenGrantForm.model_validate(self)
+    def as_refresh_token_grant(self) -> OAuth2RefreshTokenRequest:
+        return OAuth2RefreshTokenRequest.model_validate(self)

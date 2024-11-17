@@ -2,6 +2,8 @@
 
 Customizable and ready-to-use identity server written in Python
 
+![Sign In](assets/signin.png)
+
 ## Key features
 
 * Complies with OpenID Connect
@@ -36,12 +38,16 @@ Customizable and ready-to-use identity server written in Python
 
 ## Observability
 
-See [observability preset](https://github.com/everysoftware/fastapi-obs)
+**FastID** integrates perfectly with [this preset](https://github.com/everysoftware/fastapi-obs)
 
 ## Screenshots
 
-![Admin Panel](assets/admin_panel.png)
-![Metrics](assets/dashboard_metrics.png)
-![Logs](assets/dashboards_logs.png)
+![Sign In](assets/signin.png)
+![Sign Up](assets/signup.png)
+![Profile](assets/profile.png)
+![Connections](assets/connections.png)
+![Admin Login](assets/admin_login.png)
+![Admin Users](assets/admin_users.png)
+![Admin Apps](assets/admin_users.png)
 
 **Made with ❤️**

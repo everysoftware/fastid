@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import Field, EmailStr, field_serializer, ConfigDict
 
 from app.base.schemas import BaseModel
-from app.base.types import generate_uuid
+from app.base.types import uuid
 
 
 class TypeParams(BaseModel):
@@ -50,7 +50,7 @@ class IDTokenClaims(JWTClaims):
 
 
 class TokenResponse(BaseModel):
-    token_id: str = Field(default_factory=lambda: generate_uuid().hex)
+    token_id: str = Field(default_factory=lambda: uuid().hex)
     access_token: str | None = None
     refresh_token: str | None = None
     id_token: str | None = None

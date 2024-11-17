@@ -8,14 +8,13 @@ from app.auth.repositories import IsActiveUser
 from app.auth.schemas import (
     UserUpdate,
     UserCreate,
-    OAuth2TokenRequest,
 )
 from app.authlib.dependencies import token_backend
 from app.authlib.oauth import (
-    OAuth2TokenRequestForm,
+    OAuth2BaseTokenRequest,
     OAuth2Grant,
-    OAuth2PasswordGrantForm,
-    OAuth2RefreshTokenGrantForm,
+    OAuth2PasswordRequest,
+    OAuth2RefreshTokenRequest,
 )
 from app.authlib.schemas import TokenResponse
 from app.base.pagination import Pagination, Page
@@ -38,7 +37,7 @@ class AuthUseCases(UseCases):
         await self.uow.commit()
         return user
 
-    async def authorize(self, form: OAuth2TokenRequest) -> TokenResponse:
+    async def authorize(self, form: OAuth2BaseTokenRequest) -> TokenResponse:
         match form.grant_type:
             case OAuth2Grant.password:
                 token = await self._authorize_password(
@@ -101,7 +100,7 @@ class AuthUseCases(UseCases):
         return user
 
     async def _authorize_password(
-        self, form: OAuth2PasswordGrantForm
+        self, form: OAuth2PasswordRequest
     ) -> TokenResponse:
         user = await self.uow.users.find(IsActiveUser(form.username))
         if user is None:
@@ -113,13 +112,13 @@ class AuthUseCases(UseCases):
 
     @staticmethod
     async def _refresh_token(
-        form: OAuth2RefreshTokenGrantForm,
+        form: OAuth2RefreshTokenRequest,
     ) -> TokenResponse:
         content = token_backend.validate_rt(form.refresh_token)
         at = token_backend.create_at(content.sub, scope=content.scope)
         return token_backend.to_response(at=at)
 
     async def _authorize_code(
-        self, form: OAuth2TokenRequestForm
+        self, form: OAuth2BaseTokenRequest
     ) -> TokenResponse:
         raise NotImplementedError()

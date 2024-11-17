@@ -2,7 +2,7 @@ from typing import Self, Any
 
 from app.apps.config import apps_settings
 from app.apps.models import App
-from app.apps.repositories import IsAppExists
+from app.apps.repositories import IsAppSlugExists
 from app.auth.config import auth_settings
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
@@ -48,7 +48,8 @@ class Background:
         )
         if not user:
             user = User(
-                first_name="First User",
+                first_name="First",
+                last_name="User",
                 email=auth_settings.default_user_email,
             )
             user.set_password(auth_settings.default_user_password)
@@ -57,13 +58,12 @@ class Background:
 
     async def register_apps(self) -> None:
         client = await self.uow.apps.find(
-            IsAppExists(apps_settings.default_id)
+            IsAppSlugExists(apps_settings.default_slug)
         )
         if not client:
             app = App(
                 name=apps_settings.default_name,
-                client_id=apps_settings.default_id,
-                client_secret=apps_settings.default_secret,
+                slug=apps_settings.default_slug,
                 redirect_uris=";".join(apps_settings.default_redirect_uris),
             )
             await self.uow.apps.add(app)

@@ -6,7 +6,7 @@ from sqlalchemy.orm import mapped_column, Mapped
 from app.auth.exceptions import WrongPassword, NoPermission
 from app.auth.schemas import UserCreate
 from app.base.models import Entity
-from app.base.types import generate_uuid
+from app.base.types import uuid
 from app.oauthlib.schemas import OpenIDBearer
 from app.utils.hashing import hasher
 
@@ -49,7 +49,7 @@ class User(Entity):
     @classmethod
     def from_open_id(cls, open_id: OpenIDBearer) -> Self:
         user = cls(
-            id=generate_uuid(),
+            id=uuid(),
             first_name=open_id.first_name,
             last_name=open_id.last_name,
             email=open_id.email,

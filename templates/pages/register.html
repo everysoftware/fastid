@@ -11,7 +11,7 @@
     }
 {% endblock %}
 {% block scripts %}
-    <script type="module" src="/static/js/login.js"></script>
+    <script type="module" src="/static/js/auth.js"></script>
 {% endblock %}
 
 {% block main %}
@@ -53,7 +53,7 @@
         <div class="container py-5 h-100">
             <div class="row d-flex align-items-center justify-content-center h-100">
                 <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
-                    <form id="loginForm" class="needs-validation" novalidate>
+                    <form id="registerForm" class="needs-validation" novalidate>
                         <h4 class="text-center mb-4">Sign up</h4>
                         <div data-mdb-input-init class="form-outline mb-4">
                             <input type="text" id="name" class="form-control form-control-lg" required/>
@@ -82,7 +82,7 @@
                         </div>
 
                         <!-- Submit button -->
-                        <button id="loginBtn" type="submit" data-mdb-button-init data-mdb-ripple-init
+                        <button id="registerBtn" type="submit" data-mdb-button-init data-mdb-ripple-init
                                 class="btn btn-primary btn-lg btn-block mb-4">Create an account
                         </button>
 
