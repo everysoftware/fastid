@@ -9,7 +9,6 @@ from app.auth.router import router as auth_router
 from app.base.schemas import ErrorResponse
 from app.oauth.accounts_router import router as oauth_accounts_router
 from app.oauth.login_router import router as oauth_router
-from app.api.public import router as external_router
 
 api_router = APIRouter(
     responses={
@@ -21,15 +20,13 @@ api_router = APIRouter(
     },
 )
 
-api_router.include_router(external_router)
+secured_router = APIRouter(dependencies=[Depends(f) for f in auth_flows])
+secured_router.include_router(auth_router)
+secured_router.include_router(oauth_router)
+secured_router.include_router(admin_auth_router)
+secured_router.include_router(oauth_accounts_router)
 
-private_router = APIRouter(dependencies=[Depends(f) for f in auth_flows])
-private_router.include_router(auth_router)
-private_router.include_router(oauth_router)
-private_router.include_router(admin_auth_router)
-private_router.include_router(oauth_accounts_router)
-
-api_router.include_router(private_router)
+api_router.include_router(secured_router)
 
 
 @api_router.get("/hc", include_in_schema=False)

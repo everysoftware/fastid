@@ -26,7 +26,7 @@ export class AuthClient extends ApiClient {
         form.append('scope', '');
         form.append('client_id', '');
         form.append('client_secret', '');
-        return this.post('/auth/token', {}, form, this.handleLoginErrors);
+        return this.post('/token', {}, form, this.handleLoginErrors);
     }
 
     handleRegisterErrors(status, data) {
@@ -38,14 +38,12 @@ export class AuthClient extends ApiClient {
     }
 
     async register(firstName, email, password) {
-        return this.post('/auth/register', {}, {
-            email: email,
-            password: password,
-            first_name: firstName
+        return this.post('/register', {}, {
+            email: email, password: password, first_name: firstName
         }, {}, this.handleRegisterErrors);
     }
 
     async logout() {
-        return this.post('/auth/logout');
+        return this.post('/logout');
     }
 }

@@ -24,13 +24,15 @@ class AdminModule(Module):
         self.admin_kwargs = admin_kwargs
 
     def install(self, app: FastAPI) -> None:
+        admin_app = FastAPI()
         admin = Admin(
-            app,
+            admin_app,
             self.engine,
-            base_url=self.base_url,
+            base_url="/",
             authentication_backend=admin_auth,
             **self.admin_kwargs,
         )
         admin.add_view(UserAdmin)
         admin.add_view(OAuthClientAdmin)
         admin.add_view(OAuthAccountAdmin)
+        app.mount(self.base_url, admin_app)

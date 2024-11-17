@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import FastAPI, APIRouter
 from starlette.staticfiles import StaticFiles
 
-from app.frontend.auth import router as auth_router
+from app.frontend.pages import router as auth_router
 from app.frontend.templating import templates
 from app.main.config import main_settings
 from app.main.modules import Module
@@ -18,7 +18,7 @@ class FrontendModule(Module):
         self,
         *,
         title: str = "Unnamed app",
-        base_url: str = "/app",
+        base_url: str = "/",
         static_url: str = "/static",
         favicon_url: str = "/static/assets/favicon.png",
         logo_url: str = "/static/assets/logo.png",

@@ -2,15 +2,15 @@ import abc
 from abc import ABC
 from typing import Mapping, Literal
 
-from fastapi import Response
+from fastapi import Response, Request
 from fastapi.security.utils import get_authorization_scheme_param
-from starlette.requests import Request
 
 from app.authlib.exceptions import NoTokenProvided
+from app.authlib.schemas import TokenResponse
 
 
 class Transport(ABC):
-    def __init__(self, *, name: str, scheme_name: str):
+    def __init__(self, *, name: str, scheme_name: str) -> None:
         self.name = name
         self.scheme_name = scheme_name
 
@@ -19,6 +19,19 @@ class Transport(ABC):
 
     @abc.abstractmethod
     def set_token(self, response: Response, token: str) -> Response: ...
+
+    @abc.abstractmethod
+    def delete_token(self, response: Response) -> Response: ...
+
+    def get_login_response(self, token: TokenResponse) -> Response:
+        response = Response(content=token.model_dump_json())
+        self.set_token(response, token.access_token)
+        return response
+
+    def get_logout_response(self) -> Response:
+        response = Response()
+        self.delete_token(response)
+        return response
 
 
 class HeaderTransport(Transport):
@@ -39,6 +52,10 @@ class HeaderTransport(Transport):
 
     def set_token(self, response: Response, token: str) -> Response:
         response.headers[self.name] = f"Bearer {token}"
+        return response
+
+    def delete_token(self, response: Response) -> Response:
+        del response.headers[self.name]
         return response
 
 
@@ -68,6 +85,14 @@ class CookieTransport(Transport):
             value=token,
             httponly=self.httponly,
             max_age=self.max_age,
+            secure=self.secure,
+            samesite=self.samesite,
+        )
+        return response
+
+    def delete_token(self, response: Response) -> Response:
+        response.delete_cookie(
+            key=self.name,
             secure=self.secure,
             samesite=self.samesite,
         )

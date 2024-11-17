@@ -43,7 +43,6 @@ modules.append(
         plugins=api_plugins,
     )
 )
-modules.append(FrontendModule(title=main_settings.title))
 
 if admin_settings.enabled:
     modules.append(
@@ -54,6 +53,8 @@ if admin_settings.enabled:
             logo_url=admin_settings.logo_url,
         )
     )
+
+modules.append(FrontendModule(title=main_settings.title))
 
 app = app_factory(
     title=main_settings.title,
