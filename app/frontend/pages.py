@@ -42,8 +42,11 @@ async def authorize(
             consent.redirect_uri = "/profile"
 
     # Check if user is already authenticated
+    token = auth_bus.parse_request(request, auto_error=False)
+    response: Response
+    if token is None:
+        token = ""
     try:
-        token = auth_bus.parse_request(request, auto_error=False)
         await auth.get_userinfo(token)
     except ClientError:
         response = templates.TemplateResponse(

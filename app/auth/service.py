@@ -8,6 +8,7 @@ from app.auth.repositories import IsActiveUser
 from app.auth.schemas import (
     UserUpdate,
     UserCreate,
+    OAuth2TokenRequest,
 )
 from app.authlib.dependencies import token_backend
 from app.authlib.oauth import (
@@ -37,7 +38,7 @@ class AuthUseCases(UseCases):
         await self.uow.commit()
         return user
 
-    async def authorize(self, form: OAuth2BaseTokenRequest) -> TokenResponse:
+    async def authorize(self, form: OAuth2TokenRequest) -> TokenResponse:
         match form.grant_type:
             case OAuth2Grant.password:
                 token = await self._authorize_password(

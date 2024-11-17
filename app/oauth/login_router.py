@@ -1,9 +1,8 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, Response
+from fastapi.responses import RedirectResponse
 from starlette import status
-from starlette.requests import Request
-from starlette.responses import RedirectResponse
 
 from app.authlib.dependencies import cookie_transport
 from app.frontend.templating import templates
@@ -46,7 +45,8 @@ async def oauth_callback(
     else:
         callback = TelegramCallback.model_validate(request.query_params)
     token = await service.authorize(oauth_name, callback)
-    response = RedirectResponse(url="/authorize")
+    response: Response = RedirectResponse(url="/authorize")
+    assert token.access_token is not None
     response = cookie_transport.set_token(response, token.access_token)
     return response
 

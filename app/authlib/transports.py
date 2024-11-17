@@ -25,6 +25,7 @@ class Transport(ABC):
 
     def get_login_response(self, token: TokenResponse) -> Response:
         response = Response(content=token.model_dump_json())
+        assert token.access_token is not None
         self.set_token(response, token.access_token)
         return response
 
