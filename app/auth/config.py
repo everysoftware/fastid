@@ -3,6 +3,7 @@ from pathlib import Path
 from pydantic_settings import SettingsConfigDict
 
 from app.base.schemas import BaseSettings
+from app.main.config import main_settings
 
 
 class AuthSettings(BaseSettings):
@@ -19,6 +20,18 @@ class AuthSettings(BaseSettings):
 
     authorization_code_expires_in: int = 5 * 60
     verification_code_expires_in: int = 5 * 60
+
+    @property
+    def authorization_endpoint(self) -> str:
+        return f"{main_settings.base_url}/authorize"
+
+    @property
+    def token_endpoint(self) -> str:
+        return f"{main_settings.api_url}/token"
+
+    @property
+    def userinfo_endpoint(self) -> str:
+        return f"{main_settings.api_url}/userinfo"
 
     model_config = SettingsConfigDict(env_prefix="auth_")
 

@@ -106,76 +106,31 @@
                         <div class="card-body">
                             <h4 class="card-title mb-4">Connections</h4>
 
-                            <!-- Telegram -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="fab fa-telegram fa-2x fa-fw text-info me-3"></i>
-                                    <span class="fw-bold">Telegram</span>
+                            {% for provider in available_providers.values() %}
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fab {{ provider.icon }} fa-2x fa-fw me-3"
+                                           style="color: {{ provider.color }}"></i>
+                                        <span class="fw-bold">{{ provider.title }}</span>
+                                    </div>
+                                    {% if provider.name in connected_providers %}
+                                        <a href="{{ provider.revoke_url }}" data-mdb-ripple-init
+                                           class="btn btn-danger btn-sm" role="button">
+                                            Disconnect
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ provider.authorization_url }}" data-mdb-ripple-init
+                                           class="btn btn-success btn-sm"
+                                           role="button">
+                                            Connect
+                                        </a>
+                                    {% endif %}
                                 </div>
-                                {% if is_telegram_connected %}
-                                    <button class="btn btn-danger btn-sm">Disconnect</button>
-                                {% else %}
-                                    <button class="btn btn-success btn-sm">Connect</button>
-                                {% endif %}
-                            </div>
-
-                            <!-- Google -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="fab fa-google fa-2x fa-fw text-danger me-3"></i>
-                                    <span class="fw-bold">Google</span>
-                                </div>
-                                {% if is_google_connected %}
-                                    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-danger btn-sm">
-                                        Disconnect
-                                    </button>
-                                {% else %}
-                                    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-success btn-sm">
-                                        Connect
-                                    </button>
-                                {% endif %}
-                            </div>
-
-                            <!-- Yandex -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="fab fa-yandex fa-2x fa-fw text-danger me-3"></i>
-                                    <span class="fw-bold">Yandex</span>
-                                </div>
-                                {% if is_yandex_connected %}
-                                    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-danger btn-sm">
-                                        Disconnect
-                                    </button>
-                                {% else %}
-                                    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-success btn-sm">
-                                        Connect
-                                    </button>
-                                {% endif %}
-                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountLabel"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger" id="deleteAccountLabel">Confirm Deletion</h5>
-                        <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Are you sure you want to delete your account? This action cannot be undone.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">Cancel</button>
-                        <a href="/delete-account" class="btn btn-danger">Yes, Delete My Account</a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </section>
-
 {% endblock %}

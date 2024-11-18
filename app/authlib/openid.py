@@ -1,10 +1,20 @@
 import datetime
-from typing import Literal
 
-from pydantic import Field, EmailStr, field_serializer, ConfigDict
+from pydantic import ConfigDict, field_serializer, EmailStr
 
 from app.base.schemas import BaseModel
-from app.base.types import uuid
+
+
+class DiscoveryDocument(BaseModel):
+    """
+    OpenID Connect Discovery Document.
+    """
+
+    authorization_endpoint: str = ""
+    token_endpoint: str = ""
+    userinfo_endpoint: str = ""
+
+    model_config = ConfigDict(extra="allow")
 
 
 class TypeParams(BaseModel):
@@ -43,19 +53,8 @@ class RefreshTokenClaims(JWTClaims):
 
 
 class IDTokenClaims(JWTClaims):
+    name: str | None = None
+    given_name: str | None = None
+    family_name: str | None = None
     email: EmailStr | None = None
-    first_name: str | None = None
-    last_name: str | None = None
-    display_name: str | None = None
-
-
-class TokenResponse(BaseModel):
-    token_id: str = Field(default_factory=lambda: uuid().hex)
-    access_token: str | None = None
-    refresh_token: str | None = None
-    id_token: str | None = None
-    token_type: Literal["bearer"] = "bearer"
-    expires_in: int | None = Field(
-        None,
-        description="Token expiration time in seconds",
-    )
+    email_verified: bool | None = None

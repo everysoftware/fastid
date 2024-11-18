@@ -84,26 +84,15 @@
                         </div>
 
                         <div class="row d-flex align-items-center justify-content-center">
-                            <a data-mdb-ripple-init=""
-                               class="btn btn-primary btn-floating mx-2"
-                               style="background-color: #F44336"
-                               href="{{ google_login_url }}" role="button" aria-label="Google">
-                                <i class="fab fa-google"></i>
-                            </a>
-
-                            <a data-mdb-ripple-init
-                               style="background-color: #03A9F4"
-                               href="{{ telegram_login_url }}"
-                               class="btn btn-primary btn-floating mx-2">
-                                <i class="fab fa-telegram"></i>
-                            </a>
-
-                            <a data-mdb-ripple-init
-                               style="background-color: #EA4335"
-                               href="{{ yandex_login_url }}"
-                               class="btn btn-primary btn-floating mx-2">
-                                <i class="fab fa-yandex"></i>
-                            </a>
+                            {% for provider in available_providers.values() %}
+                                <a data-mdb-ripple-init=""
+                                   class="btn btn-primary btn-floating mx-2"
+                                   style="background-color: {{ provider.color }}"
+                                   href="{{ provider.authorization_url }}" role="button"
+                                   aria-label="{{ provider.title }}">
+                                    <i class="fab {{ provider.icon }}"></i>
+                                </a>
+                            {% endfor %}
                         </div>
                     </form>
                 </div>
