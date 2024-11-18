@@ -13,7 +13,8 @@ Agents:
 """
 
 from enum import StrEnum, auto
-from typing import Iterable, Sequence
+from typing import Iterable
+from urllib.parse import urlencode
 
 from pydantic import (
     ConfigDict,
@@ -50,14 +51,14 @@ class OAuth2Grant(StrEnum):
     """
     authorization_code = auto()
     """
-    The client directs the resource owner to an resource server. The resource owner authenticates and authorizes
+    The client directs the resource owner to an authorization server. The resource owner authenticates and authorizes
     the client. The authorization server redirects the resource owner back to the client with an authorization code.
     The client requests an access token from the authorization server's token endpoint by including the authorization
     code received in the previous step.
     """
     pkce = auto()
     """
-    The client directs the resource owner to an resource server. The resource owner authenticates and authorizes
+    The client directs the resource owner to an authorization server. The resource owner authenticates and authorizes
     the client. The authorization server redirects the resource owner back to the client with an authorization code.
     The client requests an access token from the authorization server's token endpoint by including the authorization
     code received in the previous step and the code verifier.
@@ -68,28 +69,10 @@ class OAuth2Grant(StrEnum):
     """
 
 
-class OAuth2ResponseType(StrEnum):
-    """
-    Response Types are used to specify the desired authorization processing flow.
-    """
-
-    token = auto()
-    """
-    Used for the implicit flow to obtain an access token.
-    """
-    id_token = auto()
-    """
-    Used for the implicit flow to obtain an ID Token.
-    """
-    code = auto()
-    """
-    Used for the authorization code flow to obtain an authorization code.
-    """
-
-
 class OAuth2ConsentRequest(BaseModel):
     """
-    OAuth 2.0 Consent Request
+    Consent Request is sent by the client to the authorization server.
+    Authorization server asks the resource owner to grant permissions to the client.
     """
 
     response_type: str | None = None
@@ -122,12 +105,41 @@ class OAuth2ConsentRequest(BaseModel):
     """
 
     @property
-    def response_types(self) -> Sequence[OAuth2ResponseType] | None:
-        if self.response_type is not None:
-            return [
-                OAuth2ResponseType(s) for s in self.response_type.split(" ")
-            ]
-        return None
+    def scopes(self) -> Iterable[str]:
+        if self.scope is None:
+            return []
+        return self.scope.split(" ")
+
+
+class OAuth2Callback(BaseModel):
+    """
+    Callback is sent by the authorization server to the client after the resource owner grants permissions.
+    """
+
+    code: str | None = None
+    """
+    The authorization code is used to obtain an access token.
+    """
+    state: str | None = None
+    """
+    The state is used to prevent CSRF attacks. State should be the same as in the consent request.
+    """
+    scope: str | None = None
+    """
+    The scope is used to specify what access rights an access token has. Scope should be the same as in the consent
+    request.
+    """
+    code_verifier: str | None = None
+    """
+    The code verifier is used to verify the authorization code.
+    """
+    redirect_uri: str | None = None
+    """
+    The redirect URI is used to redirect the user-agent back to the client. Not all providers put it in the callback.
+    """
+
+    def get_url(self) -> str:
+        return f"{self.redirect_uri}?{urlencode(self.model_dump(mode="json", exclude_none=True))}"
 
 
 class OAuth2BaseTokenRequest(BaseModel):
@@ -135,14 +147,14 @@ class OAuth2BaseTokenRequest(BaseModel):
     """
     The grant type is used to specify the method through which a client can obtain an access token.
     """
-    client_id: str = "default"
+    client_id: str = ""
     """
     The client ID is a public identifier for the client.
 
     Client credentials may be omitted if the resource server trusts the client. E.g. if you are connecting
     backend and frontend of the same application.
     """
-    client_secret: str = "default"
+    client_secret: str = ""
     """
     The client secret is a secret known only to the client and the resource server.
 

@@ -4,6 +4,7 @@ from typing import Mapping, Literal
 
 from fastapi import Response, Request
 from fastapi.security.utils import get_authorization_scheme_param
+from starlette.responses import JSONResponse
 
 from app.authlib.exceptions import NoTokenProvided
 from app.authlib.schemas import TokenResponse
@@ -24,7 +25,7 @@ class Transport(ABC):
     def delete_token(self, response: Response) -> Response: ...
 
     def get_login_response(self, token: TokenResponse) -> Response:
-        response = Response(content=token.model_dump_json())
+        response = JSONResponse(content=token.model_dump())
         assert token.access_token is not None
         self.set_token(response, token.access_token)
         return response

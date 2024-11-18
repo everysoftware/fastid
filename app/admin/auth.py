@@ -5,6 +5,7 @@ from app.api.exceptions import ClientError
 from app.auth.schemas import OAuth2TokenRequest
 from app.auth.service import AuthUseCases
 from app.authlib.oauth import OAuth2Grant
+from app.cache.dependencies import get_cache
 from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW
 
@@ -18,8 +19,9 @@ class AdminAuth(AuthenticationBackend):
             password=data["password"],
             scope="admin",
         )
+        cache = get_cache()
         async with AlchemyUOW(session_factory) as uow:
-            auth = AuthUseCases(uow)
+            auth = AuthUseCases(uow, cache)
             try:
                 token = await auth.authorize(form)
             except ClientError:
@@ -36,8 +38,9 @@ class AdminAuth(AuthenticationBackend):
         token = request.session.get("at")
         if not token:
             return False
+        cache = get_cache()
         async with AlchemyUOW(session_factory) as uow:
-            auth = AuthUseCases(uow)
+            auth = AuthUseCases(uow, cache)
             try:
                 user = await auth.get_userinfo(token)
             except ClientError:

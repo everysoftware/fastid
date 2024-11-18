@@ -85,7 +85,7 @@
                             <form>
                                 <div data-mdb-input-init class="form-outline mb-3">
                                     <input type="email" id="email" class="form-control"
-                                           value="{{ user.email }}" required>
+                                           value="{{ user.email if user.email else '' }}" required>
                                     <label class="form-label" for="email">Email</label>
                                 </div>
                                 <button data-mdb-button-init data-mdb-ripple-init type="submit"

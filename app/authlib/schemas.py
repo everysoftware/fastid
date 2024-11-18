@@ -11,7 +11,7 @@ class TypeParams(BaseModel):
     algorithm: str = "HS256"
     private_key: str
     public_key: str
-    expires_in: datetime.timedelta
+    expires_in: datetime.timedelta | None = None
     issuer: str = "unnamed_app"
 
 
@@ -55,6 +55,7 @@ class TokenResponse(BaseModel):
     refresh_token: str | None = None
     id_token: str | None = None
     token_type: Literal["bearer"] = "bearer"
-    expires_in: int = Field(
+    expires_in: int | None = Field(
+        None,
         description="Token expiration time in seconds",
     )

@@ -33,11 +33,12 @@ class ITokenBackend(ABC):
     def create_it(
         self,
         sub: Subject,
+        *,
         name: str | None = None,
         given_name: str | None = None,
         family_name: str | None = None,
         email: str | None = None,
-        email_verified: str | None = None,
+        email_verified: bool | None = None,
         **kwargs: Any,
     ) -> str: ...
 
@@ -72,8 +73,11 @@ class BackendConfig:
     def has_type(self, token_type: str) -> bool:
         return token_type in self.types
 
-    def get_lifetime(self, token_type: str) -> int:
-        return int(self.types[token_type].expires_in.total_seconds())
+    def get_lifetime(self, token_type: str) -> int | None:
+        expires_in = self.types[token_type].expires_in
+        if expires_in is None:
+            return None
+        return int(expires_in.total_seconds())
 
 
 class TokenBackend(ITokenBackend):
@@ -107,11 +111,12 @@ class TokenBackend(ITokenBackend):
     def create_it(
         self,
         sub: Subject,
+        *,
         name: str | None = None,
         given_name: str | None = None,
         family_name: str | None = None,
         email: str | None = None,
-        email_verified: str | None = None,
+        email_verified: bool | None = None,
         **kwargs: Any,
     ) -> str:
         return self._create(
@@ -163,9 +168,10 @@ class TokenBackend(ITokenBackend):
             iss=params.issuer,
             typ=token_type,
             iat=now,
-            exp=now + params.expires_in,
             **payload,
         )
+        if params.expires_in is not None:
+            claims["exp"] = now + params.expires_in
         return jwt.encode(
             claims,
             params.private_key,

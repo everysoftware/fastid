@@ -17,6 +17,27 @@ conf.add_type(
         expires_in=datetime.timedelta(seconds=auth_settings.jwt_access_expire),
     ),
 )
+conf.add_type(
+    "id",
+    TypeParams(
+        issuer=main_settings.discovery_name,
+        algorithm=auth_settings.jwt_algorithm,
+        private_key=auth_settings.jwt_private_key.read_text(),
+        public_key=auth_settings.jwt_public_key.read_text(),
+    ),
+)
+conf.add_type(
+    "refresh",
+    TypeParams(
+        issuer=main_settings.discovery_name,
+        algorithm=auth_settings.jwt_algorithm,
+        private_key=auth_settings.jwt_private_key.read_text(),
+        public_key=auth_settings.jwt_public_key.read_text(),
+        expires_in=datetime.timedelta(
+            seconds=auth_settings.jwt_refresh_expire
+        ),
+    ),
+)
 token_backend = TokenBackend(conf)
 
 header_transport = HeaderTransport()
