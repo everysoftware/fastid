@@ -16,8 +16,9 @@ class AuthSettings(BaseSettings):
     default_user_password: str = "password"
     admin_email: str = "admin@example.com"
     admin_password: str = "changethis"
-    code_length: int = 6
-    code_expires_in: int = 5 * 60
+
+    authorization_code_expires_in: int = 5 * 60
+    verification_code_expires_in: int = 5 * 60
 
     model_config = SettingsConfigDict(env_prefix="auth_")
 

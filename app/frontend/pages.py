@@ -6,7 +6,9 @@ from fastapi.responses import RedirectResponse
 from app.api.exceptions import ClientError
 from app.auth.dependencies import UserDep, AuthDep
 from app.auth.schemas import OAuth2ConsentRequest
-from app.authlib.dependencies import cookie_transport, auth_bus
+from app.authlib.dependencies import cookie_transport, token_backend
+from app.base.types import UUID
+from app.frontend.dependencies import valid_consent
 from app.frontend.templating import templates
 
 router = APIRouter()
@@ -14,48 +16,55 @@ router = APIRouter()
 
 @router.get("/")
 def index() -> Response:
-    return RedirectResponse(url="/authorize")
+    return RedirectResponse(url="/login")
 
 
 @router.get("/register")
 def register(
     request: Request,
 ) -> Response:
-    response = templates.TemplateResponse(
-        "register.html", {"request": request}
-    )
-    return response
+    return templates.TemplateResponse("register.html", {"request": request})
+
+
+@router.get("/login")
+async def login(
+    request: Request,
+) -> Response:
+    token = cookie_transport.get_token(request)
+    if token is None:
+        return templates.TemplateResponse(
+            "authorize.html", {"request": request}
+        )
+    return RedirectResponse(url="/profile")
+
+
+def get_consent_response(
+    request: Request, consent: OAuth2ConsentRequest
+) -> Response:
+    request.session["consent"] = consent.model_dump(mode="json")
+    return templates.TemplateResponse("authorize.html", {"request": request})
 
 
 @router.get("/authorize")
 async def authorize(
-    request: Request,
-    consent: Annotated[OAuth2ConsentRequest, Depends()],
     auth: AuthDep,
+    request: Request,
+    consent: Annotated[OAuth2ConsentRequest, Depends(valid_consent)],
 ) -> Response:
-    # Check if consent is saved in cookies
-    if consent.redirect_uri is None:
-        consent_data = request.session.get("consent")
-        if consent_data is not None:
-            consent = OAuth2ConsentRequest.model_validate(consent_data)
-        if consent.redirect_uri is None:
-            consent.redirect_uri = "/profile"
-
-    # Check if user is already authenticated
-    token = auth_bus.parse_request(request, auto_error=False)
-    response: Response
+    token = cookie_transport.get_token(request)
     if token is None:
-        token = ""
+        return get_consent_response(request, consent)
     try:
-        await auth.get_userinfo(token)
+        payload = token_backend.validate_at(token)
     except ClientError:
-        response = templates.TemplateResponse(
-            "authorize.html", {"request": request}
-        )
-        request.session["consent"] = consent.model_dump(mode="json")
+        return get_consent_response(request, consent)
     else:
+        # User is authenticated, redirect to specified redirect URI with code
         request.session.clear()
-        response = RedirectResponse(consent.redirect_uri)
+        redirect_uri = await auth.approve_consent_request(
+            consent, UUID(payload.sub)
+        )
+        response = RedirectResponse(redirect_uri)
     return response
 
 
@@ -64,10 +73,9 @@ def profile(
     request: Request,
     user: UserDep,
 ) -> Response:
-    response = templates.TemplateResponse(
+    return templates.TemplateResponse(
         "profile.html", {"request": request, "user": user}
     )
-    return response
 
 
 @router.get(
@@ -75,6 +83,6 @@ def profile(
     status_code=status.HTTP_200_OK,
 )
 def logout() -> Any:
-    response = RedirectResponse(url="/authorize")
+    response = RedirectResponse(url="/login")
     cookie_transport.delete_token(response)
     return response

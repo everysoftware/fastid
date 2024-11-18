@@ -54,14 +54,18 @@ class ValidationError(LongValidationError):
 
 
 class Unauthorized(ClientError):
+    message = "Unauthorized"
+    error_code = "unauthorized"
     status_code = status.HTTP_401_UNAUTHORIZED
     headers = {"WWW-Authenticate": "Bearer"}
 
 
-def backend_exception_handler(
+def client_exception_handler(
     request: Request, ex: ClientError
 ) -> JSONResponse:
-    logger.info(f'"{request.method} {request.url}" response: {repr(ex)}')
+    logger.info(
+        '[BE] "%s %s" response: %s', request.method, request.url, repr(ex)
+    )
     return JSONResponse(
         status_code=ex.status_code,
         content=ErrorResponse(
@@ -83,5 +87,5 @@ def unhandled_exception_handler(
 
 
 def add_exception_handlers(app: FastAPI) -> None:
-    app.add_exception_handler(ClientError, backend_exception_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(ClientError, client_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, unhandled_exception_handler)

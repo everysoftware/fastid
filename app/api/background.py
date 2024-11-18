@@ -2,7 +2,7 @@ from typing import Self, Any
 
 from app.apps.config import apps_settings
 from app.apps.models import App
-from app.apps.repositories import IsAppSlugExists
+from app.apps.repositories import IsActiveAppSlug
 from app.auth.config import auth_settings
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
@@ -22,7 +22,7 @@ class Background:
         await self.register_apps()
 
     async def on_shutdown(self) -> None:
-        pass
+        await self.redis.aclose()
 
     async def healthcheck(self) -> None:
         await self.redis.ping()
@@ -58,7 +58,7 @@ class Background:
 
     async def register_apps(self) -> None:
         client = await self.uow.apps.find(
-            IsAppSlugExists(apps_settings.default_slug)
+            IsActiveAppSlug(apps_settings.default_slug)
         )
         if not client:
             app = App(

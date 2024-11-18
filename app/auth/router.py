@@ -1,7 +1,6 @@
 from typing import Any, Annotated
 
-from fastapi import APIRouter, Form
-from starlette import status
+from fastapi import APIRouter, Form, status
 
 from app.auth.dependencies import AuthDep, UserDep
 from app.auth.schemas import (

@@ -47,7 +47,7 @@ Customizable and ready-to-use identity server written in Python
 ![Profile](assets/profile.png)
 ![Connections](assets/connections.png)
 ![Admin Login](assets/admin_login.png)
+![Admin Apps](assets/admin_apps.png)
 ![Admin Users](assets/admin_users.png)
-![Admin Apps](assets/admin_users.png)
 
 **Made with ❤️**

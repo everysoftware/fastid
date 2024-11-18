@@ -7,6 +7,7 @@ from starlette import status
 from app.authlib.dependencies import cookie_transport
 from app.frontend.templating import templates
 from app.main import logging
+from app.main.config import main_settings
 from app.oauth.dependencies import SocialLoginDep
 from app.oauthlib.dependencies import OAuthName
 from app.oauthlib.schemas import OAuthCallback, TelegramCallback
@@ -45,10 +46,11 @@ async def oauth_callback(
     else:
         callback = TelegramCallback.model_validate(request.query_params)
     token = await service.authorize(oauth_name, callback)
-    response: Response = RedirectResponse(url="/authorize")
+    response: Response = RedirectResponse(
+        url=main_settings.authorization_endpoint
+    )
     assert token.access_token is not None
-    response = cookie_transport.set_token(response, token.access_token)
-    return response
+    return cookie_transport.set_token(response, token.access_token)
 
 
 @router.get(
@@ -62,8 +64,7 @@ def telegram_redirect(
         request,
         "telegram_redirect.html",
         {
-            "redirect_uri": request.url_for(
-                "oauth_callback", oauth_name="telegram"
-            )
+            "request": request,
+            "redirect_uri": f"{main_settings.oauth_callback_url}/telegram",
         },
     )

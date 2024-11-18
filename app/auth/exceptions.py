@@ -4,8 +4,15 @@ from app.api.exceptions import ClientError, Unauthorized
 
 
 class NotSupportedGrant(Unauthorized):
-    message = "Not supported grant type"
+    message = "Grant type must be 'password', 'authorization_code' or 'refresh_token'"
     error_code = "not_supported_grant"
+    status_code = status.HTTP_400_BAD_REQUEST
+
+
+class NotSupportedResponseType(Unauthorized):
+    message = "Response type must be 'code'"
+    error_code = "not_supported_response_type"
+    status_code = status.HTTP_400_BAD_REQUEST
 
 
 class NoPermission(ClientError):
@@ -23,13 +30,13 @@ class UserAlreadyExists(ClientError):
 class UserEmailNotFound(ClientError):
     message = "User with this email not found"
     error_code = "user_email_not_found"
-    status_code = status.HTTP_404_NOT_FOUND
+    status_code = status.HTTP_400_BAD_REQUEST
 
 
 class UserNotFound(ClientError):
     message = "User with this id not found"
     error_code = "user_not_found"
-    status_code = status.HTTP_404_NOT_FOUND
+    status_code = status.HTTP_400_BAD_REQUEST
 
 
 class WrongPassword(Unauthorized):

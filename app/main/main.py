@@ -10,6 +10,7 @@ from app.main.modules import Module, Plugin
 from app.obs.config import obs_settings
 from app.obs.metrics import MetricsPlugin
 from app.obs.tracing import TracingPlugin
+from app.testing.main import TestAppModule
 
 modules: list[Module] = []
 api_plugins: list[Plugin] = []
@@ -23,7 +24,7 @@ if cors_settings.enabled:
         )
     )
 
-# Must be last
+# Must be last plugin
 if obs_settings.enabled:
     api_plugins.append(MetricsPlugin(app_name=main_settings.discovery_name))
     api_plugins.append(
@@ -44,6 +45,9 @@ modules.append(
     )
 )
 
+if main_settings.debug:
+    modules.append(TestAppModule())
+
 if admin_settings.enabled:
     modules.append(
         AdminModule(
@@ -54,6 +58,7 @@ if admin_settings.enabled:
         )
     )
 
+# Must be last module
 modules.append(FrontendModule(title=main_settings.title))
 
 app = app_factory(

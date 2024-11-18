@@ -4,6 +4,7 @@ from fastapi import FastAPI, APIRouter
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
+from app.frontend.exceptions import add_exception_handlers
 from app.frontend.pages import router as auth_router
 from app.frontend.templating import templates
 from app.main.config import main_settings
@@ -49,6 +50,7 @@ class FrontendModule(Module):
     def install(self, app: FastAPI) -> None:
         self._update_env()
         frontend_app = FastAPI(title=self.title, **self.fastapi_kwargs)
+        add_exception_handlers(frontend_app)
         frontend_app.add_middleware(
             SessionMiddleware,  # noqa
             secret_key="...",
@@ -60,6 +62,5 @@ class FrontendModule(Module):
         main_router = APIRouter()
         for router in routers:
             main_router.include_router(router)
-
         frontend_app.include_router(main_router)
         app.mount(self.base_url, frontend_app)

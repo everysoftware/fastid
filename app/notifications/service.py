@@ -1,10 +1,8 @@
-import random
 import secrets
-import string
 from typing import assert_never, Mapping, Any
 
-from app.auth.schemas import UserDTO
 from app.auth.config import auth_settings
+from app.auth.schemas import UserDTO
 from app.base.service import UseCases
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
@@ -13,6 +11,7 @@ from app.mail.schemas import MailMessage
 from app.notifications.exceptions import WrongCode
 from app.notifications.schemas import NotifyMethod, NotifyResponse
 from app.telegram.dependencies import BotDep
+from app.utils.otp import otp
 
 
 class NotificationUseCases(UseCases):
@@ -64,17 +63,17 @@ class NotificationUseCases(UseCases):
             case _:
                 assert_never(method)
 
-    async def create_otc(self, user: UserDTO) -> str:
-        code = "".join(
-            random.choices(string.digits, k=auth_settings.code_length)
-        )
+    async def _set_otp(self, user: UserDTO) -> str:
+        code = otp()
         await self.cache.set(
-            f"codes:{user.id}", code, expire=auth_settings.code_expires_in
+            f"otp:users:{user.id}",
+            code,
+            expire=auth_settings.verification_code_expires_in,
         )
         return code
 
-    async def send_otc(self, method: NotifyMethod, user: UserDTO) -> None:
-        code = await self.create_otc(user)
+    async def send_otp(self, method: NotifyMethod, user: UserDTO) -> None:
+        code = await self._set_otp(user)
         await self.notify(
             method,
             user,
@@ -83,9 +82,9 @@ class NotificationUseCases(UseCases):
         )
 
     async def validate_otc(self, user: UserDTO, code: str) -> None:
-        user_code = await self.cache.get(f"otc:{user.id}", cast=str)
+        user_code = await self.cache.get(f"otp:users:{user.id}", cast=str)
         if user_code is None:
             raise WrongCode()
         if not secrets.compare_digest(user_code, code):
             raise WrongCode()
-        await self.cache.delete(f"otc:{user.id}")
+        await self.cache.delete(f"otp:users:{user.id}")

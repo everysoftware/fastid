@@ -2,7 +2,6 @@ from enum import StrEnum, auto
 
 from pydantic import (
     Field,
-    EmailStr,
 )
 
 from app.authlib.oauth import (
@@ -26,14 +25,14 @@ class UserDTO(EntityDTO):
 class UserCreate(BaseModel):
     first_name: str = Field(examples=["John"])
     last_name: str | None = Field(None, examples=["Doe"])
-    email: EmailStr
+    email: str
     password: str
 
 
 class UserUpdate(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
-    email: EmailStr | None = None
+    email: str | None = None
 
 
 class TokenType(StrEnum):

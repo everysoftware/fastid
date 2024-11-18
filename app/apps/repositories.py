@@ -17,17 +17,19 @@ class AppRepository(IAppRepository, AlchemyRepository[App]):
     model_type = App
 
 
-class IsAppExists(AlchemySpec):
+class IsActiveApp(AlchemySpec):
     def __init__(self, client_id: str) -> None:
         self.client_id = client_id
 
     def apply[T: Select[Any]](self, stmt: T) -> T:
-        return stmt.where(App.client_id == self.client_id)
+        return stmt.where(
+            App.client_id == self.client_id, App.is_active.is_(True)
+        )
 
 
-class IsAppSlugExists(AlchemySpec):
+class IsActiveAppSlug(AlchemySpec):
     def __init__(self, slug: str) -> None:
         self.slug = slug
 
     def apply[T: Select[Any]](self, stmt: T) -> T:
-        return stmt.where(App.slug == self.slug)
+        return stmt.where(App.slug == self.slug, App.is_active.is_(True))

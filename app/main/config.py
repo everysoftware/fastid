@@ -1,6 +1,5 @@
 from typing import Literal
 
-from pydantic import HttpUrl
 from pydantic_settings import SettingsConfigDict
 
 from app.base.schemas import BaseSettings
@@ -13,20 +12,32 @@ class MainSettings(BaseSettings):
     env: Literal["dev", "prod"] = "dev"
     debug: bool = False
 
-    base_url: HttpUrl = HttpUrl("http://localhost:8000")
+    base_url: str = "http://localhost:8000"
     api_path: str = "/api/v1"
 
     @property
-    def api_url(self) -> HttpUrl:
-        return HttpUrl(f"{self.base_url}{self.api_path[1:]}")
+    def authorization_endpoint(self) -> str:
+        return f"{self.base_url}/authorize"
 
     @property
-    def oauth_login_url(self) -> HttpUrl:
-        return HttpUrl(f"{self.api_url}/oauth/login")
+    def api_url(self) -> str:
+        return f"{self.base_url}/{self.api_path[1:]}"
 
     @property
-    def oauth_callback_url(self) -> HttpUrl:
-        return HttpUrl(f"{self.api_url}/oauth/callback")
+    def token_endpoint(self) -> str:
+        return f"{self.api_url}/token"
+
+    @property
+    def userinfo_endpoint(self) -> str:
+        return f"{self.api_url}/userinfo"
+
+    @property
+    def oauth_login_url(self) -> str:
+        return f"{self.api_url}/oauth/login"
+
+    @property
+    def oauth_callback_url(self) -> str:
+        return f"{self.api_url}/oauth/callback"
 
     model_config = SettingsConfigDict(env_prefix="main_")
 
