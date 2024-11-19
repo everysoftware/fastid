@@ -2,7 +2,7 @@ from typing import Any, Annotated
 
 from fastapi import APIRouter, status, Depends, Form
 
-from app.auth.dependencies import AuthDep, UserDep
+from app.auth.dependencies import UserManagerDep, UserDep
 from app.auth.exceptions import NotSupportedGrant
 from app.auth.grants import (
     PasswordGrant,
@@ -14,6 +14,8 @@ from app.auth.schemas import (
     UserUpdate,
     UserCreate,
     OAuth2TokenRequest,
+    UserChangeEmail,
+    UserChangePassword,
 )
 from app.authlib.dependencies import cookie_transport
 from app.authlib.oauth import TokenResponse, OAuth2Grant
@@ -25,7 +27,7 @@ router = APIRouter(tags=["Users"])
     "/register", status_code=status.HTTP_201_CREATED, response_model=UserDTO
 )
 async def register(
-    service: AuthDep,
+    service: Annotated[UserManagerDep, Depends()],
     dto: UserCreate,
 ) -> Any:
     return await service.register(dto)
@@ -66,21 +68,37 @@ def me(user: UserDep) -> Any:
 
 
 @router.patch(
-    "/users/me", response_model=UserDTO, status_code=status.HTTP_200_OK
+    "/me/profile", response_model=UserDTO, status_code=status.HTTP_200_OK
 )
 async def patch(
-    service: AuthDep,
+    service: UserManagerDep,
     user: UserDep,
     dto: UserUpdate,
 ) -> Any:
-    return await service.update(user, dto)
+    return await service.update_profile(user, dto)
 
 
-@router.delete(
-    "/users/me", response_model=UserDTO, status_code=status.HTTP_200_OK
+@router.patch(
+    "/me/email", response_model=UserDTO, status_code=status.HTTP_200_OK
 )
-async def delete(service: AuthDep, user: UserDep) -> Any:
-    return await service.delete(user)
+async def change_email(
+    service: UserManagerDep, user: UserDep, dto: UserChangeEmail
+) -> Any:
+    return await service.change_email(user, dto)
+
+
+@router.patch(
+    "/me/password", response_model=UserDTO, status_code=status.HTTP_200_OK
+)
+async def change_password(
+    service: UserManagerDep, user: UserDep, dto: UserChangePassword
+) -> Any:
+    return await service.change_password(user, dto)
+
+
+@router.delete("/me", response_model=UserDTO, status_code=status.HTTP_200_OK)
+async def delete(service: UserManagerDep, user: UserDep) -> Any:
+    return await service.delete_account(user)
 
 
 @router.get(

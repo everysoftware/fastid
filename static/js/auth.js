@@ -1,5 +1,6 @@
 import {authClient} from './dependencies.js';
 
+
 (function () {
     'use strict'
 

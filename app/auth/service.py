@@ -7,18 +7,29 @@ from app.auth.repositories import IsActiveUser
 from app.auth.schemas import (
     UserUpdate,
     UserCreate,
+    UserChangeEmail,
+    UserChangePassword,
 )
 from app.authlib.dependencies import token_backend
 from app.base.pagination import Pagination, Page
-from app.base.service import UseCases
+from app.base.service import UseCase
 from app.base.sorting import Sorting
 from app.base.types import UUID
 from app.db.dependencies import UOWDep
+from app.notifier.dependencies import NotifierDep
+from app.notifier.templates import (
+    WelcomeNotification,
+)
+from app.utils.background import BackgroundDep
 
 
-class AuthUseCases(UseCases):
-    def __init__(self, uow: UOWDep) -> None:
+class UserManagementUseCases(UseCase):
+    def __init__(
+        self, uow: UOWDep, notifier: NotifierDep, background: BackgroundDep
+    ) -> None:
         self.uow = uow
+        self.notifier = notifier
+        self.background = background
 
     async def register(self, dto: UserCreate) -> User:
         user = await self.uow.users.find(IsActiveUser(dto.email))
@@ -26,6 +37,9 @@ class AuthUseCases(UseCases):
             raise UserAlreadyExists()
         user = User.from_create(dto)
         user = await self.uow.users.add(user)
+        self.background.add_task(
+            self.notifier.push_otp, WelcomeNotification(user=user)
+        )
         await self.uow.commit()
         return user
 
@@ -42,7 +56,7 @@ class AuthUseCases(UseCases):
     async def get(self, user_id: UUID) -> User | None:
         return await self.uow.users.get(user_id)
 
-    async def update(
+    async def update_profile(
         self,
         user: User,
         dto: UserUpdate,
@@ -51,7 +65,21 @@ class AuthUseCases(UseCases):
         await self.uow.commit()
         return user
 
-    async def delete(self, user: User) -> User:
+    async def change_email(self, user: User, dto: UserChangeEmail) -> User:
+        await self.notifier.validate_otp(user, dto.code)
+        user.change_email(dto.email)
+        await self.uow.commit()
+        return user
+
+    async def change_password(
+        self, user: User, dto: UserChangePassword
+    ) -> User:
+        await self.notifier.validate_otp(user, dto.code)
+        user.change_password(dto.password)
+        await self.uow.commit()
+        return user
+
+    async def delete_account(self, user: User) -> User:
         await self.uow.users.remove(user)
         await self.uow.commit()
         return user

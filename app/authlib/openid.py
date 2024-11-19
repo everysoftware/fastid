@@ -90,6 +90,12 @@ class AccessTokenClaims(JWTClaims):
 
     scope: str | None = None
 
+    @property
+    def scopes(self) -> Sequence[str]:
+        if self.scope is None:
+            return []
+        return self.scope.split(" ")
+
 
 class RefreshTokenClaims(JWTClaims):
     """

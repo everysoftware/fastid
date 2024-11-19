@@ -1,4 +1,4 @@
-from app.auth.dependencies import AuthDep, UserDep
+from app.auth.dependencies import UserManagerDep, UserDep
 from app.auth.exceptions import NoPermission
 from app.auth.models import User
 
@@ -18,7 +18,7 @@ class Requires:
 
     async def __call__(
         self,
-        users: AuthDep,
+        users: UserManagerDep,
         user: UserDep,
     ) -> User:
         if (

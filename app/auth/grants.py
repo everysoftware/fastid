@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any
 
 from app.apps.exceptions import (
@@ -8,7 +8,11 @@ from app.apps.exceptions import (
 from app.apps.models import App
 from app.apps.repositories import IsActiveApp
 from app.auth.config import auth_settings
-from app.auth.exceptions import UserNotFound, NotSupportedResponseType
+from app.auth.exceptions import (
+    UserNotFound,
+    NotSupportedResponseType,
+    NoPermission,
+)
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
 from app.auth.schemas import OAuth2ConsentRequest
@@ -20,13 +24,14 @@ from app.authlib.oauth import (
     OAuth2RefreshTokenRequest,
     OAuth2Callback,
 )
+from app.base.service import UseCase
 from app.base.types import UUID
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
 from app.utils.otp import otp
 
 
-class Grant(ABC):
+class Grant(UseCase):
     def __init__(self, uow: UOWDep) -> None:
         self.uow = uow
         self.token_backend = token_backend
@@ -48,6 +53,8 @@ class Grant(ABC):
         return app
 
     def grant(self, user: User, scope: str) -> TokenResponse:
+        if "admin" in scope and not user.is_superuser:
+            raise NoPermission()
         at = self.token_backend.create_at(user.id, scope=scope)
         if "openid" in scope:
             it = self.token_backend.create_it(
@@ -113,9 +120,9 @@ class AuthorizationCodeGrant(Grant):
         data = await self.cache.get(
             f"ac:{form.client_id}:{form.code}", cast=str
         )
+        await self.cache.delete(f"ac:{form.client_id}:{form.code}")
         if data is None:
             raise InvalidAuthorizationCode()
-        await self.cache.delete(f"ac:{form.client_id}:{form.code}")
         user_id, scope = data.split(":")
         user = await self.uow.users.get_one(UUID(user_id))
         return self.grant(user, scope)

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Email Letter</title>
+    <title>Letter</title>
 </head>
 <body>
 <div style="font-family: Arial, sans-serif; color: #333;">
@@ -11,7 +11,6 @@
     <div class="main-content" id="content">
         {% block content %}{% endblock %}
     </div>
-    <p>Best regards,</p>
-    <p>{{ app_display_name }}</p>
+    <p>Best regards, <br>{{ app_title }}</p>
 </div>
 </body>

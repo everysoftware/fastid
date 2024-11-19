@@ -4,14 +4,14 @@ from fastapi import Depends
 from starlette.requests import Request
 
 from app.api.exceptions import Unauthorized, ClientError
-from app.auth.dependencies import AuthDep
+from app.auth.dependencies import UserManagerDep
 from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
 from app.authlib.dependencies import cookie_transport
 
 
-async def get_user(auth: AuthDep, request: Request) -> User | None:
+async def get_user(auth: UserManagerDep, request: Request) -> User | None:
     token = cookie_transport.get_token(request)
     if token is None:
         return None

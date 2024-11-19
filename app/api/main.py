@@ -2,8 +2,8 @@ from typing import Sequence, Any
 
 from fastapi import FastAPI
 
-from app.api.background import Background
 from app.api.exceptions import add_exception_handlers
+from app.api.lifespan import LifespanTasks
 from app.api.routing import api_router
 from app.main import logging
 from app.main.modules import Module, Plugin
@@ -29,12 +29,12 @@ class APIModule(Module):
         self.fastapi_kwargs = fastapi_kwargs
 
     async def on_startup(self, app: FastAPI) -> None:
-        async with Background() as background:
-            await background.on_startup()
+        async with LifespanTasks() as tasks:
+            await tasks.on_startup()
 
     async def on_shutdown(self, app: FastAPI) -> None:
-        async with Background() as background:
-            await background.on_shutdown()
+        async with LifespanTasks() as tasks:
+            await tasks.on_shutdown()
 
     def install(self, app: FastAPI) -> None:
         api_app = FastAPI(

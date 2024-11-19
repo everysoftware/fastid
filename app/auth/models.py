@@ -4,7 +4,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import mapped_column, Mapped
 
 from app.auth.exceptions import WrongPassword, NoPermission
-from app.auth.schemas import UserCreate
+from app.auth.schemas import UserCreate, ContactType
 from app.base.models import Entity
 from app.base.types import uuid
 from app.oauthlib.schemas import OpenIDBearer
@@ -17,7 +17,6 @@ class User(Entity):
     first_name: Mapped[str]
     last_name: Mapped[str | None]
     email: Mapped[str | None] = mapped_column(index=True)
-    new_email: Mapped[str | None] = mapped_column(index=True)
     telegram_id: Mapped[int | None] = mapped_column(index=True)
     hashed_password: Mapped[str | None]
     is_active: Mapped[bool] = mapped_column(default=True)
@@ -36,6 +35,14 @@ class User(Entity):
             return self.first_name
         return ""
 
+    @hybrid_property
+    def available_contact(self) -> ContactType:
+        if self.telegram_id is not None:
+            return "telegram"
+        if self.email is not None:
+            return "email"
+        raise ValueError("No contact information")
+
     @classmethod
     def from_create(cls, dto: UserCreate) -> Self:
         user = cls(
@@ -43,7 +50,7 @@ class User(Entity):
             last_name=dto.last_name,
             email=dto.email,
         )
-        user.set_password(dto.password)
+        user.change_password(dto.password)
         return user
 
     @classmethod
@@ -63,8 +70,11 @@ class User(Entity):
         if provider == "telegram":
             self.telegram_id = None
 
-    def set_password(self, password: str) -> None:
+    def change_password(self, password: str) -> None:
         self.hashed_password = hasher.hash(password)
+
+    def change_email(self, new_email: str) -> None:
+        self.email = new_email
 
     def verify_password(self, password: str) -> None:
         if not hasher.verify(password, self.hashed_password):

@@ -2,12 +2,12 @@ from app.apps.exceptions import AppNotFound
 from app.apps.models import App
 from app.apps.repositories import IsActiveApp
 from app.apps.schemas import AppCreate
-from app.base.service import UseCases
+from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
 
 
-class AppUseCases(UseCases):
+class AppUseCases(UseCase):
     def __init__(self, uow: UOWDep, cache: CacheDep) -> None:
         self.uow = uow
         self.cache = cache

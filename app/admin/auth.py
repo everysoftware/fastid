@@ -4,7 +4,7 @@ from starlette.requests import Request
 from app.api.exceptions import ClientError
 from app.auth.config import auth_settings
 from app.auth.grants import PasswordGrant
-from app.auth.service import AuthUseCases
+from app.authlib.dependencies import token_backend
 from app.authlib.oauth import OAuth2Grant, OAuth2PasswordRequest
 from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW
@@ -17,6 +17,7 @@ class AdminAuth(AuthenticationBackend):
             grant_type=OAuth2Grant.password,
             username=data["username"],
             password=data["password"],
+            scope="admin",
         )
         async with AlchemyUOW(session_factory) as uow:
             grant = PasswordGrant(uow)
@@ -36,13 +37,11 @@ class AdminAuth(AuthenticationBackend):
         token = request.session.get("at")
         if not token:
             return False
-        async with AlchemyUOW(session_factory) as uow:
-            auth = AuthUseCases(uow)
-            try:
-                user = await auth.get_userinfo(token)
-            except ClientError:
-                return False
-        if not user.is_superuser:
+        try:
+            claims = token_backend.validate_at(token)
+        except ClientError:
+            return False
+        if "admin" not in claims.scopes:
             return False
         return True
 

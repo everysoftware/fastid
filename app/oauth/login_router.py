@@ -6,7 +6,7 @@ from starlette import status
 
 from app.api.exceptions import ClientError
 from app.auth.config import auth_settings
-from app.auth.dependencies import AuthDep, UserDep
+from app.auth.dependencies import UserManagerDep, UserDep
 from app.authlib.dependencies import cookie_transport, auth_bus
 from app.frontend.templating import templates
 from app.oauth.dependencies import OAuthAccountsDep, valid_callback
@@ -38,7 +38,7 @@ async def oauth_login(
     status_code=status.HTTP_200_OK,
 )
 async def oauth_callback(
-    auth: AuthDep,
+    auth: UserManagerDep,
     oauth: OAuthAccountsDep,
     request: Request,
     oauth_name: OAuthName,
