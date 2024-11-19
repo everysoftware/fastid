@@ -22,8 +22,16 @@ class AuthSettings(BaseSettings):
     verification_code_expires_in: int = 5 * 60
 
     @property
+    def issuer(self) -> str:
+        return main_settings.base_url
+
+    @property
     def authorization_endpoint(self) -> str:
         return f"{main_settings.base_url}/authorize"
+
+    @property
+    def registration_endpoint(self) -> str:
+        return f"{main_settings.base_url}/register"
 
     @property
     def token_endpoint(self) -> str:
@@ -32,6 +40,10 @@ class AuthSettings(BaseSettings):
     @property
     def userinfo_endpoint(self) -> str:
         return f"{main_settings.api_url}/userinfo"
+
+    @property
+    def jwks_uri(self) -> str:
+        return f"{main_settings.base_url}/.well-known/jwks.json"
 
     model_config = SettingsConfigDict(env_prefix="auth_")
 

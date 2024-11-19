@@ -5,6 +5,7 @@ from starlette.requests import Request
 
 from app.api.exceptions import Unauthorized, ClientError
 from app.auth.dependencies import AuthDep
+from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
 from app.authlib.dependencies import cookie_transport
@@ -21,9 +22,9 @@ async def get_user(auth: AuthDep, request: Request) -> User | None:
 
 
 async def valid_consent(
-    auth: AuthDep,
     request: Request,
     consent: Annotated[OAuth2ConsentRequest, Depends()],
+    authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
 ) -> OAuth2ConsentRequest:
     if not request.query_params:
         consent_data = request.session.get("consent")
@@ -31,4 +32,4 @@ async def valid_consent(
             raise Unauthorized()
         else:
             consent = OAuth2ConsentRequest.model_validate(consent_data)
-    return await auth.validate_consent_request(consent)
+    return await authorization_code_grant.validate_consent(consent)

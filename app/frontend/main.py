@@ -4,6 +4,7 @@ from fastapi import FastAPI, APIRouter
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
+from app.auth.config import auth_settings
 from app.frontend.exceptions import add_exception_handlers
 from app.frontend.pages import router as auth_router
 from app.frontend.templating import templates
@@ -33,19 +34,19 @@ class FrontendModule(Module):
         self.static_url = static_url
         self.fastapi_kwargs = fastapi_kwargs
 
-    def _update_env(self) -> None:
+    def _set_templates_env(self) -> None:
         templates.env.globals["app_title"] = self.title
         templates.env.globals["favicon_url"] = self.favicon_url
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["available_providers"] = reg.meta
 
     def install(self, app: FastAPI) -> None:
-        self._update_env()
+        self._set_templates_env()
         frontend_app = FastAPI(title=self.title, **self.fastapi_kwargs)
         add_exception_handlers(frontend_app)
         frontend_app.add_middleware(
             SessionMiddleware,  # noqa
-            secret_key="...",
+            secret_key=auth_settings.jwt_private_key,
             session_cookie="fastidsession",
         )
         app.mount(

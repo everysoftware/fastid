@@ -1,4 +1,4 @@
-from typing import Self, Iterable
+from typing import Self
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import mapped_column, Mapped
@@ -89,8 +89,4 @@ class User(Entity):
 
     def assert_verified(self) -> None:
         if not self.is_verified:
-            raise NoPermission()
-
-    def verify_scopes(self, scopes: Iterable[str]) -> None:
-        if "admin" in scopes and not self.is_superuser:
             raise NoPermission()

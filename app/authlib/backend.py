@@ -8,7 +8,7 @@ from jwt import InvalidTokenError
 
 from app.authlib.exceptions import InvalidToken, InvalidTokenType
 from app.authlib.openid import (
-    TypeParams,
+    JWTParams,
     AccessTokenClaims,
     RefreshTokenClaims,
     IDTokenClaims,
@@ -62,12 +62,12 @@ class ITokenBackend(ABC):
 
 class BackendConfig:
     def __init__(self) -> None:
-        self.types: MutableMapping[str, TypeParams] = {}
+        self.types: MutableMapping[str, JWTParams] = {}
 
-    def add_type(self, token_type: str, params: TypeParams) -> None:
+    def add_type(self, token_type: str, params: JWTParams) -> None:
         self.types[token_type] = params
 
-    def get_type(self, token_type: str) -> TypeParams:
+    def get_type(self, token_type: str) -> JWTParams:
         return self.types[token_type]
 
     def has_type(self, token_type: str) -> bool:

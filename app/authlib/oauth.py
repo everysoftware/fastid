@@ -10,6 +10,16 @@ Agents:
 * Client (application), e.g. SuperApp
 * Authorization server, e.g. Google
 * Resource server (provider), e.g. Google Photos
+
+Terms:
+
+Identification - the process of identifying a user. It can be done by a name, email, id or phone number.
+
+Authentication - the process of verifying the identity of a user. It can be done by a password, fingerprint, or
+face recognition. OpenID Connect defines an ID token that is used to authenticate a user.
+
+Authorization - the process of granting permissions to a user. It can be done by a scope, role, or permission.
+OAuth 2.0 defines an access token that is used to authorize a user.
 """
 
 from enum import StrEnum, auto

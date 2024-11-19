@@ -4,11 +4,13 @@ from fastapi import APIRouter, Request, Response, Depends, status
 from fastapi.responses import RedirectResponse
 
 from app.api.exceptions import Unauthorized
-from app.auth.dependencies import AuthDep
+from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
 from app.authlib.dependencies import cookie_transport
+from app.authlib.openid import DiscoveryDocument, JWKS
 from app.frontend.dependencies import valid_consent, get_user
+from app.frontend.openid import discovery_document, jwks
 from app.frontend.templating import templates
 from app.oauth.dependencies import OAuthAccountsDep
 
@@ -39,10 +41,10 @@ def login(
 
 @router.get("/authorize")
 async def authorize(
-    auth: AuthDep,
     request: Request,
     user: Annotated[User | None, Depends(get_user)],
     consent: Annotated[OAuth2ConsentRequest, Depends(valid_consent)],
+    authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
 ) -> Response:
     if user is None:
         request.session["consent"] = consent.model_dump(mode="json")
@@ -52,7 +54,9 @@ async def authorize(
     else:
         # User is authenticated, redirect to specified redirect URI with code
         request.session.clear()
-        redirect_uri = await auth.approve_consent_request(consent, user.id)
+        redirect_uri = await authorization_code_grant.approve_consent(
+            consent, user
+        )
         response = RedirectResponse(redirect_uri)
     return response
 
@@ -81,3 +85,13 @@ def logout() -> Any:
     response = RedirectResponse(url="/login")
     cookie_transport.delete_token(response)
     return response
+
+
+@router.get("/.well-known/openid-configuration")
+def openid_configuration() -> DiscoveryDocument:
+    return discovery_document
+
+
+@router.get("/.well-known/jwks.json")
+def get_jwks() -> JWKS:
+    return jwks

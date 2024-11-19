@@ -248,6 +248,7 @@ class HTTPXOAuth2(IOAuth2, ABC):
         *,
         headers: dict[str, Any] | None = None,
     ) -> OpenID:
+        assert self.discovery.userinfo_endpoint is not None
         headers = headers or {}
         headers |= {
             "Authorization": f"{self.token.token_type} {self.token.access_token}",
@@ -281,6 +282,7 @@ class HTTPXOAuth2(IOAuth2, ABC):
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
     ) -> httpx.Request:
+        assert self.discovery.token_endpoint is not None
         params = params or {}
         headers = headers or {}
         headers |= {"Content-Type": "application/x-www-form-urlencoded"}
