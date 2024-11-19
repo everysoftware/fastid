@@ -5,6 +5,7 @@ from app.apps.exceptions import (
     InvalidClientCredentials,
     InvalidAuthorizationCode,
 )
+from app.apps.models import App
 from app.apps.repositories import IsActiveApp
 from app.auth.config import auth_settings
 from app.auth.exceptions import UserNotFound, NotSupportedResponseType
@@ -26,14 +27,30 @@ from app.utils.otp import otp
 
 
 class Grant(ABC):
+    def __init__(self, uow: UOWDep) -> None:
+        self.uow = uow
+        self.token_backend = token_backend
+
     @abstractmethod
     async def authorize(self, form: Any) -> TokenResponse: ...
 
-    @staticmethod
-    def grant(user: User, scope: str) -> TokenResponse:
-        at = token_backend.create_at(user.id, scope=scope)
+    async def validate_client(self, client_id: str) -> App:
+        app = await self.uow.apps.find(IsActiveApp(client_id))
+        if app is None:
+            raise InvalidClientCredentials()
+        return app
+
+    async def authenticate_client(
+        self, client_id: str, client_secret: str
+    ) -> App:
+        app = await self.validate_client(client_id)
+        app.verify_secret(client_secret)
+        return app
+
+    def grant(self, user: User, scope: str) -> TokenResponse:
+        at = self.token_backend.create_at(user.id, scope=scope)
         if "openid" in scope:
-            it = token_backend.create_it(
+            it = self.token_backend.create_it(
                 user.id,
                 name=user.display_name,
                 given_name=user.first_name,
@@ -44,16 +61,13 @@ class Grant(ABC):
         else:
             it = None
         if "offline_access" in scope:
-            rt = token_backend.create_rt(user.id, scope=scope)
+            rt = self.token_backend.create_rt(user.id, scope=scope)
         else:
             rt = None
-        return token_backend.to_response(at=at, rt=rt, it=it)
+        return self.token_backend.to_response(at=at, rt=rt, it=it)
 
 
 class PasswordGrant(Grant):
-    def __init__(self, uow: UOWDep) -> None:
-        self.uow = uow
-
     async def authorize(self, form: OAuth2PasswordRequest) -> TokenResponse:
         user = await self.uow.users.find(IsActiveUser(form.username))
         if user is None:
@@ -64,7 +78,7 @@ class PasswordGrant(Grant):
 
 class AuthorizationCodeGrant(Grant):
     def __init__(self, uow: UOWDep, cache: CacheDep) -> None:
-        self.uow = uow
+        super().__init__(uow)
         self.cache = cache
 
     async def validate_consent(
@@ -72,12 +86,10 @@ class AuthorizationCodeGrant(Grant):
     ) -> OAuth2ConsentRequest:
         if consent.response_type != "code":
             raise NotSupportedResponseType()
-        if consent.client_id is None:
-            raise InvalidClientCredentials()
-        app = await self.uow.apps.find(IsActiveApp(consent.client_id))
-        if app is None:
-            raise InvalidClientCredentials()
-        app.check_consent_request(consent)
+        assert consent.client_id is not None
+        assert consent.redirect_uri is not None
+        app = await self.validate_client(consent.client_id)
+        app.verify_redirect_uri(consent.redirect_uri)
         return consent
 
     async def approve_consent(
@@ -97,10 +109,7 @@ class AuthorizationCodeGrant(Grant):
     async def authorize(
         self, form: OAuth2AuthorizationCodeRequest
     ) -> TokenResponse:
-        app = await self.uow.apps.find(IsActiveApp(form.client_id))
-        if app is None:
-            raise InvalidClientCredentials()
-        app.check_token_request(form)
+        await self.authenticate_client(form.client_id, form.client_secret)
         data = await self.cache.get(
             f"ac:{form.client_id}:{form.code}", cast=str
         )
@@ -113,14 +122,12 @@ class AuthorizationCodeGrant(Grant):
 
 
 class RefreshTokenGrant(Grant):
-    def __init__(self, uow: UOWDep) -> None:
-        self.uow = uow
-
     async def authorize(
         self,
         form: OAuth2RefreshTokenRequest,
     ) -> TokenResponse:
-        content = token_backend.validate_rt(form.refresh_token)
+        await self.authenticate_client(form.client_id, form.client_secret)
+        content = self.token_backend.validate_rt(form.refresh_token)
         assert content.scope is not None
         user = await self.uow.users.get_one(UUID(content.sub))
         return self.grant(user, content.scope)

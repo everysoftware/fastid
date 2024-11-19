@@ -38,4 +38,4 @@ class OAuth2TokenRequest(AuthlibOAuth2TokenRequest):
 
 
 class OAuth2ConsentRequest(AuthlibOAuth2ConsentRequest):
-    pass
+    scope: str = "openid email name"

@@ -23,7 +23,7 @@ export class AuthClient extends ApiClient {
         form.append('grant_type', 'password');
         form.append('username', email);
         form.append('password', password);
-        form.append('scope', '');
+        form.append('scope', '*');
         form.append('client_id', '');
         form.append('client_secret', '');
         return this.post('/token', {}, form, this.handleLoginErrors);
