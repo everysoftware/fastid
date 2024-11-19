@@ -26,7 +26,7 @@ from app.authlib.oauth import (
     OAuth2Callback,
     OAuth2AuthorizationCodeRequest,
 )
-from app.authlib.schemas import TokenResponse
+from app.authlib.oauth import TokenResponse
 from app.base.pagination import Pagination, Page
 from app.base.service import UseCases
 from app.base.sorting import Sorting

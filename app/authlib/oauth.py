@@ -18,9 +18,11 @@ from urllib.parse import urlencode
 
 from pydantic import (
     ConfigDict,
+    Field,
 )
 
 from app.base.schemas import BaseModel
+from app.base.types import uuid
 
 
 class OAuth2Grant(StrEnum):
@@ -217,6 +219,10 @@ class OAuth2RefreshTokenRequest(OAuth2BaseTokenRequest):
 
 
 class OAuth2TokenRequest(BaseModel):
+    """
+    Token Request is sent by the client to the authorization server to obtain an access token.
+    """
+
     grant_type: OAuth2Grant = OAuth2Grant.password
     client_id: str = ""
     client_secret: str = ""
@@ -242,3 +248,20 @@ class OAuth2TokenRequest(BaseModel):
 
     def as_refresh_token_grant(self) -> OAuth2RefreshTokenRequest:
         return OAuth2RefreshTokenRequest.model_validate(self)
+
+
+class TokenResponse(BaseModel):
+    """
+    Token Response is sent by the authorization server to the client and contains the access token.
+    """
+
+    token_id: str | None = Field(default_factory=lambda: uuid().hex)
+    access_token: str | None = None
+    refresh_token: str | None = None
+    id_token: str | None = None
+    token_type: str | None = "bearer"
+    scope: str | None = None
+    expires_in: int | None = Field(
+        None,
+        description="Token expiration time in seconds",
+    )

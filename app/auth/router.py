@@ -10,7 +10,7 @@ from app.auth.schemas import (
     OAuth2TokenRequest,
 )
 from app.authlib.dependencies import cookie_transport
-from app.authlib.schemas import TokenResponse
+from app.authlib.oauth import TokenResponse
 
 router = APIRouter(tags=["Users"])
 

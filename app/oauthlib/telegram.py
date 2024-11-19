@@ -1,18 +1,17 @@
 import datetime
 import hashlib
 import hmac
-from typing import Any
+from typing import Any, Self
 from urllib.parse import urlencode
 
 from aiogram import Bot
 
+from app.authlib.oauth import TokenResponse
+from app.authlib.openid import DiscoveryDocument
+from app.oauthlib.base import IOAuth2
 from app.oauthlib.exceptions import OAuth2Error
-from app.oauthlib.interfaces import IOAuth2
 from app.oauthlib.schemas import (
     OpenID,
-    AnyUrl,
-    DiscoveryDocument,
-    OAuthBearerToken,
     TelegramCallback,
 )
 from app.oauthlib.utils import replace_localhost
@@ -20,32 +19,46 @@ from app.oauthlib.utils import replace_localhost
 
 class TelegramOAuth(IOAuth2):
     provider = "telegram"
-    scope = ["write"]
-    expires_in: int = 5 * 60
+    default_scope = ["write"]
 
     _bot: Bot
-    _callback: TelegramCallback | None = None
+    _token: TokenResponse | None = None
+    _telegram_token: TelegramCallback | None = None
 
     def __init__(
         self,
         bot_token: str,
-        redirect_uri: AnyUrl | None = None,
+        redirect_uri: str | None = None,
         scope: list[str] | None = None,
         *,
         expires_in: int = 5 * 60,
-    ):
+    ) -> None:
         self._bot = Bot(token=bot_token)
+        self.expires_in = expires_in
+
         super().__init__(
             str(self._bot.id), self._bot.token, redirect_uri, scope
         )
-        self.expires_in = expires_in
 
-    async def discover(self) -> DiscoveryDocument:
+    @property
+    def discovery(self) -> DiscoveryDocument:
         return DiscoveryDocument(
             authorization_endpoint="https://oauth.telegram.org/auth"
         )
 
-    async def openid_from_response(
+    @property
+    def token(self) -> TokenResponse:
+        if self._token is None:
+            raise OAuth2Error("No token available")
+        return self._token
+
+    @property
+    def telegram_token(self) -> TelegramCallback:
+        if self._telegram_token is None:
+            raise OAuth2Error("No Telegram token available")
+        return self._telegram_token
+
+    def openid_from_response(
         self,
         response: dict[Any, Any],
     ) -> OpenID:
@@ -65,10 +78,11 @@ class TelegramOAuth(IOAuth2):
             provider=self.provider,
         )
 
-    async def login(
+    def get_authorization_url(
         self,
         *,
-        redirect_uri: AnyUrl | None = None,
+        scope: list[str] | None = None,
+        redirect_uri: str | None = None,
         params: dict[str, Any] | None = None,
         state: str | None = None,
     ) -> str:
@@ -80,16 +94,16 @@ class TelegramOAuth(IOAuth2):
             "request_access": self.scope,
             **params,
         }
-        return f"{await self.authorization_endpoint}?{urlencode(login_params)}"
+        return f"{self.discovery.authorization_endpoint}?{urlencode(login_params)}"
 
-    async def callback(
+    async def authorize(
         self,
         callback: TelegramCallback,
         *,
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-    ) -> OAuthBearerToken:
-        self._callback = callback
+    ) -> TokenResponse:
+        self._telegram_token = callback
         response = callback.model_dump()
         code_hash = response.pop("hash")
         data_check_string = "\n".join(
@@ -108,14 +122,20 @@ class TelegramOAuth(IOAuth2):
         now = datetime.datetime.now(tz=datetime.UTC)
         if now - dt > datetime.timedelta(seconds=self.expires_in):
             raise OAuth2Error("Telegram auth data expired")
-        self._token = OAuthBearerToken(access_token=callback.hash)
+        self._token = TokenResponse(access_token=callback.hash)
         return self.token
 
-    async def get_user_raw(
+    async def userinfo(
         self,
         *,
         headers: dict[str, str] | None = None,
-    ) -> dict[str, Any]:
-        if self._callback is None:
-            raise OAuth2Error("Callback data is missing")
-        return self._callback.model_dump()
+    ) -> OpenID:
+        return self.openid_from_response(self.telegram_token.model_dump())
+
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(
+        self, exc_type: type[Exception], exc_value: Exception, traceback: Any
+    ) -> None:
+        pass

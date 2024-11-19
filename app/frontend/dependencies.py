@@ -3,9 +3,21 @@ from typing import Annotated
 from fastapi import Depends
 from starlette.requests import Request
 
-from app.api.exceptions import Unauthorized
+from app.api.exceptions import Unauthorized, ClientError
 from app.auth.dependencies import AuthDep
+from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
+from app.authlib.dependencies import cookie_transport
+
+
+async def get_user(auth: AuthDep, request: Request) -> User | None:
+    token = cookie_transport.get_token(request)
+    if token is None:
+        return None
+    try:
+        return await auth.get_userinfo(token)
+    except ClientError:
+        return None
 
 
 async def valid_consent(

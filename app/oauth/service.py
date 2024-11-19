@@ -1,36 +1,37 @@
 from app.auth.models import User
 from app.authlib.dependencies import token_backend
-from app.authlib.schemas import TokenResponse
-from app.base.pagination import Pagination, Page
+from app.authlib.oauth import TokenResponse
+from app.base.pagination import Page, LimitOffset
 from app.base.service import UseCases
 from app.base.sorting import Sorting
 from app.base.types import UUID
 from app.db.dependencies import UOWDep
 from app.oauth.exceptions import (
     OAuthAccountNotFound,
-    OAuthAlreadyConnected,
+    OAuthAccountInUse,
 )
 from app.oauth.models import OAuthAccount
+from app.oauth.registry import reg
 from app.oauth.repositories import (
     IsAccountBelongToUser,
     IsAccountConnected,
+    IsAccountExists,
 )
-from app.oauthlib.dependencies import OAuthName, OAuthDep
-from app.oauthlib.schemas import OAuthCallback, OpenIDBearer, TelegramCallback
+from app.oauth.schemas import OAuthName
+from app.oauthlib.schemas import UniversalCallback, OpenIDBearer
 
 
 class OAuthUseCases(UseCases):
-    def __init__(self, uow: UOWDep, oauth: OAuthDep) -> None:
+    def __init__(self, uow: UOWDep) -> None:
         self.uow = uow
-        self.oauth = oauth
 
-    async def login(self, oauth_name: OAuthName) -> str:
-        factory = self.oauth.get_factory(oauth_name)
-        oauth = factory.create()
-        return await oauth.login()
+    @staticmethod
+    async def get_authorization_url(oauth_name: OAuthName) -> str:
+        async with reg.begin(oauth_name) as oauth:
+            return oauth.get_authorization_url()
 
     async def authorize(
-        self, oauth_name: OAuthName, callback: OAuthCallback | TelegramCallback
+        self, oauth_name: OAuthName, callback: UniversalCallback
     ) -> TokenResponse:
         open_id = await self._callback(oauth_name, callback)
         account = await self.uow.oauth_accounts.find(
@@ -45,14 +46,14 @@ class OAuthUseCases(UseCases):
         return token_backend.to_response(at)
 
     async def connect(
-        self, user: User, oauth_name: OAuthName, callback: OAuthCallback
+        self, user: User, oauth_name: OAuthName, callback: UniversalCallback
     ) -> OAuthAccount:
         open_id = await self._callback(oauth_name, callback)
         account = await self.uow.oauth_accounts.find(
             IsAccountConnected(open_id.provider, open_id.id)
         )
         if account:
-            raise OAuthAlreadyConnected()
+            raise OAuthAccountInUse()
         account = OAuthAccount.from_open_id(open_id, user)
         account = await self.uow.oauth_accounts.add(account)
         await self.uow.commit()
@@ -70,34 +71,33 @@ class OAuthUseCases(UseCases):
     async def paginate(
         self,
         user: User,
-        pagination: Pagination,
-        sorting: Sorting,
     ) -> Page[OAuthAccount]:
         return await self.uow.oauth_accounts.get_many(
             IsAccountBelongToUser(user.id),
-            pagination=pagination,
-            sorting=sorting,
+            pagination=LimitOffset(limit=10),
+            sorting=Sorting(),
         )
 
-    async def disconnect(
-        self, user: User, account: OAuthAccount
-    ) -> OAuthAccount:
+    async def revoke(self, user: User, oauth_name: OAuthName) -> OAuthAccount:
+        account = await self.uow.oauth_accounts.find_one(
+            IsAccountExists(user.id, oauth_name)
+        )
         user.disconnect_open_id(account.provider)
         account = await self.uow.oauth_accounts.remove(account)
         await self.uow.commit()
         return account
 
+    @staticmethod
     async def _callback(
-        self, oauth_name: OAuthName, callback: OAuthCallback | TelegramCallback
+        oauth_name: OAuthName, callback: UniversalCallback
     ) -> OpenIDBearer:
-        factory = self.oauth.get_factory(oauth_name)
-        oauth = factory.create()
-        token = await oauth.callback(callback)
-        open_id = await oauth.get_user()
-        return OpenIDBearer(
-            **token.model_dump(),
-            **open_id.model_dump(),
-        )
+        async with reg.begin(oauth_name) as oauth:
+            token = await oauth.authorize(callback)
+            open_id = await oauth.userinfo()
+            return OpenIDBearer(
+                **token.model_dump(),
+                **open_id.model_dump(),
+            )
 
     async def _authorize_new(self, open_id: OpenIDBearer) -> User:
         user = User.from_open_id(open_id)

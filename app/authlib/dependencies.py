@@ -2,7 +2,7 @@ import datetime
 
 from app.auth.config import auth_settings
 from app.authlib.backend import BackendConfig, TokenBackend
-from app.authlib.schemas import TypeParams
+from app.authlib.openid import TypeParams
 from app.authlib.transports import HeaderTransport, CookieTransport, AuthBus
 from app.main.config import main_settings
 

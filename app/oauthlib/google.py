@@ -2,19 +2,20 @@ from typing import Any
 
 import httpx
 
+from app.authlib.openid import DiscoveryDocument
 from app.oauthlib.base import (
-    BaseOAuth2,
+    HTTPXOAuth2,
 )
 from app.oauthlib.exceptions import OAuth2Error
-from app.oauthlib.schemas import OpenID, DiscoveryDocument
+from app.oauthlib.schemas import OpenID
 
 
-class GoogleOAuth(BaseOAuth2):
+class GoogleOAuth(HTTPXOAuth2):
     discovery_url = (
         "https://accounts.google.com/.well-known/openid-configuration"
     )
     provider = "google"
-    scope = ["openid", "email", "profile"]
+    default_scope = ["openid", "email", "profile"]
 
     async def discover(self) -> DiscoveryDocument:
         async with httpx.AsyncClient() as session:

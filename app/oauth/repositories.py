@@ -38,3 +38,15 @@ class IsAccountConnected(AlchemySpec):
             OAuthAccount.provider == self.provider,
             OAuthAccount.account_id == self.account_id,
         )
+
+
+class IsAccountExists(AlchemySpec):
+    def __init__(self, user_id: UUID, provider: str) -> None:
+        self.user_id = user_id
+        self.provider = provider
+
+    def apply[T: Select[Any]](self, stmt: T) -> T:
+        return stmt.where(
+            OAuthAccount.user_id == self.user_id,
+            OAuthAccount.provider == self.provider,
+        )

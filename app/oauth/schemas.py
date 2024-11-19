@@ -1,3 +1,5 @@
+from enum import StrEnum, auto
+
 from app.base.schemas import EntityDTO, BaseModel
 from app.base.types import UUID
 
@@ -22,3 +24,9 @@ class OAuthAccountBase(BaseModel):
 
 class OAuthAccountDTO(EntityDTO, OAuthAccountBase):
     user_id: UUID
+
+
+class OAuthName(StrEnum):
+    google = auto()
+    yandex = auto()
+    telegram = auto()

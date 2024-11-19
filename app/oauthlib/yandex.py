@@ -1,12 +1,13 @@
 from typing import Any
 
-from app.oauthlib.base import BaseOAuth2
-from app.oauthlib.schemas import OpenID, DiscoveryDocument
+from app.authlib.openid import DiscoveryDocument
+from app.oauthlib.base import HTTPXOAuth2
+from app.oauthlib.schemas import OpenID
 
 
-class YandexOAuth(BaseOAuth2):
+class YandexOAuth(HTTPXOAuth2):
     provider = "yandex"
-    scope = ["login:email", "login:info", "login:avatar"]
+    default_scope = ["login:email", "login:info", "login:avatar"]
     avatar_url = "https://avatars.yandex.net/get-yapic"
 
     async def discover(self) -> DiscoveryDocument:

@@ -7,13 +7,13 @@ import jwt
 from jwt import InvalidTokenError
 
 from app.authlib.exceptions import InvalidToken, InvalidTokenType
-from app.authlib.schemas import (
-    TokenResponse,
+from app.authlib.openid import (
     TypeParams,
     AccessTokenClaims,
     RefreshTokenClaims,
     IDTokenClaims,
 )
+from app.authlib.oauth import TokenResponse
 
 type Subject = Any
 

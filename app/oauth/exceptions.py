@@ -6,16 +6,16 @@ from app.api.exceptions import ClientError
 class OAuthAccountNotFound(ClientError):
     message = "OAuth account with this id not found"
     error_code = "oauth_account_not_found"
-    status_code = status.HTTP_404_NOT_FOUND
-
-
-class OAuthAlreadyConnected(ClientError):
-    message = "OAuth account is in use"
-    error_code = "oauth_already_associated"
     status_code = status.HTTP_400_BAD_REQUEST
 
 
-class UserTelegramNotFound(ClientError):
-    message = "User with this telegram id not found"
-    error_code = "telegram_id_not_found"
+class OAuthAccountInUse(ClientError):
+    message = "OAuth account is in use"
+    error_code = "oauth_account_in_use"
+    status_code = status.HTTP_400_BAD_REQUEST
+
+
+class ProviderNotAllowed(ClientError):
+    message = "This OAuth provider is not allowed"
+    error_code = "provider_not_allowed"
     status_code = status.HTTP_400_BAD_REQUEST

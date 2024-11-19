@@ -3,13 +3,14 @@ from typing import Any, Annotated
 from fastapi import APIRouter, Request, Response, Depends, status
 from fastapi.responses import RedirectResponse
 
-from app.api.exceptions import ClientError
-from app.auth.dependencies import UserDep, AuthDep
+from app.api.exceptions import Unauthorized
+from app.auth.dependencies import AuthDep
+from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
-from app.authlib.dependencies import cookie_transport, token_backend
-from app.base.types import UUID
-from app.frontend.dependencies import valid_consent
+from app.authlib.dependencies import cookie_transport
+from app.frontend.dependencies import valid_consent, get_user
 from app.frontend.templating import templates
+from app.oauth.dependencies import OAuthAccountsDep
 
 router = APIRouter()
 
@@ -27,21 +28,12 @@ def register(
 
 
 @router.get("/login")
-async def login(
+def login(
     request: Request,
+    user: Annotated[User | None, Depends(get_user)],
 ) -> Response:
-    token = cookie_transport.get_token(request)
-    if token is None:
-        return templates.TemplateResponse(
-            "authorize.html", {"request": request}
-        )
-    return RedirectResponse(url="/profile")
-
-
-def get_consent_response(
-    request: Request, consent: OAuth2ConsentRequest
-) -> Response:
-    request.session["consent"] = consent.model_dump(mode="json")
+    if user:
+        return RedirectResponse(url="/profile")
     return templates.TemplateResponse("authorize.html", {"request": request})
 
 
@@ -49,32 +41,35 @@ def get_consent_response(
 async def authorize(
     auth: AuthDep,
     request: Request,
+    user: Annotated[User | None, Depends(get_user)],
     consent: Annotated[OAuth2ConsentRequest, Depends(valid_consent)],
 ) -> Response:
-    token = cookie_transport.get_token(request)
-    if token is None:
-        return get_consent_response(request, consent)
-    try:
-        payload = token_backend.validate_at(token)
-    except ClientError:
-        return get_consent_response(request, consent)
+    if user is None:
+        request.session["consent"] = consent.model_dump(mode="json")
+        return templates.TemplateResponse(
+            "authorize.html", {"request": request}
+        )
     else:
         # User is authenticated, redirect to specified redirect URI with code
         request.session.clear()
-        redirect_uri = await auth.approve_consent_request(
-            consent, UUID(payload.sub)
-        )
+        redirect_uri = await auth.approve_consent_request(consent, user.id)
         response = RedirectResponse(redirect_uri)
     return response
 
 
 @router.get("/profile")
-def profile(
+async def profile(
     request: Request,
-    user: UserDep,
+    oauth_accounts: OAuthAccountsDep,
+    user: Annotated[User | None, Depends(get_user)],
 ) -> Response:
+    if user is None:
+        raise Unauthorized()
+    page = await oauth_accounts.paginate(user)
+    connected = {a.provider for a in page.items}
     return templates.TemplateResponse(
-        "profile.html", {"request": request, "user": user}
+        "profile.html",
+        {"request": request, "user": user, "connected_providers": connected},
     )
 
 

@@ -54,10 +54,15 @@ def configure_logging() -> None:
                 },
             },
             "loggers": {
-                "uvicorn": {
-                    "level": "DEBUG",
-                    "handlers": ["default"],
-                    "propagate": True,
+                "sqlalchemy.engine": {
+                    "level": "INFO",
+                    "handlers": ["instrumented"],
+                    "propagate": False,
+                },
+                "httpx": {
+                    "level": "INFO",
+                    "handlers": ["instrumented"],
+                    "propagate": False,
                 },
                 "uvicorn.error": {
                     "level": "INFO",
@@ -69,15 +74,25 @@ def configure_logging() -> None:
                     "handlers": ["access"],
                     "propagate": False,
                 },
-                "sqlalchemy.engine": {
+                "uvicorn": {
+                    "level": "DEBUG",
+                    "handlers": ["default"],
+                    "propagate": True,
+                },
+                "gunicorn.error": {
                     "level": "INFO",
-                    "handlers": ["instrumented"],
+                    "handlers": ["default"],
                     "propagate": False,
                 },
-                "httpx": {
+                "gunicorn.access": {
                     "level": "INFO",
-                    "handlers": ["instrumented"],
+                    "handlers": ["access"],
                     "propagate": False,
+                },
+                "gunicorn": {
+                    "level": "INFO",
+                    "handlers": ["default"],
+                    "propagate": True,
                 },
             },
             "root": {
