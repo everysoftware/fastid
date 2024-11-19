@@ -15,6 +15,7 @@ from app.oauth.registry import reg
 from app.oauth.repositories import (
     IsAccountBelongToUser,
     IsAccountConnected,
+    IsAccountExists,
 )
 from app.oauth.schemas import OAuthName
 from app.oauthlib.schemas import UniversalCallback, OpenIDBearer
@@ -79,7 +80,7 @@ class OAuthUseCases(UseCases):
 
     async def revoke(self, user: User, oauth_name: OAuthName) -> OAuthAccount:
         account = await self.uow.oauth_accounts.find_one(
-            IsAccountConnected(oauth_name, str(user.id))
+            IsAccountExists(user.id, oauth_name)
         )
         user.disconnect_open_id(account.provider)
         account = await self.uow.oauth_accounts.remove(account)

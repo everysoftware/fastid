@@ -63,7 +63,7 @@ async def oauth_callback(
     return cookie_transport.set_token(response, at)
 
 
-@router.post(
+@router.get(
     "/revoke/{oauth_name}",
     status_code=status.HTTP_200_OK,
 )
@@ -73,6 +73,7 @@ async def oauth_revoke(
     oauth_name: OAuthName,
 ) -> Any:
     await oauth.revoke(user, oauth_name)
+    return RedirectResponse(url=auth_settings.authorization_endpoint)
 
 
 @router.get(

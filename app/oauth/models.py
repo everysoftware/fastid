@@ -30,13 +30,17 @@ class OAuthAccount(Entity):
     @classmethod
     def from_open_id(cls, open_id: OpenIDBearer, user: User) -> Self:
         return cls(
-            **open_id.model_dump(exclude={"id", "id_token", "token_type"}),
+            **open_id.model_dump(
+                exclude={"id", "id_token", "token_type", "token_id"}
+            ),
             account_id=open_id.id,
             user_id=user.id,
         )
 
     def update(self, open_id: OpenIDBearer) -> Self:
         return self.merge_attrs(
-            **open_id.model_dump(exclude={"id", "id_token", "token_type"}),
+            **open_id.model_dump(
+                exclude={"id", "id_token", "token_type", "token_id"}
+            ),
             account_id=open_id.id,
         )
