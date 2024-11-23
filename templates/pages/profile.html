@@ -9,7 +9,7 @@
     <li class="nav-item">
         <a class="nav-link active" href="/profile">Profile</a>
     </li>
-    <li class="nav-item active">
+    <li class="nav-item">
         <a class="nav-link" href="/logout">Logout</a>
     </li>
 {% endblock %}
@@ -61,16 +61,15 @@
                                            value="{{ user.email if user.email else '' }}" readonly>
                                     <label class="form-label" for="email">Email</label>
                                 </div>
-                                <a href="/change-email" class="btn btn-primary btn-block mb-2">Change Email</a>
-                                {#                                <button data-mdb-button-init data-mdb-ripple-init type="submit" id="changeEmailBtn"#}
-                                {#                                        data-mdb-modal-init data-mdb-target="#verificationModal"#}
-                                {#                                        class="btn btn-primary btn-block">Change email#}
-                                {#                                </button>#}
+                                <a href="/verify-action?action=change-email" class="btn btn-primary btn-block mb-2">Change
+                                    Email</a>
                             </form>
                             <hr class="my-4">
                             <div class="d-flex flex-column">
-                                <a href="/change-password" class="btn btn-primary btn-block mb-2">Change Password</a>
-                                <a href="/delete-account" class="btn btn-danger btn-block">Delete Account</a>
+                                <a href="/verify-action?action=change-password" class="btn btn-primary btn-block mb-2">Change
+                                    Password</a>
+                                <a href="/verify-action?action=delete-account" class="btn btn-danger btn-block">Delete
+                                    Account</a>
                             </div>
                         </div>
                     </div>

@@ -10,16 +10,17 @@ class AuthSettings(BaseSettings):
     jwt_private_key: Path = Path("certs") / "jwt-private.pem"
     jwt_public_key: Path = Path("certs") / "jwt-public.pem"
     jwt_algorithm: str = "RS256"
-    jwt_access_expire: int = 60 * 60  # 1 hour
-    jwt_refresh_expire: int = 30 * 24 * 60  # 30 days
+    jwt_access_expires_in: int = 60 * 60  # 1 hour
+    jwt_refresh_expires_in: int = 30 * 24 * 60  # 30 days
+    jwt_verify_token_expires_in: int = 5 * 60  # 5 minutes
 
     default_user_email: str = "user@example.com"
     default_user_password: str = "password"
     admin_email: str = "admin@example.com"
     admin_password: str = "changethis"
 
-    authorization_code_expires_in: int = 5 * 60
-    verification_code_expires_in: int = 5 * 60
+    authorization_code_expires_in: int = 5 * 60  # 5 minutes
+    verification_code_expires_in: int = 5 * 60  # 5 minutes
 
     @property
     def issuer(self) -> str:

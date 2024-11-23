@@ -20,16 +20,12 @@ from app.notifier.dependencies import NotifierDep
 from app.notifier.templates import (
     WelcomeNotification,
 )
-from app.utils.background import BackgroundDep
 
 
 class UserManagementUseCases(UseCase):
-    def __init__(
-        self, uow: UOWDep, notifier: NotifierDep, background: BackgroundDep
-    ) -> None:
+    def __init__(self, uow: UOWDep, notifier: NotifierDep) -> None:
         self.uow = uow
         self.notifier = notifier
-        self.background = background
 
     async def register(self, dto: UserCreate) -> User:
         user = await self.uow.users.find(IsActiveUser(dto.email))
@@ -37,9 +33,7 @@ class UserManagementUseCases(UseCase):
             raise UserAlreadyExists()
         user = User.from_create(dto)
         user = await self.uow.users.add(user)
-        self.background.add_task(
-            self.notifier.push_otp, WelcomeNotification(user=user)
-        )
+        await self.notifier.push(WelcomeNotification(user=user))
         await self.uow.commit()
         return user
 
@@ -66,15 +60,13 @@ class UserManagementUseCases(UseCase):
         return user
 
     async def change_email(self, user: User, dto: UserChangeEmail) -> User:
-        await self.notifier.validate_otp(user, dto.code)
-        user.change_email(dto.email)
+        user.change_email(dto.new_email)
         await self.uow.commit()
         return user
 
     async def change_password(
         self, user: User, dto: UserChangePassword
     ) -> User:
-        await self.notifier.validate_otp(user, dto.code)
         user.change_password(dto.password)
         await self.uow.commit()
         return user

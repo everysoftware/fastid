@@ -7,13 +7,13 @@ import jwt
 from jwt import InvalidTokenError
 
 from app.authlib.exceptions import InvalidToken, InvalidTokenType
+from app.authlib.oauth import TokenResponse
 from app.authlib.openid import (
     JWTParams,
     AccessTokenClaims,
     RefreshTokenClaims,
     IDTokenClaims,
 )
-from app.authlib.oauth import TokenResponse
 
 type Subject = Any
 
@@ -59,6 +59,18 @@ class ITokenBackend(ABC):
     @abstractmethod
     def validate_it(self, token: str) -> IDTokenClaims: ...
 
+    @abstractmethod
+    def create_custom(
+        self, token_type: str, payload: Mapping[str, Any]
+    ) -> str: ...
+
+    @abstractmethod
+    def validate_custom(
+        self,
+        token_type: str,
+        token: str,
+    ) -> Mapping[str, Any]: ...
+
 
 class BackendConfig:
     def __init__(self) -> None:
@@ -87,7 +99,7 @@ class TokenBackend(ITokenBackend):
     def create_at(
         self, sub: Subject, scope: str | None = None, **kwargs: Any
     ) -> str:
-        return self._create(
+        return self.create_custom(
             "access",
             {
                 "sub": str(sub),
@@ -99,7 +111,7 @@ class TokenBackend(ITokenBackend):
     def create_rt(
         self, sub: Subject, scope: str | None = None, **kwargs: Any
     ) -> str:
-        return self._create(
+        return self.create_custom(
             "refresh",
             {
                 "sub": str(sub),
@@ -119,7 +131,7 @@ class TokenBackend(ITokenBackend):
         email_verified: bool | None = None,
         **kwargs: Any,
     ) -> str:
-        return self._create(
+        return self.create_custom(
             "id",
             {
                 "sub": str(sub),
@@ -150,18 +162,20 @@ class TokenBackend(ITokenBackend):
         )
 
     def validate_at(self, token: str) -> AccessTokenClaims:
-        claims = self._validate("access", token)
+        claims = self.validate_custom("access", token)
         return AccessTokenClaims.model_validate(claims)
 
     def validate_rt(self, token: str) -> RefreshTokenClaims:
-        claims = self._validate("refresh", token)
+        claims = self.validate_custom("refresh", token)
         return RefreshTokenClaims.model_validate(claims)
 
     def validate_it(self, token: str) -> IDTokenClaims:
-        claims = self._validate("id", token)
+        claims = self.validate_custom("id", token)
         return IDTokenClaims.model_validate(claims)
 
-    def _create(self, token_type: str, payload: Mapping[str, Any]) -> str:
+    def create_custom(
+        self, token_type: str, payload: Mapping[str, Any]
+    ) -> str:
         params = self.config.get_type(token_type)
         now = datetime.datetime.now(datetime.UTC)
         claims = dict(
@@ -178,8 +192,10 @@ class TokenBackend(ITokenBackend):
             algorithm=params.algorithm,
         )
 
-    def _validate(
-        self, token_type: str, token: str, aud: str | None = None
+    def validate_custom(
+        self,
+        token_type: str,
+        token: str,
     ) -> Mapping[str, Any]:
         params = self.config.get_type(token_type)
         try:
@@ -188,7 +204,6 @@ class TokenBackend(ITokenBackend):
                 params.public_key,
                 algorithms=[params.algorithm],
                 issuer=params.issuer,
-                audience=aud,
             )
         except InvalidTokenError as e:
             raise InvalidToken() from e

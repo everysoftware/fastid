@@ -9,6 +9,7 @@ from app.auth.grants import (
     AuthorizationCodeGrant,
     RefreshTokenGrant,
 )
+from app.auth.permissions import Requires
 from app.auth.schemas import (
     UserDTO,
     UserUpdate,
@@ -68,7 +69,7 @@ def me(user: UserDep) -> Any:
 
 
 @router.patch(
-    "/me/profile", response_model=UserDTO, status_code=status.HTTP_200_OK
+    "/users/me/profile", response_model=UserDTO, status_code=status.HTTP_200_OK
 )
 async def patch(
     service: UserManagerDep,
@@ -79,7 +80,10 @@ async def patch(
 
 
 @router.patch(
-    "/me/email", response_model=UserDTO, status_code=status.HTTP_200_OK
+    "/users/me/email",
+    dependencies=[Depends(Requires(action_verified=True))],
+    response_model=UserDTO,
+    status_code=status.HTTP_200_OK,
 )
 async def change_email(
     service: UserManagerDep, user: UserDep, dto: UserChangeEmail
@@ -88,7 +92,10 @@ async def change_email(
 
 
 @router.patch(
-    "/me/password", response_model=UserDTO, status_code=status.HTTP_200_OK
+    "/users/me/password",
+    dependencies=[Depends(Requires(action_verified=True))],
+    response_model=UserDTO,
+    status_code=status.HTTP_200_OK,
 )
 async def change_password(
     service: UserManagerDep, user: UserDep, dto: UserChangePassword
@@ -96,7 +103,9 @@ async def change_password(
     return await service.change_password(user, dto)
 
 
-@router.delete("/me", response_model=UserDTO, status_code=status.HTTP_200_OK)
+@router.delete(
+    "/users/me", response_model=UserDTO, status_code=status.HTTP_200_OK
+)
 async def delete(service: UserManagerDep, user: UserDep) -> Any:
     return await service.delete_account(user)
 

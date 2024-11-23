@@ -20,16 +20,12 @@ from app.oauth.repositories import (
 )
 from app.oauth.schemas import OAuthName
 from app.oauthlib.schemas import UniversalCallback, OpenIDBearer
-from app.utils.background import BackgroundDep
 
 
 class OAuthUseCases(UseCase):
-    def __init__(
-        self, uow: UOWDep, notifier: NotifierDep, background: BackgroundDep
-    ) -> None:
+    def __init__(self, uow: UOWDep, notifier: NotifierDep) -> None:
         self.uow = uow
         self.notifier = notifier
-        self.background = background
 
     @staticmethod
     async def get_authorization_url(oauth_name: OAuthName) -> str:

@@ -11,7 +11,7 @@ from app.base.sorting import Sorting
 
 router = APIRouter(
     tags=["Admin"],
-    dependencies=[user_dep, Depends(Requires(is_superuser=True))],
+    dependencies=[user_dep, Depends(Requires(superuser=True))],
 )
 
 

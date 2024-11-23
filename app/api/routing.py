@@ -7,7 +7,7 @@ from app.auth.admin_router import router as admin_auth_router
 from app.auth.fastapi import auth_flows
 from app.auth.router import router as auth_router
 from app.base.schemas import ErrorResponse
-from app.notifier.router import router as notifier_router
+from app.notify.router import router as notifier_router
 from app.oauth.accounts_router import router as oauth_accounts_router
 from app.oauth.login_router import router as oauth_router
 

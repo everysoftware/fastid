@@ -12,5 +12,12 @@ class WelcomeNotification(Notification):
 
 @dataclass
 class VerificationNotification(Notification):
+    new_email: str | None = None
     subject: str = "Your verification code"
     template: str = "code"
+
+    @property
+    def user_email(self) -> str:
+        if self.new_email is not None:
+            return self.new_email
+        return super().user_email

@@ -42,12 +42,11 @@ class UserUpdate(BaseModel):
 
 
 class UserChangeEmail(BaseModel):
+    new_email: str
     code: str
-    email: str
 
 
 class UserChangePassword(BaseModel):
-    code: str
     password: str
 
 

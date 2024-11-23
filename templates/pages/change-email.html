@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Change Email | {{ app_title }}{% endblock %}
+
+{% block nav %}
+    <li class="nav-item">
+        <a class="nav-link" href="/profile">Profile</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/logout">Logout</a>
+    </li>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/static/js/change_email.js"></script>
+{% endblock %}
+
+{% block main %}
+    <section class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- Change Email Form -->
+                <div class="card shadow-sm">
+
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-3">Change email</h4>
+                        <p class="text-muted">
+                            Keep your account secure and up-to-date by ensuring your email address is correct.
+                        </p>
+                        <form id="emailChangeForm">
+                            <!-- New Email Input -->
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="email" id="newEmail" class="form-control" required>
+                                <label class="form-label" for="newEmail">Email</label>
+                            </div>
+
+                            <!-- Send Code Button -->
+                            <button id="sendCodeButton" type="button" class="btn btn-secondary w-100 mb-4"
+                                    data-mdb-ripple-init>
+                                Send Code
+                            </button>
+
+                            <!-- Code Input -->
+                            <div id="codeInputContainer" class="d-none mb-4">
+                                <label for="verificationCode" class="form-label">Enter one-time code sent to your
+                                    email:</label>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                </div>
+                                <input type="hidden" id="fullCodeInput">
+                                <button data-mdb-button-init data-mdb-ripple-init type="submit" id="confirmButton"
+                                        class="btn btn-primary w-100 mt-4" disabled>
+                                    Confirm
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="mt-4">
+                            <h5 class="fw-bold">Tips</h5>
+                            <ul class="list-unstyled text-muted">
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>
+                                    Check your spam folder if you don’t receive the code immediately.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

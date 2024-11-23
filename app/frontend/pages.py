@@ -1,4 +1,4 @@
-from typing import Any, Annotated
+from typing import Any, Annotated, Literal
 
 from fastapi import APIRouter, Request, Response, Depends, status
 from fastapi.responses import RedirectResponse
@@ -9,7 +9,12 @@ from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
 from app.authlib.dependencies import cookie_transport
 from app.authlib.openid import DiscoveryDocument, JWKS
-from app.frontend.dependencies import valid_consent, get_user
+from app.frontend.dependencies import (
+    valid_consent,
+    get_user,
+    get_one_user,
+    action_verified,
+)
 from app.frontend.openid import discovery_document, jwks
 from app.frontend.templating import templates
 from app.oauth.dependencies import OAuthAccountsDep
@@ -65,15 +70,65 @@ async def authorize(
 async def profile(
     request: Request,
     oauth_accounts: OAuthAccountsDep,
-    user: Annotated[User | None, Depends(get_user)],
+    user: Annotated[User, Depends(get_one_user)],
 ) -> Response:
-    if user is None:
-        raise Unauthorized()
     page = await oauth_accounts.paginate(user)
     connected = {a.provider for a in page.items}
     return templates.TemplateResponse(
         "profile.html",
         {"request": request, "user": user, "connected_providers": connected},
+    )
+
+
+@router.get("/change-email")
+def change_email(
+    request: Request,
+    user: Annotated[User, Depends(get_one_user)],
+) -> Any:
+    return templates.TemplateResponse(
+        "change-email.html",
+        {"request": request, "user": user},
+    )
+
+
+@router.get("/verify-action")
+def verify_action(
+    request: Request,
+    user: Annotated[User, Depends(get_one_user)],
+    verified: Annotated[bool, Depends(action_verified)],
+    action: Literal["change-email", "change-password", "delete-account"],
+) -> Response:
+    if verified:
+        return RedirectResponse(f"/{action}")
+    return templates.TemplateResponse(
+        "verify-action.html",
+        {"request": request, "user": user},
+    )
+
+
+@router.get("/change-password")
+def change_password(
+    request: Request,
+    user: Annotated[User | None, Depends(get_user)],
+) -> Response:
+    if user is None:
+        raise Unauthorized()
+    return templates.TemplateResponse(
+        "change-password.html",
+        {"request": request, "user": user},
+    )
+
+
+@router.get("/delete-account")
+async def delete_account(
+    request: Request,
+    user: Annotated[User | None, Depends(get_user)],
+) -> Response:
+    if user is None:
+        raise Unauthorized()
+    return templates.TemplateResponse(
+        "delete_account.html",
+        {"request": request, "user": user},
     )
 
 
