@@ -7,10 +7,10 @@ Customizable and ready-to-use identity server written in Python
 ## Key features
 
 * Complies with OpenID Connect
-* Login via social networks. Support for Google, Telegram and Yandex at the moment
-* One-time codes. Support for e-mail & telegram at the moment
+* Login via social networks: Google, Telegram, Yandex, etc.
+* Action confirmation with one-time codes
 * Admin panel to manage users & connected apps
-* Module system to extend the functionality
+* Plugin system to extend the functionality
 * Metrics & tracing complied with OpenTelemetry
 * Written in Python using FastAPI
 
@@ -93,6 +93,9 @@ Response example:
 ![Sign Up](assets/signup.png)
 ![Profile](assets/profile.png)
 ![Connections](assets/connections.png)
+![Action Confirmation](assets/action_confirmation.png)
+![Change Password](assets/change_password.png)
+![Delete Account](assets/delete_account.png)
 ![Admin Login](assets/admin_login.png)
 ![Admin Apps](assets/admin_apps.png)
 ![Admin Users](assets/admin_users.png)
