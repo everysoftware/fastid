@@ -1,16 +1,15 @@
+'use strict';
+
 export class ApiClient {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
     }
 
-    async request(endpoint, params = {}, method = 'GET', body = null, headers = {}, customErrorHandler = null) {
+    async request(endpoint, params = {}, method = 'GET', body = null, headers = {}) {
         const url = new URL(`${this.baseUrl}${endpoint}`);
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-
         const options = {
-            method,
-            headers: headers,
-            credentials: 'include'
+            method, headers: headers, credentials: 'include'
         };
 
         if (body) {
@@ -28,55 +27,48 @@ export class ApiClient {
         try {
             const response = await fetch(url, options);
             if (!response.ok) {
-                const errorData = await response.json();
-                if (customErrorHandler) {
-                    customErrorHandler(response.status, errorData);
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    this.handleErrors(response, data);
                 } else {
-                    this.handleErrors(response.status, errorData);
+                    alert(`The server is unavailable. Please try again.\n\nError #${response.status} ${response.statusText} (server_unavailable)\n\n`);
                 }
-                return null;
             }
-            return response;
+            return response
         } catch (error) {
             console.error('Network error:', error);
-            alert('A network error occurred. Please try again.');
+            alert('A network error occurred. Please try again.\n\nError #0 Network error (network_error)');
             return null;
         }
     }
 
-    handleErrors(status, data) {
-        switch (status) {
-            case 422:
-                alert('Validation error: ' + (data.detail || 'Unknown error.'));
-                break;
-            case 404:
-                alert('The requested resource was not found.');
-                break;
-            case 500:
-                alert('Internal server error. Please try again later.');
-                break;
-            default:
-                alert('An error occurred: ' + (data.detail || 'Unknown error.'));
+    handleErrors(response, data) {
+        if (response.status === 422) {
+            data = data[0];
         }
+        const msg = data.msg, code = data.type;
+        alert(`${msg}\n\nError #${response.status} ${response.statusText} (${code})`);
     }
 
-    post(endpoint, params = {}, body = {}, headers = {}, customErrorHandler = null) {
-        return this.request(endpoint, params, 'POST', body, headers, customErrorHandler);
+    async post(endpoint, params = {}, body = {}, headers = {}) {
+        return await this.request(endpoint, params, 'POST', body, headers);
     }
 
-    get(endpoint, params = {}, headers = {}, customErrorHandler = null) {
-        return this.request(endpoint, params, 'GET', null, headers, customErrorHandler);
+    async get(endpoint, params = {}, headers = {}) {
+        return await this.request(endpoint, params, 'GET', null, headers);
     }
 
-    put(endpoint, params = {}, body = {}, headers = {}, customErrorHandler = null) {
-        return this.request(endpoint, params, 'PUT', body, headers, customErrorHandler);
+    async put(endpoint, params = {}, body = {}, headers = {}) {
+        return await this.request(endpoint, params, 'PUT', body, headers);
     }
 
-    patch(endpoint, params = {}, body = {}, headers = {}, customErrorHandler = null) {
-        return this.request(endpoint, params, 'PATCH', body, headers, customErrorHandler);
+    async patch(endpoint, params = {}, body = {}, headers = {}) {
+        return await this.request(endpoint, params, 'PATCH', body, headers);
     }
 
-    delete(endpoint, params = {}, headers = {}, customErrorHandler = null) {
-        return this.request(endpoint, params, 'DELETE', null, headers, customErrorHandler);
+    async delete(endpoint, params = {}, headers = {}) {
+        return await this.request(endpoint, params, 'DELETE', null, headers);
     }
+
 }

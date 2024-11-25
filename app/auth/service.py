@@ -1,5 +1,5 @@
 from app.auth.exceptions import (
-    UserNotFound,
+    UserIDNotFound,
     UserAlreadyExists,
 )
 from app.auth.models import User
@@ -40,7 +40,7 @@ class UserManagementUseCases(UseCase):
     async def get_one(self, user_id: UUID) -> User:
         user = await self.get(user_id)
         if user is None:
-            raise UserNotFound()
+            raise UserIDNotFound()
         return user
 
     async def get_userinfo(self, token: str) -> User:
@@ -60,6 +60,9 @@ class UserManagementUseCases(UseCase):
         return user
 
     async def change_email(self, user: User, dto: UserChangeEmail) -> User:
+        check_user = await self.uow.users.find(IsActiveUser(dto.new_email))
+        if check_user is not None:
+            raise UserAlreadyExists()
         user.change_email(dto.new_email)
         await self.uow.commit()
         return user

@@ -1,5 +1,9 @@
+'use strict';
+
+import {profileClient} from "./dependencies.js";
+
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("changePasswordForm").addEventListener("submit", (e) => {
+    document.getElementById("changePasswordForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const newPassword = document.getElementById("newPassword").value;
@@ -16,20 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        fetch("/api/v1/users/me/password", {
-            method: "PATCH",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({password: newPassword}),
-        })
-            .then((res) => {
-                if (!res.ok) throw new Error("Failed to change password.");
-                return res.json();
-            })
-            .then(() => {
-                alert("Password changed successfully!");
-                location.assign("/profile");
-            })
-            .catch((err) => alert(err.message));
+        const body = {
+            password: newPassword,
+        };
+        const response = await profileClient.patch("/users/me/password", {}, body);
+
+        if (response) {
+            alert("Password changed successfully!");
+            location.assign("/profile");
+        }
     });
     document.getElementById("changePasswordBtn").addEventListener("click", () => {
         document.getElementById("changePasswordForm").requestSubmit();

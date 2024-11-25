@@ -27,20 +27,20 @@
                         <p class="text-muted">
                             Keep your account secure and up-to-date by ensuring your email address is correct.
                         </p>
-                        <form id="emailChangeForm">
+                        <form id="sendCodeForm">
                             <!-- New Email Input -->
                             <div data-mdb-input-init class="form-outline mb-4">
                                 <input type="email" id="newEmail" class="form-control" required>
                                 <label class="form-label" for="newEmail">Email</label>
                             </div>
-
                             <!-- Send Code Button -->
-                            <button id="sendCodeButton" type="button" class="btn btn-secondary w-100 mb-4"
-                                    data-mdb-ripple-init>
+                            <button data-mdb-ripple-init id="sendCodeButton" type="submit"
+                                    class="btn btn-secondary w-100 mb-4">
                                 Send Code
                             </button>
+                        </form>
 
-                            <!-- Code Input -->
+                        <form id="emailChangeForm">
                             <div id="codeInputContainer" class="d-none mb-4">
                                 <label for="verificationCode" class="form-label">Enter one-time code sent to your
                                     email:</label>
@@ -59,7 +59,7 @@
                                            style="width: 40px; font-size: 1.5rem" required>
                                 </div>
                                 <input type="hidden" id="fullCodeInput">
-                                <button data-mdb-button-init data-mdb-ripple-init type="submit" id="confirmButton"
+                                <button data-mdb-ripple-init type="submit" id="confirmButton"
                                         class="btn btn-primary w-100 mt-4" disabled>
                                     Confirm
                                 </button>

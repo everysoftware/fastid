@@ -41,12 +41,12 @@ class EntityDTO(BaseModel):
 
 class ErrorResponse(BaseModel):
     msg: str
-    code: str
+    type: str
 
 
-OK: Final = ErrorResponse(msg="ok", code="ok")
+OK: Final = ErrorResponse(msg="ok", type="ok")
 INTERNAL_ERR: Final = ErrorResponse(
-    msg="Internal Server Error", code="unexpected_error"
+    msg="Internal Server Error", type="unexpected_error"
 )
 
 

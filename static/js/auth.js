@@ -1,53 +1,43 @@
+'use strict';
+
 import {authClient} from './dependencies.js';
 
-
-(function () {
-    'use strict'
-
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', async function (event) {
-            event.preventDefault()
-            if (!loginForm.checkValidity()) {
-                event.stopPropagation()
-                loginForm.classList.add('was-validated')
-                return;
-            }
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const response = await authClient.login(email, password);
-            if (response) {
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = new URLSearchParams();
+            form.append('grant_type', 'password');
+            form.append('username', document.getElementById("email").value);
+            form.append('password', document.getElementById("password").value);
+            form.append('scope', '*');
+            form.append('client_id', '');
+            const response = await authClient.post('/token', {}, form);
+            if (response.ok) {
                 location.reload();
             }
-        }, false)
-
-        document.getElementById("loginBtn").addEventListener("click", function (event) {
-            loginForm.requestSubmit();
         });
     }
 
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
-        registerForm.addEventListener('submit', async function (event) {
-            event.preventDefault()
-            if (!registerForm.checkValidity()) {
-                event.stopPropagation()
-                registerForm.classList.add('was-validated')
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const password = document.getElementById("password").value;
+            if (password !== document.getElementById("confirmPassword").value) {
+                alert("Passwords do not match.");
                 return;
             }
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const response = await authClient.register(name, email, password);
-            if (response) {
-                location.assign("/authorize");
+            const body = {
+                email: document.getElementById("email").value,
+                password: password,
+                first_name: document.getElementById("name").value
             }
-        }, false)
-
-        document.getElementById("registerBtn").addEventListener("click", function (event) {
-            registerForm.requestSubmit();
+            const response = await authClient.post("/register", {}, body);
+            if (response.ok) {
+                location.assign("/login");
+            }
         });
     }
-})()
+});

@@ -64,31 +64,6 @@
 
 {% block main %}{% endblock %}
 
-<div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">Verification Code</h5>
-                <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="modalDescription">Enter the 6-digit code sent to your email to proceed.</p>
-                <div id="codeInputContainer" class="d-flex justify-content-center mb-3">
-                    <!-- Code Input Fields -->
-                    {% for i in range(6) %}
-                        <input type="text" maxlength="1" class="form-control otp-input mx-1 text-center"
-                               style="width: 40px; font-size: 1.5rem;">
-                    {% endfor %}
-                </div>
-                <div id="modalError" class="text-danger text-center d-none">Invalid code. Please try again.</div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="confirmActionBtn" class="btn btn-primary">Confirm</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script
         src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/8.0.0/mdb.umd.min.js"
 ></script>

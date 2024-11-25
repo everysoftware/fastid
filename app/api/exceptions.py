@@ -70,7 +70,7 @@ def client_exception_handler(
         status_code=ex.status_code,
         content=ErrorResponse(
             msg=ex.message,
-            code=ex.error_code,
+            type=ex.error_code,
         ).model_dump(mode="json"),
         headers=ex.headers,
     )

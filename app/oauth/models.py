@@ -1,17 +1,22 @@
-from typing import Self
+from __future__ import annotations
+
+from typing import Self, TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.auth.models import User
 from app.base.models import Entity
 from app.oauthlib.schemas import OpenIDBearer
+
+if TYPE_CHECKING:
+    from app.auth.models import User
 
 
 class OAuthAccount(Entity):
     __tablename__ = "oauth_accounts"
 
-    user_id: Mapped[UUID] = mapped_column(index=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
     provider: Mapped[str]
     account_id: Mapped[str]
     access_token: Mapped[str | None]
@@ -26,6 +31,8 @@ class OAuthAccount(Entity):
     last_name: Mapped[str | None]
     display_name: Mapped[str | None]
     picture: Mapped[str | None]
+
+    user: Mapped[User] = relationship(back_populates="oauth_accounts")
 
     @classmethod
     def from_open_id(cls, open_id: OpenIDBearer, user: User) -> Self:

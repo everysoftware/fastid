@@ -28,23 +28,22 @@
         <div class="container py-5 h-100">
             <div class="row d-flex align-items-center justify-content-center h-100">
                 <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
-                    <form id="loginForm" class="needs-validation" novalidate>
+                    <form id="loginForm">
                         <h4 class="text-center mb-4">Sign in</h4>
-                        <!-- Email input -->
                         <div data-mdb-input-init class="form-outline mb-4">
-                            <input type="email" id="email" class="form-control form-control-lg" required/>
-                            <label class="form-label" for="email">Email address</label>
+                            <input type="email" id="email" class="form-control form-control-lg" placeholder="Email"
+                                   required/>
                         </div>
-
-                        <!-- Password input -->
                         <div data-mdb-input-init class="form-outline mb-4">
                             <input type="password" id="password" class="form-control form-control-lg"
+                                   placeholder="Password"
                                    required/>
-                            <label class="form-label" for="password">Password</label>
                         </div>
 
-                        <!-- Submit button -->
-                        <button id="loginBtn" type="submit" data-mdb-button-init data-mdb-ripple-init
+                        <label for="email" hidden></label>
+                        <label for="password" hidden></label>
+
+                        <button id="loginBtn" type="submit" data-mdb-ripple-init
                                 class="btn btn-primary btn-lg btn-block mb-4">Login
                         </button>
 

@@ -3,7 +3,6 @@ from typing import Any, Annotated, Literal
 from fastapi import APIRouter, Request, Response, Depends, status
 from fastapi.responses import RedirectResponse
 
-from app.api.exceptions import Unauthorized
 from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
@@ -80,17 +79,6 @@ async def profile(
     )
 
 
-@router.get("/change-email")
-def change_email(
-    request: Request,
-    user: Annotated[User, Depends(get_one_user)],
-) -> Any:
-    return templates.TemplateResponse(
-        "change-email.html",
-        {"request": request, "user": user},
-    )
-
-
 @router.get("/verify-action")
 def verify_action(
     request: Request,
@@ -106,13 +94,28 @@ def verify_action(
     )
 
 
+@router.get("/change-email")
+def change_email(
+    request: Request,
+    user: Annotated[User, Depends(get_one_user)],
+    verified: Annotated[bool, Depends(action_verified)],
+) -> Any:
+    if not verified:
+        return RedirectResponse("/verify-action?action=change-email")
+    return templates.TemplateResponse(
+        "change-email.html",
+        {"request": request, "user": user},
+    )
+
+
 @router.get("/change-password")
 def change_password(
     request: Request,
-    user: Annotated[User | None, Depends(get_user)],
+    user: Annotated[User, Depends(get_one_user)],
+    verified: Annotated[bool, Depends(action_verified)],
 ) -> Response:
-    if user is None:
-        raise Unauthorized()
+    if not verified:
+        return RedirectResponse("/verify-action?action=change-password")
     return templates.TemplateResponse(
         "change-password.html",
         {"request": request, "user": user},
@@ -120,14 +123,15 @@ def change_password(
 
 
 @router.get("/delete-account")
-async def delete_account(
+def delete_account(
     request: Request,
-    user: Annotated[User | None, Depends(get_user)],
+    user: Annotated[User, Depends(get_one_user)],
+    verified: Annotated[bool, Depends(action_verified)],
 ) -> Response:
-    if user is None:
-        raise Unauthorized()
+    if not verified:
+        return RedirectResponse("/verify-action?action=delete-account")
     return templates.TemplateResponse(
-        "delete_account.html",
+        "delete-account.html",
         {"request": request, "user": user},
     )
 

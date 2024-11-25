@@ -85,7 +85,7 @@ def telegram_redirect(
 ) -> Any:
     return templates.TemplateResponse(
         request,
-        "telegram_redirect.html",
+        "telegram-redirect.html",
         {
             "request": request,
             "redirect_uri": reg.inspect("telegram").redirect_uri,

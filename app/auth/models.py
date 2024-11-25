@@ -1,7 +1,9 @@
-from typing import Self
+from __future__ import annotations
+
+from typing import Self, TYPE_CHECKING
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from app.auth.exceptions import WrongPassword, NoPermission
 from app.auth.schemas import UserCreate, ContactType
@@ -9,6 +11,9 @@ from app.base.models import Entity
 from app.base.types import uuid
 from app.oauthlib.schemas import OpenIDBearer
 from app.utils.hashing import hasher
+
+if TYPE_CHECKING:
+    from app.oauth.models import OAuthAccount
 
 
 class User(Entity):
@@ -22,6 +27,10 @@ class User(Entity):
     is_active: Mapped[bool] = mapped_column(default=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_verified: Mapped[bool] = mapped_column(default=False)
+
+    oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
+        back_populates="user", cascade="delete"
+    )
 
     @hybrid_property
     def is_oauth(self) -> bool:

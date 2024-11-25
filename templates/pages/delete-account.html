@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Account | {{ app_title }}{% endblock %}
+
+{% block nav %}
+    <li class="nav-item">
+        <a class="nav-link" href="/profile">Profile</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/logout">Logout</a>
+    </li>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/static/js/delete_account.js"></script>
+{% endblock %}
+
+{% block main %}
+    <section class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- Delete Account Form -->
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-3 text-danger">Delete Account</h4>
+                        <div class="mb-4">
+                            <ul class="list-unstyled text-muted">
+                                <li class="mb-2"><i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                    Deleting your account is irreversible.
+                                </li>
+                                <li class="mb-2"><i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                    You will lose access to all services associated with this account.
+                                </li>
+                                <li class="mb-2"><i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                    Ensure you’ve downloaded any important data before proceeding.
+                                </li>
+                            </ul>
+                        </div>
+                        <p class="text-muted">
+                            If you're sure you want to delete your account, please type <span
+                                class="fw-bold">CONFIRM</span> in the box below.
+                        </p>
+                        <form id="deleteAccountForm">
+                            <div data-mdb-input-init class="form-outline mb-4" id="confirmContainer">
+                                <input type="text" id="confirmationText" class="form-control" required>
+                                <label class="form-label" for="confirmationText">Type CONFIRM to proceed</label>
+                            </div>
+                            <button data-mdb-ripple-init type="submit" id="deleteAccountBtn"
+                                    class="btn btn-danger w-100" disabled>
+                                Delete Account
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

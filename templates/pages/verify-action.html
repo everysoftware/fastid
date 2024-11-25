@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Verify the action | {{ app_title }}{% endblock %}
+{% block title %}Confirmation required | {{ app_title }}{% endblock %}
 
 {% block nav %}
     <li class="nav-item">
@@ -22,7 +22,7 @@
                 <!-- Change Password Form -->
                 <div class="card shadow-sm">
                     <div class="card-body p-4">
-                        <h4 class="card-title mb-3">Verify the action</h4>
+                        <h4 class="card-title mb-3">Confirm the action</h4>
                         <p class="text-muted">
                             Enter one-time code sent to your email or telegram:
                         </p>
@@ -45,7 +45,7 @@
                                 </div>
                                 <input type="hidden" id="fullCodeInput">
                             </div>
-                            <button data-mdb-button-init data-mdb-ripple-init type="submit" id="nextButton" class="btn btn-primary w-100">
+                            <button data-mdb-ripple-init type="submit" id="nextButton" class="btn btn-primary w-100">
                                 Next
                             </button>
                         </form>

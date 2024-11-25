@@ -9,9 +9,9 @@ from app.apps.models import App
 from app.apps.repositories import IsActiveApp
 from app.auth.config import auth_settings
 from app.auth.exceptions import (
-    UserNotFound,
     NotSupportedResponseType,
     NoPermission,
+    UserEmailNotFound,
 )
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
@@ -78,7 +78,7 @@ class PasswordGrant(Grant):
     async def authorize(self, form: OAuth2PasswordRequest) -> TokenResponse:
         user = await self.uow.users.find(IsActiveUser(form.username))
         if user is None:
-            raise UserNotFound()
+            raise UserEmailNotFound()
         user.verify_password(form.password)
         return self.grant(user, form.scope)
 
