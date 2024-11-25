@@ -7,7 +7,7 @@ from typing import Any, Literal, Mapping
 from jinja2 import Environment, FileSystemLoader
 
 from app.auth.models import User
-from app.notifier.config import notifier_settings
+from app.notifylib.config import notifier_settings
 
 TemplateType = Literal["rich", "anemic"]
 

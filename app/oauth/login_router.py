@@ -9,6 +9,7 @@ from app.auth.config import auth_settings
 from app.auth.dependencies import UserManagerDep, UserDep
 from app.authlib.dependencies import cookie_transport, auth_bus
 from app.frontend.templating import templates
+from app.notifylib.telegram import BotDep
 from app.oauth.dependencies import OAuthAccountsDep, valid_callback
 from app.oauth.registry import reg
 from app.oauth.schemas import OAuthName
@@ -80,14 +81,13 @@ async def oauth_revoke(
     "/redirect/telegram",
     status_code=status.HTTP_200_OK,
 )
-def telegram_redirect(
-    request: Request,
-) -> Any:
+async def telegram_redirect(request: Request, bot: BotDep) -> Any:
     return templates.TemplateResponse(
         request,
         "telegram-redirect.html",
         {
             "request": request,
             "redirect_uri": reg.inspect("telegram").redirect_uri,
+            "bot_username": (await bot.me()).username,
         },
     )

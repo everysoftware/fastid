@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 
-from app.notifier.base import Notification
-from app.notifier.mail import MailDep
-from app.notifier.telegram import BotDep
+from app.notifylib.base import Notification
+from app.notifylib.mail import MailDep
+from app.notifylib.telegram import BotDep
 
 
 class INotifier(ABC):

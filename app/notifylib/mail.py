@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.notifier.config import notifier_settings
+from app.notifylib.config import notifier_settings
 
 
 class MailClient:

@@ -1,4 +1,5 @@
 from app.auth.models import User
+from app.auth.repositories import IsActiveUser
 from app.authlib.dependencies import token_backend
 from app.authlib.oauth import TokenResponse
 from app.base.pagination import Page, LimitOffset
@@ -6,7 +7,7 @@ from app.base.service import UseCase
 from app.base.sorting import Sorting
 from app.base.types import UUID
 from app.db.dependencies import UOWDep
-from app.notifier.dependencies import NotifierDep
+from app.notifylib.dependencies import NotifierDep
 from app.oauth.exceptions import (
     OAuthAccountNotFound,
     OAuthAccountInUse,
@@ -39,10 +40,9 @@ class OAuthUseCases(UseCase):
         account = await self.uow.oauth_accounts.find(
             IsAccountConnected(open_id.provider, open_id.id)
         )
-        if account:
-            user = await self._authorize_existing(account, open_id)
-        else:
-            user = await self._authorize_new(open_id)
+        if not account:
+            account = await self._register(open_id)
+        user = await self.uow.users.get_one(account.user_id)
         await self.uow.commit()
         at = token_backend.create_at(user.id)
         return token_backend.to_response(at)
@@ -101,15 +101,15 @@ class OAuthUseCases(UseCase):
                 **open_id.model_dump(),
             )
 
-    async def _authorize_new(self, open_id: OpenIDBearer) -> User:
-        user = User.from_open_id(open_id)
-        user = await self.uow.users.add(user)
+    async def _register(self, open_id: OpenIDBearer) -> OAuthAccount:
+        user = (
+            await self.uow.users.find(IsActiveUser(open_id.email))
+            if open_id.email
+            else None
+        )
+        if not user:
+            user = User.from_open_id(open_id)
+            user = await self.uow.users.add(user)
         account = OAuthAccount.from_open_id(open_id, user)
         await self.uow.oauth_accounts.add(account)
-        return user
-
-    async def _authorize_existing(
-        self, account: OAuthAccount, open_id: OpenIDBearer
-    ) -> User:
-        account.update(open_id)
-        return await self.uow.users.get_one(account.user_id)
+        return account

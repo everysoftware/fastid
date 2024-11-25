@@ -16,8 +16,8 @@ from app.base.service import UseCase
 from app.base.sorting import Sorting
 from app.base.types import UUID
 from app.db.dependencies import UOWDep
-from app.notifier.dependencies import NotifierDep
-from app.notifier.templates import (
+from app.notifylib.dependencies import NotifierDep
+from app.notifylib.templates import (
     WelcomeNotification,
 )
 

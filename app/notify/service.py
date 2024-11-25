@@ -5,10 +5,10 @@ from app.auth.models import User
 from app.authlib.dependencies import token_backend
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
-from app.notifier.base import Notification
-from app.notifier.dependencies import NotifierDep
-from app.notifier.exceptions import WrongCode
-from app.notifier.schemas import VerifyTokenRequest
+from app.notifylib.base import Notification
+from app.notifylib.dependencies import NotifierDep
+from app.notifylib.exceptions import WrongCode
+from app.notifylib.schemas import VerifyTokenRequest
 from app.utils.otp import otp
 
 
