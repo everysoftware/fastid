@@ -4,14 +4,21 @@ from fastapi import Depends
 from starlette.requests import Request
 
 from app.api.exceptions import Unauthorized, ClientError
-from app.auth.dependencies import AuthDep
+from app.auth.dependencies import UserManagerDep
+from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
-from app.authlib.dependencies import cookie_transport
+from app.authlib.dependencies import (
+    cookie_transport,
+    verify_token_transport,
+    token_backend,
+)
 
 
-async def get_user(auth: AuthDep, request: Request) -> User | None:
-    token = cookie_transport.get_token(request)
+async def get_user(
+    auth: UserManagerDep,
+    token: Annotated[str | None, Depends(cookie_transport)],
+) -> User | None:
     if token is None:
         return None
     try:
@@ -20,10 +27,34 @@ async def get_user(auth: AuthDep, request: Request) -> User | None:
         return None
 
 
+async def get_one_user(
+    auth: UserManagerDep,
+    token: Annotated[str | None, Depends(cookie_transport)],
+) -> User:
+    if token is None:
+        raise Unauthorized()
+    try:
+        return await auth.get_userinfo(token)
+    except ClientError:
+        raise Unauthorized() from None
+
+
+def action_verified(
+    token: Annotated[str | None, Depends(verify_token_transport)],
+) -> bool:
+    if token is None:
+        return False
+    try:
+        token_backend.validate_custom("verify", token)
+    except ClientError:
+        return False
+    return True
+
+
 async def valid_consent(
-    auth: AuthDep,
     request: Request,
     consent: Annotated[OAuth2ConsentRequest, Depends()],
+    authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
 ) -> OAuth2ConsentRequest:
     if not request.query_params:
         consent_data = request.session.get("consent")
@@ -31,4 +62,4 @@ async def valid_consent(
             raise Unauthorized()
         else:
             consent = OAuth2ConsentRequest.model_validate(consent_data)
-    return await auth.validate_consent_request(consent)
+    return await authorization_code_grant.validate_consent(consent)

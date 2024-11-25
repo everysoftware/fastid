@@ -2,10 +2,10 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
 from app.api.exceptions import ClientError
-from app.auth.schemas import OAuth2TokenRequest
-from app.auth.service import AuthUseCases
-from app.authlib.oauth import OAuth2Grant
-from app.cache.dependencies import get_cache
+from app.auth.config import auth_settings
+from app.auth.grants import PasswordGrant
+from app.authlib.dependencies import token_backend
+from app.authlib.oauth import OAuth2Grant, OAuth2PasswordRequest
 from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW
 
@@ -13,17 +13,16 @@ from app.db.uow import AlchemyUOW
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         data = await request.form()
-        form = OAuth2TokenRequest(
+        form = OAuth2PasswordRequest(
             grant_type=OAuth2Grant.password,
             username=data["username"],
             password=data["password"],
             scope="admin",
         )
-        cache = get_cache()
         async with AlchemyUOW(session_factory) as uow:
-            auth = AuthUseCases(uow, cache)
+            grant = PasswordGrant(uow)
             try:
-                token = await auth.authorize(form)
+                token = await grant.authorize(form)
             except ClientError:
                 return False
         request.session.update({"at": token.access_token})
@@ -38,16 +37,13 @@ class AdminAuth(AuthenticationBackend):
         token = request.session.get("at")
         if not token:
             return False
-        cache = get_cache()
-        async with AlchemyUOW(session_factory) as uow:
-            auth = AuthUseCases(uow, cache)
-            try:
-                user = await auth.get_userinfo(token)
-            except ClientError:
-                return False
-        if not user.is_superuser:
+        try:
+            claims = token_backend.validate_at(token)
+        except ClientError:
+            return False
+        if "admin" not in claims.scopes:
             return False
         return True
 
 
-admin_auth = AdminAuth(secret_key="...")
+admin_auth = AdminAuth(secret_key=auth_settings.jwt_private_key.read_text())

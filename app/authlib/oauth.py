@@ -10,10 +10,20 @@ Agents:
 * Client (application), e.g. SuperApp
 * Authorization server, e.g. Google
 * Resource server (provider), e.g. Google Photos
+
+Terms:
+
+Identification - the process of identifying a user. It can be done by a name, email, id or phone number.
+
+Authentication - the process of verifying the identity of a user. It can be done by a password, fingerprint, or
+face recognition. OpenID Connect defines an ID token that is used to authenticate a user.
+
+Authorization - the process of granting permissions to a user. It can be done by a scope, role, or permission.
+OAuth 2.0 defines an access token that is used to authorize a user.
 """
 
 from enum import StrEnum, auto
-from typing import Iterable
+from typing import Sequence
 from urllib.parse import urlencode
 
 from pydantic import (
@@ -107,7 +117,7 @@ class OAuth2ConsentRequest(BaseModel):
     """
 
     @property
-    def scopes(self) -> Iterable[str]:
+    def scopes(self) -> Sequence[str]:
         if self.scope is None:
             return []
         return self.scope.split(" ")
@@ -170,11 +180,11 @@ class OAuth2BaseTokenRequest(BaseModel):
 
 class OAuth2PasswordRequest(OAuth2BaseTokenRequest):
     grant_type: OAuth2Grant = OAuth2Grant.password
-    username: str = "user@example.com"
+    username: str = ""
     """
     The resource owner's username. Used in Password Grant Flow.
     """
-    password: str = "password"
+    password: str = ""
     """
     The resource owner's password. Used in Password Grant Flow.
     """
@@ -185,10 +195,6 @@ class OAuth2PasswordRequest(OAuth2BaseTokenRequest):
     Usually, it is passed as query params in the authorization URL, but if the flow does not assume redirection
     (like Password Grant Flow), it should be passed in the token request.
     """
-
-    @property
-    def scopes(self) -> Iterable[str]:
-        return self.scope.split(" ")
 
 
 class OAuth2AuthorizationCodeRequest(OAuth2BaseTokenRequest):
@@ -235,7 +241,7 @@ class OAuth2TokenRequest(BaseModel):
     scope: str = ""
 
     @property
-    def scopes(self) -> Iterable[str]:
+    def scopes(self) -> Sequence[str]:
         return self.scope.split(" ")
 
     def as_password_grant(self) -> OAuth2PasswordRequest:

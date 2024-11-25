@@ -11,7 +11,7 @@ from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW
 
 
-class Background:
+class LifespanTasks:
     def __init__(self) -> None:
         self.uow = AlchemyUOW(session_factory)
         self.redis = redis_client
@@ -37,7 +37,7 @@ class Background:
                 first_name="Admin",
                 email=auth_settings.admin_email,
             )
-            user.set_password(auth_settings.admin_password)
+            user.change_password(auth_settings.admin_password)
             user.verify()
             user.grant_superuser()
             await self.uow.users.add(user)
@@ -52,7 +52,7 @@ class Background:
                 last_name="User",
                 email=auth_settings.default_user_email,
             )
-            user.set_password(auth_settings.default_user_password)
+            user.change_password(auth_settings.default_user_password)
             user.verify()
             await self.uow.users.add(user)
 

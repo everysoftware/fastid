@@ -24,6 +24,9 @@ class Transport(ABC):
     @abc.abstractmethod
     def delete_token(self, response: Response) -> Response: ...
 
+    def __call__(self, request: Request) -> str | None:
+        return self.get_token(request)
+
     def get_login_response(self, token: TokenResponse) -> Response:
         response = JSONResponse(content=token.model_dump())
         assert token.access_token is not None
@@ -41,7 +44,7 @@ class HeaderTransport(Transport):
         self,
         *,
         name: str = "Authorization",
-        scheme_name: str = "BearerHeader",
+        scheme_name: str = "AccessTokenHeader",
     ):
         super().__init__(name=name, scheme_name=scheme_name)
 
@@ -66,7 +69,7 @@ class CookieTransport(Transport):
         self,
         *,
         name: str = "fastidaccesstoken",
-        scheme_name: str = "BearerCookie",
+        scheme_name: str = "AccessTokenCookie",
         httponly: bool = True,
         max_age: int | None = None,
         secure: bool = False,

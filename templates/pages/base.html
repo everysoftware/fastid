@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" data-mdb-theme="dark">
+<html lang="en" dir="ltr">
 
 <head>
     <meta charset="utf-8">
@@ -17,29 +17,58 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/8.0.0/mdb.min.css"/>
     {% block links %} {% endblock %}
     <style>
-
         .form-control:-webkit-autofill,
         .form-control:-webkit-autofill:hover,
         .form-control:-webkit-autofill:focus,
         .form-control:-webkit-autofill:active {
             border: none;
-            -webkit-text-fill-color: var(--mdb-surface);
+            -webkit-text-fill-color: var(--mdb-body-color);
             -webkit-box-shadow: 0 0 0 100px var(--mdb-body-bg) inset !important;
         }
 
         {% block style %}{% endblock %}
-
     </style>
-
+    <script>
+        const isSystemThemeSetToDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (isSystemThemeSetToDark) {
+            document.documentElement.dataset.mdbTheme = "dark";
+        }
+    </script>
 </head>
 <body>
+
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{{ favicon_url }}" alt="App Logo" class="img-fluid me-2" style="max-width: 30px;">
+            <span class="fw-bold">{{ app_title }}</span>
+        </a>
+        <button
+                class="navbar-toggler"
+                type="button"
+                data-mdb-toggle="collapse"
+                data-mdb-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+        >
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                {% block nav %}{% endblock %}
+            </ul>
+        </div>
+    </div>
+</nav>
 
 {% block main %}{% endblock %}
 
 <script
         src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/8.0.0/mdb.umd.min.js"
 ></script>
-{% block scripts %} {% endblock %}
+<script src="/static/js/base.js"></script>
+{% block scripts %}{% endblock %}
 
 </body>
 </html>

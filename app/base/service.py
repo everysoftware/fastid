@@ -1,5 +1,5 @@
 from abc import ABC
 
 
-class UseCases(ABC):
+class UseCase(ABC):
     pass

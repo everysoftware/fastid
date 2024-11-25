@@ -1,24 +1,23 @@
+'use strict';
+
 import {profileClient} from './dependencies.js';
 
-(function () {
-    'use strict'
-
-    const editProfileForm = document.getElementById('editProfileForm');
-    editProfileForm.addEventListener('submit', async function (event) {
+document.addEventListener("DOMContentLoaded", () => {
+    // Edit profile
+    let form = document.getElementById("editProfileForm");
+    form.addEventListener("submit", async (event) => {
         event.preventDefault()
-        if (!editProfileForm.checkValidity()) {
-            event.stopPropagation()
-            editProfileForm.classList.add('was-validated')
-            return;
+        const body = {
+            first_name: document.getElementById("firstName").value,
+            last_name: document.getElementById("lastName").value
         }
-        const firstName = document.getElementById("firstName").value;
-        const lastName = document.getElementById("lastName").value;
-        const response = await profileClient.patch("/users/me", {}, {first_name: firstName, last_name: lastName});
+        const response = await profileClient.patch("/users/me/profile", {}, body);
         if (response) {
+            alert('Profile updated successfully.');
             location.reload();
         }
     });
-    document.getElementById("editProfileBtn").addEventListener("click", function (event) {
-        editProfileForm.requestSubmit();
+    document.getElementById("editProfileBtn").addEventListener("click", function () {
+        form.requestSubmit();
     });
-})()
+});

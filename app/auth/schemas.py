@@ -1,4 +1,4 @@
-from enum import StrEnum, auto
+from typing import Literal
 
 from pydantic import (
     Field,
@@ -9,6 +9,13 @@ from app.authlib.oauth import (
     OAuth2ConsentRequest as AuthlibOAuth2ConsentRequest,
 )
 from app.base.schemas import BaseModel, EntityDTO
+
+ContactType = Literal["email", "telegram"]
+
+
+class Contact(BaseModel):
+    type: ContactType
+    value: str
 
 
 class UserDTO(EntityDTO):
@@ -32,37 +39,15 @@ class UserCreate(BaseModel):
 class UserUpdate(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
-    email: str | None = None
 
 
-class TokenType(StrEnum):
-    access = auto()
-    refresh = auto()
-    verify = auto()
+class UserChangeEmail(BaseModel):
+    new_email: str
+    code: str
 
 
-class Role(StrEnum):
-    user = auto()
-    superuser = auto()
-
-
-class Scope(StrEnum):
-    """
-    Scopes are strings that are used to specify what access rights an access token has.
-    """
-
-    profile = auto()
-    """
-    Access to the user's profile.
-    """
-    openid = auto()
-    """
-    Access to the user's ID Token. This is required for OpenID Connect.
-    """
-    admin = auto()
-    """
-    Access to the admin panel.
-    """
+class UserChangePassword(BaseModel):
+    password: str
 
 
 class OAuth2TokenRequest(AuthlibOAuth2TokenRequest):
@@ -70,4 +55,4 @@ class OAuth2TokenRequest(AuthlibOAuth2TokenRequest):
 
 
 class OAuth2ConsentRequest(AuthlibOAuth2ConsentRequest):
-    pass
+    scope: str = "openid email name"

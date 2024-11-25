@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmation required | {{ app_title }}{% endblock %}
+
+{% block nav %}
+    <li class="nav-item">
+        <a class="nav-link" href="/profile">Profile</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/logout">Logout</a>
+    </li>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/static/js/verify_action.js"></script>
+{% endblock %}
+
+{% block main %}
+    <section class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- Change Password Form -->
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-3">Confirm the action</h4>
+                        <p class="text-muted">
+                            Enter one-time code sent to your email or telegram:
+                        </p>
+                        <form id="passwordChangeForm">
+                            <!-- Code Input -->
+                            <div id="codeInputContainer" class="mb-4">
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                </div>
+                                <input type="hidden" id="fullCodeInput">
+                            </div>
+                            <button data-mdb-ripple-init type="submit" id="nextButton" class="btn btn-primary w-100">
+                                Next
+                            </button>
+                        </form>
+                        <div class="mt-4">
+                            <h5 class="fw-bold">Tips</h5>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-check-circle text-success me-2"></i>
+                                    Check your spam folder if you don’t receive the code immediately.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

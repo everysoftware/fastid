@@ -14,75 +14,57 @@
     <script type="module" src="/static/js/auth.js"></script>
 {% endblock %}
 
+{% block nav %}
+    <li class="nav-item">
+        <a class="nav-link" href="/login">Login</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" href="/register">Register</a>
+    </li>
+{% endblock %}
+
 {% block main %}
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
-            <!-- Brand -->
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="{{ favicon_url }}" alt="App Logo" class="img-fluid me-2" style="max-width: 30px;">
-                <span class="fw-bold">{{ app_title }}</span>
-            </a>
-
-            <!-- Toggle button -->
-            <button
-                    class="navbar-toggler"
-                    type="button"
-                    data-mdb-toggle="collapse"
-                    data-mdb-target="#navbarNav"
-                    aria-controls="navbarNav"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-            >
-                <i class="fas fa-bars"></i>
-            </button>
-
-            <!-- Links -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/register">Register</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
     <section class="vh-100">
         <div class="container py-5 h-100">
             <div class="row d-flex align-items-center justify-content-center h-100">
                 <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
-                    <form id="registerForm" class="needs-validation" novalidate>
+                    <form id="registerForm" class="needs-validation">
                         <h4 class="text-center mb-4">Sign up</h4>
-                        <div data-mdb-input-init class="form-outline mb-4">
-                            <input type="text" id="name" class="form-control form-control-lg" required/>
-                            <label class="form-label" for="name">Name</label>
-                        </div>
 
                         <div data-mdb-input-init class="form-outline mb-4">
-                            <input type="email" id="email" class="form-control form-control-lg" required/>
-                            <label class="form-label" for="email">Email address</label>
+                            <input type="text" id="name" class="form-control form-control-lg" placeholder="First Name"
+                                   required/>
                         </div>
-
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <input type="email" id="email" class="form-control form-control-lg" placeholder="Email"
+                                   required/>
+                        </div>
                         <div data-mdb-input-init class="form-outline mb-4">
                             <input type="password" id="password" class="form-control form-control-lg"
+                                   placeholder="Password"
                                    required/>
-                            <label class="form-label" for="password">Password</label>
+                        </div>
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <input type="password" id="confirmPassword" class="form-control form-control-lg"
+                                   placeholder="Confirm Password"
+                                   required/>
                         </div>
 
                         <div class="d-flex justify-content-start align-items-center mb-4">
-                            <!-- Checkbox -->
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="form1Example3" checked/>
-                                <label class="form-check-label" for="form1Example3"> I accept the user
+                                <label class="form-check-label" for="form1Example3"> I read and accept the user
                                     agreement </label>
                             </div>
-
                         </div>
 
+                        <label class="form-label" for="name" hidden>Name</label>
+                        <label class="form-label" for="email" hidden>Email</label>
+                        <label class="form-label" for="password" hidden>Password</label>
+                        <label class="form-label" for="confirmPassword" hidden>Confirm Password</label>
+
                         <!-- Submit button -->
-                        <button id="registerBtn" type="submit" data-mdb-button-init data-mdb-ripple-init
+                        <button id="registerBtn" type="submit" data-mdb-ripple-init
                                 class="btn btn-primary btn-lg btn-block mb-4">Create an account
                         </button>
 

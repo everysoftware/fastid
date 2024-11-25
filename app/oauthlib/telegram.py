@@ -133,9 +133,10 @@ class TelegramOAuth(IOAuth2):
         return self.openid_from_response(self.telegram_token.model_dump())
 
     async def __aenter__(self) -> Self:
+        await self._bot.__aenter__()
         return self
 
     async def __aexit__(
         self, exc_type: type[Exception], exc_value: Exception, traceback: Any
     ) -> None:
-        pass
+        await self._bot.__aexit__(exc_type, exc_value, traceback)
