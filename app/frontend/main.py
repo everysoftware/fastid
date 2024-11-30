@@ -9,7 +9,7 @@ from app.frontend.exceptions import add_exception_handlers
 from app.frontend.pages import router as auth_router
 from app.frontend.templating import templates
 from app.main.modules import Module
-from app.oauth.registry import reg
+from app.oauth.providers import registry
 
 routers = [auth_router]
 
@@ -38,7 +38,7 @@ class FrontendModule(Module):
         templates.env.globals["app_title"] = self.title
         templates.env.globals["favicon_url"] = self.favicon_url
         templates.env.globals["logo_url"] = self.logo_url
-        templates.env.globals["available_providers"] = reg.meta
+        templates.env.globals["available_providers"] = registry.meta
 
     def install(self, app: FastAPI) -> None:
         self._set_templates_env()

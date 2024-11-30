@@ -6,7 +6,7 @@ from sqlalchemy import Select
 from app.apps.models import App
 from app.base.repository import IRepository
 from app.db.repository import AlchemyRepository
-from app.db.specification import AlchemySpec
+from app.db.specification import AlchemySpecification
 
 
 class IAppRepository(IRepository[App], ABC):
@@ -17,7 +17,7 @@ class AppRepository(IAppRepository, AlchemyRepository[App]):
     model_type = App
 
 
-class IsActiveApp(AlchemySpec):
+class IsActiveApp(AlchemySpecification):
     def __init__(self, client_id: str) -> None:
         self.client_id = client_id
 
@@ -27,7 +27,7 @@ class IsActiveApp(AlchemySpec):
         )
 
 
-class IsActiveAppSlug(AlchemySpec):
+class IsActiveAppSlug(AlchemySpecification):
     def __init__(self, slug: str) -> None:
         self.slug = slug
 

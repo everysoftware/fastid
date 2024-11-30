@@ -9,7 +9,7 @@ from app.oauth.config import telegram_settings
 
 async def get_bot() -> AsyncGenerator[Bot, None]:
     async with Bot(
-        telegram_settings.client_secret,
+        telegram_settings.bot_token,
         default=DefaultBotProperties(),
     ) as bot:
         yield bot

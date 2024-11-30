@@ -13,13 +13,12 @@ from app.oauth.exceptions import (
     OAuthAccountInUse,
 )
 from app.oauth.models import OAuthAccount
-from app.oauth.registry import reg
+from app.oauth.providers import registry
 from app.oauth.repositories import (
     IsAccountBelongToUser,
     IsAccountConnected,
     IsAccountExists,
 )
-from app.oauth.schemas import OAuthName
 from app.oauthlib.schemas import UniversalCallback, OpenIDBearer
 
 
@@ -29,12 +28,12 @@ class OAuthUseCases(UseCase):
         self.notifier = notifier
 
     @staticmethod
-    async def get_authorization_url(oauth_name: OAuthName) -> str:
-        async with reg.begin(oauth_name) as oauth:
+    async def get_authorization_url(oauth_name: str) -> str:
+        async with registry.begin(oauth_name) as oauth:
             return oauth.get_authorization_url()
 
     async def authorize(
-        self, oauth_name: OAuthName, callback: UniversalCallback
+        self, oauth_name: str, callback: UniversalCallback
     ) -> TokenResponse:
         open_id = await self._callback(oauth_name, callback)
         account = await self.uow.oauth_accounts.find(
@@ -48,7 +47,7 @@ class OAuthUseCases(UseCase):
         return token_backend.to_response(at)
 
     async def connect(
-        self, user: User, oauth_name: OAuthName, callback: UniversalCallback
+        self, user: User, oauth_name: str, callback: UniversalCallback
     ) -> OAuthAccount:
         open_id = await self._callback(oauth_name, callback)
         account = await self.uow.oauth_accounts.find(
@@ -80,7 +79,7 @@ class OAuthUseCases(UseCase):
             sorting=Sorting(),
         )
 
-    async def revoke(self, user: User, oauth_name: OAuthName) -> OAuthAccount:
+    async def revoke(self, user: User, oauth_name: str) -> OAuthAccount:
         account = await self.uow.oauth_accounts.find_one(
             IsAccountExists(user.id, oauth_name)
         )
@@ -91,9 +90,9 @@ class OAuthUseCases(UseCase):
 
     @staticmethod
     async def _callback(
-        oauth_name: OAuthName, callback: UniversalCallback
+        oauth_name: str, callback: UniversalCallback
     ) -> OpenIDBearer:
-        async with reg.begin(oauth_name) as oauth:
+        async with registry.begin(oauth_name) as oauth:
             token = await oauth.authorize(callback)
             open_id = await oauth.userinfo()
             return OpenIDBearer(

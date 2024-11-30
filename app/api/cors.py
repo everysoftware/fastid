@@ -32,7 +32,6 @@ class CORSPlugin(Plugin):
 
 
 class CORSSettings(BaseSettings):
-    enabled: bool = False
     origins: Sequence[str] = ("*",)
     origin_regex: str | None = None
 

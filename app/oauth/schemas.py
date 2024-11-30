@@ -1,5 +1,3 @@
-from enum import StrEnum, auto
-
 from app.base.schemas import EntityDTO, BaseModel
 from app.base.types import UUID
 
@@ -26,7 +24,11 @@ class OAuthAccountDTO(EntityDTO, OAuthAccountBase):
     user_id: UUID
 
 
-class OAuthName(StrEnum):
-    google = auto()
-    yandex = auto()
-    telegram = auto()
+class ProviderMeta(BaseModel):
+    name: str
+    title: str
+    icon: str
+    color: str
+    redirect_uri: str
+    authorization_url: str
+    revoke_url: str

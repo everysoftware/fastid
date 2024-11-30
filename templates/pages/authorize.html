@@ -52,9 +52,11 @@
                             <a href="/recover">Forgot password?</a>
                         </div>
 
-                        <div class="divider d-flex align-items-center my-4">
-                            <p class="text-center fw-bold mx-3 mb-0 text-muted">OR CONTINUE WITH</p>
-                        </div>
+                        {% if available_providers %}
+                            <div class="divider d-flex align-items-center my-4">
+                                <p class="text-center fw-bold mx-3 mb-0 text-muted">OR CONTINUE WITH</p>
+                            </div>
+                        {% endif %}
 
                         <div class="row d-flex align-items-center justify-content-center">
                             {% for provider in available_providers.values() %}

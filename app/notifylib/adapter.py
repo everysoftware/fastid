@@ -19,7 +19,7 @@ class Notifier(INotifier):
     async def push(self, notification: Notification) -> None:
         method: str
         if notification.method == "auto":
-            method = notification.user.available_contact
+            method = notification.user.notification_method
         else:
             method = notification.method
         match method:
