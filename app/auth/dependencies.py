@@ -1,13 +1,20 @@
 from typing import Annotated
 
 from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 
+from app.auth.backend import auth_bus
 from app.auth.models import User
-from app.auth.service import UserManagementUseCases
-from app.authlib.dependencies import auth_bus
 from app.base.types import UUID
+from app.profile.service import ProfileUseCases
 
-UserManagerDep = Annotated[UserManagementUseCases, Depends()]
+auth_flows = [
+    OAuth2PasswordBearer(
+        tokenUrl="auth/token", scheme_name="Password", auto_error=False
+    ),
+]
+
+UserManagerDep = Annotated[ProfileUseCases, Depends()]
 
 
 async def get_user(

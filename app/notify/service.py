@@ -1,25 +1,44 @@
 import secrets
+from typing import Annotated
 
+from fastapi import Depends
+
+from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.models import User
-from app.authlib.dependencies import token_backend
+from app.auth.utils import otp
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
-from app.notifylib.base import Notification
-from app.notifylib.dependencies import NotifierDep
-from app.notifylib.exceptions import WrongCode
-from app.notifylib.schemas import VerifyTokenRequest
-from app.utils.otp import otp
+from app.notify.adapters import MailAdapter, TelegramAdapter
+from app.notify.base import Notification
+from app.notify.exceptions import WrongCode
+from app.notify.schemas import VerifyTokenRequest
 
 
 class NotificationUseCases(UseCase):
-    def __init__(self, notifier: NotifierDep, cache: CacheDep) -> None:
-        self.notifier = notifier
+    def __init__(
+        self,
+        mail: Annotated[MailAdapter, Depends()],
+        telegram: Annotated[TelegramAdapter, Depends()],
+        cache: CacheDep,
+    ) -> None:
+        self.mail = mail
+        self.telegram = telegram
         self.cache = cache
-        self.token_backend = token_backend
 
     async def push(self, notification: Notification) -> None:
-        await self.notifier.push(notification)
+        method: str
+        if notification.method == "auto":
+            method = notification.user.notification_method
+        else:
+            method = notification.method
+        match method:
+            case "email":
+                await self.mail.send(notification)
+            case "telegram":
+                await self.telegram.send(notification)
+            case _:
+                raise ValueError(f"Unknown method: {method}")
 
     async def push_code(self, notification: Notification) -> None:
         code = otp()
@@ -29,7 +48,7 @@ class NotificationUseCases(UseCase):
             code,
             expire=auth_settings.verification_code_expires_in,
         )
-        await self.notifier.push(notification)
+        await self.push(notification)
 
     async def validate_code(self, user: User, code: str) -> None:
         user_code = await self.cache.get(f"otp:users:{user.id}", cast=str)
@@ -43,6 +62,4 @@ class NotificationUseCases(UseCase):
         self, user: User, request: VerifyTokenRequest
     ) -> str:
         await self.validate_code(user, request.code)
-        return self.token_backend.create_custom(
-            "verify", {"sub": str(user.id)}
-        )
+        return token_backend.create_custom("verify", {"sub": str(user.id)})

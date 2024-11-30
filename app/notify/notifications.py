@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from app.notifylib.base import Notification
-from app.notifylib.config import notifier_settings
+from app.notify.base import Notification
+from app.notify.config import notify_settings
 
 
 @dataclass
 class WelcomeNotification(Notification):
-    subject: str = f"Welcome to {notifier_settings.from_name}"
+    subject: str = f"Welcome to {notify_settings.from_name}"
     template: str = "welcome"
 
 

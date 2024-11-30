@@ -119,6 +119,3 @@ def get_logger(
     logger.addHandler(get_handler(handler))
     logger.propagate = False
     return logger
-
-
-configure_logging()

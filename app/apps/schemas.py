@@ -7,6 +7,7 @@ from app.base.schemas import EntityDTO, BaseModel
 
 class AppBase(BaseModel):
     name: str
+    slug: str
     client_id: str
     client_secret: str
     redirect_uris: Sequence[AnyHttpUrl]

@@ -16,7 +16,7 @@ from app.auth.exceptions import (
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
 from app.auth.schemas import OAuth2ConsentRequest
-from app.authlib.dependencies import token_backend
+from app.auth.backend import token_backend
 from app.authlib.oauth import (
     TokenResponse,
     OAuth2PasswordRequest,
@@ -28,7 +28,7 @@ from app.base.service import UseCase
 from app.base.types import UUID
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
-from app.utils.otp import otp
+from app.auth.utils import otp
 
 
 class Grant(UseCase):

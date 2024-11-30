@@ -5,7 +5,7 @@ from fastapi import Depends
 from app.auth.dependencies import UserManagerDep, UserDep
 from app.auth.exceptions import NoPermission
 from app.auth.models import User
-from app.authlib.dependencies import verify_token_transport, token_backend
+from app.auth.backend import verify_token_transport, token_backend
 
 
 class Requires:

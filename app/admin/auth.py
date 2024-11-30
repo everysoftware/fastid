@@ -4,7 +4,7 @@ from starlette.requests import Request
 from app.api.exceptions import ClientError
 from app.auth.config import auth_settings
 from app.auth.grants import PasswordGrant
-from app.authlib.dependencies import token_backend
+from app.auth.backend import token_backend
 from app.authlib.oauth import OAuth2Grant, OAuth2PasswordRequest
 from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW

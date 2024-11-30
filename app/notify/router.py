@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, BackgroundTasks
 from starlette.responses import JSONResponse
 
 from app.auth.dependencies import UserDep
-from app.authlib.dependencies import verify_token_transport
-from app.notifylib.schemas import OTPRequest, VerifyTokenRequest
-from app.notifylib.templates import VerificationNotification
+from app.auth.backend import verify_token_transport
+from app.notify.schemas import OTPRequest, VerifyTokenRequest
+from app.notify.notifications import VerificationNotification
 from app.notify.dependencies import NotifyDep
 
 router = APIRouter(prefix="/notify", tags=["Notify"])

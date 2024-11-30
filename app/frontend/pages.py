@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
-from app.authlib.dependencies import cookie_transport
+from app.auth.backend import cookie_transport
 from app.authlib.openid import DiscoveryDocument, JWKS
 from app.frontend.dependencies import (
     valid_consent,

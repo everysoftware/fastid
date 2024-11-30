@@ -1,13 +1,12 @@
+from app.auth.backend import token_backend
 from app.auth.models import User
 from app.auth.repositories import IsActiveUser
-from app.authlib.dependencies import token_backend
 from app.authlib.oauth import TokenResponse
 from app.base.pagination import Page, LimitOffset
 from app.base.service import UseCase
 from app.base.sorting import Sorting
 from app.base.types import UUID
 from app.db.dependencies import UOWDep
-from app.notifylib.dependencies import NotifierDep
 from app.oauth.exceptions import (
     OAuthAccountNotFound,
     OAuthAccountInUse,
@@ -23,9 +22,8 @@ from app.oauthlib.schemas import UniversalCallback, OpenIDBearer
 
 
 class OAuthUseCases(UseCase):
-    def __init__(self, uow: UOWDep, notifier: NotifierDep) -> None:
+    def __init__(self, uow: UOWDep) -> None:
         self.uow = uow
-        self.notifier = notifier
 
     @staticmethod
     async def get_authorization_url(oauth_name: str) -> str:

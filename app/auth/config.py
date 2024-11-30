@@ -14,11 +14,6 @@ class AuthSettings(BaseSettings):
     jwt_refresh_expires_in: int = 30 * 24 * 60  # 30 days
     jwt_verify_token_expires_in: int = 5 * 60  # 5 minutes
 
-    default_user_email: str = "user@example.com"
-    default_user_password: str = "password"
-    admin_email: str = "admin@example.com"
-    admin_password: str = "changethis"
-
     authorization_code_expires_in: int = 5 * 60  # 5 minutes
     verification_code_expires_in: int = 5 * 60  # 5 minutes
 

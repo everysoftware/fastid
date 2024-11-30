@@ -1,5 +1,7 @@
 import datetime
 
+from passlib.context import CryptContext
+
 from app.auth.config import auth_settings
 from app.authlib.backend import BackendConfig, TokenBackend
 from app.authlib.openid import JWTParams
@@ -63,3 +65,5 @@ verify_token_transport = CookieTransport(
     scheme_name="VerifyTokenCookie",
     max_age=auth_settings.jwt_verify_token_expires_in,
 )
+
+hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")

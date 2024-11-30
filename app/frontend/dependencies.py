@@ -8,7 +8,7 @@ from app.auth.dependencies import UserManagerDep
 from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
-from app.authlib.dependencies import (
+from app.auth.backend import (
     cookie_transport,
     verify_token_transport,
     token_backend,

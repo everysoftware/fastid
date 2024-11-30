@@ -29,6 +29,7 @@ opentelemetry-instrumentation-sqlalchemy = "^0.48b0"
 opentelemetry-instrumentation-httpx = "^0.48b0"
 fast-depends = "^2.4.12"
 uuid-utils = "^0.9.0"
+typer = "^0.14.0"
 
 
 [tool.poetry.group.dev.dependencies]

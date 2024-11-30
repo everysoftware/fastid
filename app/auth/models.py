@@ -11,7 +11,7 @@ from app.base.models import Entity
 from app.base.types import uuid
 from app.oauth.config import telegram_settings
 from app.oauthlib.schemas import OpenIDBearer
-from app.utils.hashing import hasher
+from app.auth.backend import hasher
 
 if TYPE_CHECKING:
     from app.oauth.models import OAuthAccount
@@ -62,7 +62,7 @@ class User(Entity):
             last_name=dto.last_name,
             email=dto.email,
         )
-        user.change_password(dto.password)
+        user.set_password(dto.password)
         return user
 
     @classmethod
@@ -82,7 +82,7 @@ class User(Entity):
         if provider == "telegram":
             self.telegram_id = None
 
-    def change_password(self, password: str) -> None:
+    def set_password(self, password: str) -> None:
         self.hashed_password = hasher.hash(password)
 
     def change_email(self, new_email: str) -> None:

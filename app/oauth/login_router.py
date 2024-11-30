@@ -5,11 +5,10 @@ from fastapi.responses import RedirectResponse
 from starlette import status
 
 from app.api.exceptions import ClientError
+from app.auth.backend import cookie_transport, auth_bus
 from app.auth.config import auth_settings
 from app.auth.dependencies import UserManagerDep, UserDep
-from app.authlib.dependencies import cookie_transport, auth_bus
 from app.frontend.templating import templates
-from app.notifylib.telegram import BotDep
 from app.oauth.dependencies import OAuthAccountsDep, valid_callback
 from app.oauth.providers import registry
 from app.oauthlib.schemas import UniversalCallback
@@ -80,13 +79,13 @@ async def oauth_revoke(
     "/redirect/telegram",
     status_code=status.HTTP_200_OK,
 )
-async def telegram_redirect(request: Request, bot: BotDep) -> Any:
+async def telegram_redirect(request: Request) -> Any:
     return templates.TemplateResponse(
         request,
         "telegram-redirect.html",
         {
             "request": request,
             "redirect_uri": registry.inspect("telegram").redirect_uri,
-            "bot_username": (await bot.me()).username,
+            "bot_username": "everytech_it_bot",
         },
     )
