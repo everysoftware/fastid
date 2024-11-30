@@ -1,5 +1,3 @@
-from typing import Literal
-
 from pydantic import (
     Field,
 )
@@ -9,13 +7,6 @@ from app.authlib.oauth import (
     OAuth2ConsentRequest as AuthlibOAuth2ConsentRequest,
 )
 from app.base.schemas import BaseModel, EntityDTO
-
-ContactType = Literal["email", "telegram"]
-
-
-class Contact(BaseModel):
-    type: ContactType
-    value: str
 
 
 class UserDTO(EntityDTO):

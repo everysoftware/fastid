@@ -19,7 +19,7 @@ class OAuthSettings(BaseModel):
 
 
 class BaseOAuthSettings(BaseModel):
-    oauth_allowed: bool = False
+    enabled: bool = False
     client_id: str = ""
     client_secret: str = ""
 
@@ -32,7 +32,10 @@ class YandexSettings(BaseSettings, BaseOAuthSettings):
     model_config = SettingsConfigDict(env_prefix="yandex_")
 
 
-class TelegramSettings(BaseSettings, BaseOAuthSettings):
+class TelegramSettings(BaseSettings):
+    enabled: bool = False
+    bot_token: str = ""
+
     model_config = SettingsConfigDict(env_prefix="telegram_")
 
 

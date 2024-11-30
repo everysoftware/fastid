@@ -1,19 +1,22 @@
 from __future__ import annotations
 
-from typing import Self, TYPE_CHECKING
+from typing import Self, TYPE_CHECKING, Literal
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from app.auth.exceptions import WrongPassword, NoPermission
-from app.auth.schemas import UserCreate, ContactType
+from app.auth.schemas import UserCreate
 from app.base.models import Entity
 from app.base.types import uuid
+from app.oauth.config import telegram_settings
 from app.oauthlib.schemas import OpenIDBearer
 from app.utils.hashing import hasher
 
 if TYPE_CHECKING:
     from app.oauth.models import OAuthAccount
+
+NotificationMethod = Literal["email", "telegram"]
 
 
 class User(Entity):
@@ -45,12 +48,12 @@ class User(Entity):
         return ""
 
     @hybrid_property
-    def available_contact(self) -> ContactType:
-        if self.telegram_id is not None:
+    def notification_method(self) -> NotificationMethod:
+        if self.telegram_id is not None and telegram_settings.enabled:
             return "telegram"
         if self.email is not None:
             return "email"
-        raise ValueError("No contact information")
+        raise ValueError(f"User id={self.id} has no available contacts")
 
     @classmethod
     def from_create(cls, dto: UserCreate) -> Self:

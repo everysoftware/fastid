@@ -1,5 +1,5 @@
+import asyncio
 from abc import ABC, abstractmethod
-
 
 from app.notifylib.base import Notification
 from app.notifylib.mail import MailDep
@@ -19,12 +19,14 @@ class Notifier(INotifier):
     async def push(self, notification: Notification) -> None:
         method: str
         if notification.method == "auto":
-            method = notification.user.available_contact
+            method = notification.user.notification_method
         else:
             method = notification.method
         match method:
             case "email":
-                return self.mail.send(notification.as_email())
+                await asyncio.to_thread(
+                    self.mail.send, notification.as_email()
+                )
             case "telegram":
                 await self.bot.send_message(**notification.as_telegram())
             case _:

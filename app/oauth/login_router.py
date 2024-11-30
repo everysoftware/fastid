@@ -11,8 +11,7 @@ from app.authlib.dependencies import cookie_transport, auth_bus
 from app.frontend.templating import templates
 from app.notifylib.telegram import BotDep
 from app.oauth.dependencies import OAuthAccountsDep, valid_callback
-from app.oauth.registry import reg
-from app.oauth.schemas import OAuthName
+from app.oauth.providers import registry
 from app.oauthlib.schemas import UniversalCallback
 
 router = APIRouter(prefix="/oauth", tags=["OAuth"])
@@ -25,7 +24,7 @@ router = APIRouter(prefix="/oauth", tags=["OAuth"])
 )
 async def oauth_login(
     service: OAuthAccountsDep,
-    oauth_name: OAuthName,
+    oauth_name: str,
     redirect: bool = True,
 ) -> Any:
     url = await service.get_authorization_url(oauth_name)
@@ -42,7 +41,7 @@ async def oauth_callback(
     auth: UserManagerDep,
     oauth: OAuthAccountsDep,
     request: Request,
-    oauth_name: OAuthName,
+    oauth_name: str,
     callback: Annotated[UniversalCallback, Depends(valid_callback)],
 ) -> Any:
     at = auth_bus.parse_request(request, auto_error=False)
@@ -71,7 +70,7 @@ async def oauth_callback(
 async def oauth_revoke(
     oauth: OAuthAccountsDep,
     user: UserDep,
-    oauth_name: OAuthName,
+    oauth_name: str,
 ) -> Any:
     await oauth.revoke(user, oauth_name)
     return RedirectResponse(url=auth_settings.authorization_endpoint)
@@ -87,7 +86,7 @@ async def telegram_redirect(request: Request, bot: BotDep) -> Any:
         "telegram-redirect.html",
         {
             "request": request,
-            "redirect_uri": reg.inspect("telegram").redirect_uri,
+            "redirect_uri": registry.inspect("telegram").redirect_uri,
             "bot_username": (await bot.me()).username,
         },
     )

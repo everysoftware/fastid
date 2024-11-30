@@ -6,7 +6,7 @@ from sqlalchemy import Select
 from app.auth.models import User
 from app.base.repository import IRepository
 from app.db.repository import AlchemyRepository
-from app.db.specification import AlchemySpec
+from app.db.specification import AlchemySpecification
 
 
 class IUserRepository(IRepository[User], ABC):
@@ -17,7 +17,7 @@ class UserRepository(IUserRepository, AlchemyRepository[User]):
     model_type = User
 
 
-class IsActiveUser(AlchemySpec):
+class IsActiveUser(AlchemySpecification):
     def __init__(self, email: str) -> None:
         self.email = email
 

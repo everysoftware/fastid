@@ -6,7 +6,7 @@ from sqlalchemy import Select
 from app.base.repository import IRepository
 from app.base.types import UUID
 from app.db.repository import AlchemyRepository
-from app.db.specification import AlchemySpec
+from app.db.specification import AlchemySpecification
 from app.oauth.models import OAuthAccount
 
 
@@ -20,7 +20,7 @@ class OAuthAccountRepository(
     model_type = OAuthAccount
 
 
-class IsAccountBelongToUser(AlchemySpec):
+class IsAccountBelongToUser(AlchemySpecification):
     def __init__(self, user_id: UUID) -> None:
         self.user_id = user_id
 
@@ -28,7 +28,7 @@ class IsAccountBelongToUser(AlchemySpec):
         return stmt.where(OAuthAccount.user_id == self.user_id)
 
 
-class IsAccountConnected(AlchemySpec):
+class IsAccountConnected(AlchemySpecification):
     def __init__(self, provider: str, account_id: str) -> None:
         self.account_id = account_id
         self.provider = provider
@@ -40,7 +40,7 @@ class IsAccountConnected(AlchemySpec):
         )
 
 
-class IsAccountExists(AlchemySpec):
+class IsAccountExists(AlchemySpecification):
     def __init__(self, user_id: UUID, provider: str) -> None:
         self.user_id = user_id
         self.provider = provider

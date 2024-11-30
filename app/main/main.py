@@ -13,16 +13,12 @@ from app.obs.tracing import TracingPlugin
 from app.testing.main import TestAppModule
 
 modules: list[Module] = []
-api_plugins: list[Plugin] = []
-
-
-if cors_settings.enabled:
-    api_plugins.append(
-        CORSPlugin(
-            origins=cors_settings.origins,
-            origin_regex=cors_settings.origin_regex,
-        )
+api_plugins: list[Plugin] = [
+    CORSPlugin(
+        origins=cors_settings.origins,
+        origin_regex=cors_settings.origin_regex,
     )
+]
 
 # Must be last plugin
 if obs_settings.enabled:

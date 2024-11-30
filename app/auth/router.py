@@ -1,5 +1,4 @@
 from typing import Any, Annotated
-
 from fastapi import APIRouter, status, Depends, Form
 
 from app.auth.dependencies import UserManagerDep, UserDep
