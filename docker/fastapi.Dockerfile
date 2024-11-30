@@ -31,7 +31,7 @@ ENV PATH="$POETRY_HOME/bin:$PATH"
 WORKDIR $APP_PATH
 COPY ./poetry.lock ./pyproject.toml ./
 
-RUN poetry install --no-dev
+RUN poetry install --only main
 RUN poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt
 
 #

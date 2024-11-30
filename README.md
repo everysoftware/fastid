@@ -25,8 +25,9 @@ Customizable and ready-to-use identity server written in Python
 2. Generate RSA keys:
 
     ```bash
-    openssl genrsa -out certs/private.pem 2048
-    openssl rsa -in certs/private.pem -pubout -out certs/public.pem
+    mkdir certs
+    openssl genrsa -out certs/jwt-private.pem 2048
+    openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
     ```
 
 3. Create a `.env` file. Use the `.env.example` as a reference.

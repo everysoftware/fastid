@@ -51,9 +51,11 @@ class Notification:
 
     def as_email(self) -> Message:
         msg = MIMEMultipart("alternative")
-        msg["From"] = notifier_settings.from_name
-        msg["To"] = self.user_email
         msg["Subject"] = self.subject
+        msg["From"] = (
+            f"{notifier_settings.from_name} <{notifier_settings.smtp_username}>"
+        )
+        msg["To"] = self.user_email
         msg.attach(MIMEText(self.as_html("rich"), "html"))
         return msg
 
