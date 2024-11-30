@@ -1,3 +1,3 @@
 'use strict';
 
-export const backendUrl = '/api/v1';
+export const backendUrl = `${location.origin}/api/v1`;
