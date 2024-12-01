@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 
+from app.api.exceptions import ClientError
 from app.auth.backend import auth_bus
 from app.auth.models import User
-from app.base.types import UUID
-from app.profile.service import ProfileUseCases
+from app.auth.service import AuthUseCases
 
 auth_flows = [
     OAuth2PasswordBearer(
@@ -14,11 +14,11 @@ auth_flows = [
     ),
 ]
 
-UserManagerDep = Annotated[ProfileUseCases, Depends()]
+AuthDep = Annotated[AuthUseCases, Depends()]
 
 
 async def get_user(
-    service: UserManagerDep,
+    service: AuthDep,
     token: Annotated[str, Depends(auth_bus)],
 ) -> User:
     return await service.get_userinfo(token)
@@ -28,5 +28,11 @@ user_dep = Depends(get_user)
 UserDep = Annotated[User, user_dep]
 
 
-async def get_user_by_id(service: UserManagerDep, user_id: UUID) -> User:
-    return await service.get_one(user_id)
+async def get_optional_user(service: AuthDep, request: Request) -> User | None:
+    token = auth_bus.parse_request(request)
+    if token is None:
+        return None
+    try:
+        return await service.get_userinfo(token)
+    except ClientError:
+        return None

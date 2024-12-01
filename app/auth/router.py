@@ -1,8 +1,9 @@
 from typing import Any, Annotated
 
-from fastapi import APIRouter, status, Depends, Form
+from fastapi import APIRouter, status, Depends, Form, BackgroundTasks
 
 from app.auth.backend import cookie_transport
+from app.auth.dependencies import AuthDep, UserDep
 from app.auth.exceptions import NotSupportedGrant
 from app.auth.grants import (
     PasswordGrant,
@@ -11,10 +12,28 @@ from app.auth.grants import (
 )
 from app.auth.schemas import (
     OAuth2TokenRequest,
+    UserCreate,
+    UserDTO,
 )
 from app.authlib.oauth import TokenResponse, OAuth2Grant
+from app.notify.dependencies import NotifyDep
+from app.notify.notifications import WelcomeNotification
 
-router = APIRouter(tags=["Users"])
+router = APIRouter(tags=["Auth"])
+
+
+@router.post(
+    "/register", status_code=status.HTTP_201_CREATED, response_model=UserDTO
+)
+async def register(
+    service: AuthDep,
+    notify: NotifyDep,
+    dto: UserCreate,
+    background: BackgroundTasks,
+) -> Any:
+    user = await service.register(dto)
+    background.add_task(notify.push, WelcomeNotification(user))
+    return user
 
 
 @router.post(
@@ -42,6 +61,13 @@ async def authorize(
         case _:
             raise NotSupportedGrant()
     return cookie_transport.get_login_response(token)
+
+
+@router.get(
+    "/userinfo", response_model=UserDTO, status_code=status.HTTP_200_OK
+)
+def me(user: UserDep) -> Any:
+    return user
 
 
 @router.get(

@@ -4,10 +4,10 @@ from fastapi import APIRouter, Request, Response, Depends
 from fastapi.responses import RedirectResponse
 from starlette import status
 
-from app.api.exceptions import ClientError
-from app.auth.backend import cookie_transport, auth_bus
+from app.auth.backend import cookie_transport
 from app.auth.config import auth_settings
-from app.auth.dependencies import UserManagerDep, UserDep
+from app.auth.dependencies import UserDep, get_optional_user
+from app.auth.models import User
 from app.frontend.templating import templates
 from app.oauth.dependencies import OAuthAccountsDep, valid_callback
 from app.oauth.providers import registry
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/oauth", tags=["OAuth"])
 @router.get(
     "/login/{oauth_name}",
     description="Redirects user to the provider's login page.",
-    status_code=status.HTTP_303_SEE_OTHER,
+    status_code=status.HTTP_307_TEMPORARY_REDIRECT,
 )
 async def oauth_login(
     service: OAuthAccountsDep,
@@ -29,7 +29,9 @@ async def oauth_login(
     url = await service.get_authorization_url(oauth_name)
     if not redirect:
         return url
-    return RedirectResponse(status_code=status.HTTP_303_SEE_OTHER, url=url)
+    return RedirectResponse(
+        status_code=status.HTTP_307_TEMPORARY_REDIRECT, url=url
+    )
 
 
 @router.get(
@@ -37,28 +39,20 @@ async def oauth_login(
     status_code=status.HTTP_200_OK,
 )
 async def oauth_callback(
-    auth: UserManagerDep,
     oauth: OAuthAccountsDep,
-    request: Request,
+    user: Annotated[User | None, Depends(get_optional_user)],
     oauth_name: str,
     callback: Annotated[UniversalCallback, Depends(valid_callback)],
 ) -> Any:
-    at = auth_bus.parse_request(request, auto_error=False)
     response: Response = RedirectResponse(
         url=auth_settings.authorization_endpoint
     )
-    if at is not None:
-        try:
-            user = await auth.get_userinfo(at)
-        except ClientError:
-            pass
-        else:
-            # Connect OAuth account to existing user
-            await oauth.connect(user, oauth_name, callback)
-            return response
-    token = await oauth.authorize(oauth_name, callback)
-    assert token.access_token is not None
-    at = token.access_token
+    if user is not None:
+        await oauth.connect(user, oauth_name, callback)
+        return response
+    token_response = await oauth.authorize(oauth_name, callback)
+    at = token_response.access_token
+    assert at is not None
     return cookie_transport.set_token(response, at)
 
 

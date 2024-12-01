@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.auth.dependencies import UserManagerDep, UserDep
+from app.auth.backend import verify_token_transport, token_backend
+from app.auth.dependencies import UserDep
 from app.auth.exceptions import NoPermission
 from app.auth.models import User
-from app.auth.backend import verify_token_transport, token_backend
 
 
 class Requires:
@@ -25,7 +25,6 @@ class Requires:
 
     async def __call__(
         self,
-        users: UserManagerDep,
         user: UserDep,
         verify_token: Annotated[str | None, Depends(verify_token_transport)],
     ) -> User:

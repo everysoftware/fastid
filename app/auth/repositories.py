@@ -17,7 +17,7 @@ class UserRepository(IUserRepository, AlchemyRepository[User]):
     model_type = User
 
 
-class IsActiveUser(AlchemySpecification):
+class ActiveUserSpecification(AlchemySpecification):
     def __init__(self, email: str) -> None:
         self.email = email
 

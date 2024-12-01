@@ -1,6 +1,6 @@
 from app.auth.backend import token_backend
 from app.auth.models import User
-from app.auth.repositories import IsActiveUser
+from app.auth.repositories import ActiveUserSpecification
 from app.authlib.oauth import TokenResponse
 from app.base.pagination import Page, LimitOffset
 from app.base.service import UseCase
@@ -100,7 +100,7 @@ class OAuthUseCases(UseCase):
 
     async def _register(self, open_id: OpenIDBearer) -> OAuthAccount:
         user = (
-            await self.uow.users.find(IsActiveUser(open_id.email))
+            await self.uow.users.find(ActiveUserSpecification(open_id.email))
             if open_id.email
             else None
         )

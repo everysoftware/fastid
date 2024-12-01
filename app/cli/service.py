@@ -2,7 +2,7 @@ from typing import Self, Any
 
 from app.auth.exceptions import UserAlreadyExists
 from app.auth.models import User
-from app.auth.repositories import IsActiveUser
+from app.auth.repositories import ActiveUserSpecification
 from app.auth.schemas import UserCreate
 from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW
@@ -17,7 +17,7 @@ class CLIUseCases:
         dto: UserCreate,
         is_admin: bool = False,
     ) -> None:
-        user = await self.uow.users.find(IsActiveUser(dto.email))
+        user = await self.uow.users.find(ActiveUserSpecification(dto.email))
         if user:
             raise UserAlreadyExists()
         user = User(

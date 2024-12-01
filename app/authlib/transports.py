@@ -45,7 +45,7 @@ class HeaderTransport(Transport):
         *,
         name: str = "Authorization",
         scheme_name: str = "AccessTokenHeader",
-    ):
+    ) -> None:
         super().__init__(name=name, scheme_name=scheme_name)
 
     def get_token(self, request: Request) -> str | None:
@@ -74,7 +74,7 @@ class CookieTransport(Transport):
         max_age: int | None = None,
         secure: bool = False,
         samesite: Literal["lax", "strict", "none"] = "lax",
-    ):
+    ) -> None:
         super().__init__(name=name, scheme_name=scheme_name)
         self.httponly = httponly
         self.max_age = max_age
@@ -107,7 +107,9 @@ class CookieTransport(Transport):
 class AuthBus:
     transports: Mapping[str, Transport]
 
-    def __init__(self, *transports: Transport, auto_error: bool = True):
+    def __init__(
+        self, *transports: Transport, auto_error: bool = True
+    ) -> None:
         self.auto_error = auto_error
         self.transports = {t.scheme_name: t for t in transports}
 
