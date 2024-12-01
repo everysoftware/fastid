@@ -9,9 +9,11 @@ from app.auth.config import auth_settings
 from app.auth.dependencies import UserDep, get_optional_user
 from app.auth.models import User
 from app.frontend.templating import templates
+from app.oauth.config import oauth_settings
 from app.oauth.dependencies import OAuthAccountsDep, valid_callback
-from app.oauth.providers import registry
+from app.oauth.providers import get_telegram
 from app.oauthlib.schemas import UniversalCallback
+from app.oauthlib.telegram import TelegramOAuth
 
 router = APIRouter(prefix="/oauth", tags=["OAuth"])
 
@@ -73,13 +75,15 @@ async def oauth_revoke(
     "/redirect/telegram",
     status_code=status.HTTP_200_OK,
 )
-async def telegram_redirect(request: Request) -> Any:
+async def telegram_redirect(
+    request: Request, oauth: Annotated[TelegramOAuth, Depends(get_telegram)]
+) -> Any:
     return templates.TemplateResponse(
         request,
         "telegram-redirect.html",
         {
             "request": request,
-            "redirect_uri": registry.inspect("telegram").redirect_uri,
-            "bot_username": "everytech_it_bot",
+            "redirect_uri": f"{oauth_settings.base_redirect_url}/telegram",
+            "bot_username": await oauth.get_username(),
         },
     )

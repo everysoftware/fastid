@@ -3,9 +3,7 @@ from typing import Any
 import httpx
 
 from app.authlib.openid import DiscoveryDocument
-from app.oauthlib.base import (
-    HTTPXOAuth2,
-)
+from app.oauthlib.httpx_integration import HTTPXOAuth2
 from app.oauthlib.exceptions import OAuth2Error
 from app.oauthlib.schemas import OpenID
 

@@ -27,7 +27,7 @@ class OAuthUseCases(UseCase):
 
     @staticmethod
     async def get_authorization_url(oauth_name: str) -> str:
-        async with registry.begin(oauth_name) as oauth:
+        async with registry.get(oauth_name) as oauth:
             return oauth.get_authorization_url()
 
     async def authorize(
@@ -90,7 +90,7 @@ class OAuthUseCases(UseCase):
     async def _callback(
         oauth_name: str, callback: UniversalCallback
     ) -> OpenIDBearer:
-        async with registry.begin(oauth_name) as oauth:
+        async with registry.get(oauth_name) as oauth:
             token = await oauth.authorize(callback)
             open_id = await oauth.userinfo()
             return OpenIDBearer(

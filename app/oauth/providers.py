@@ -5,47 +5,61 @@ from app.oauth.config import (
     telegram_settings,
     yandex_settings,
 )
-from app.oauth.registry import OAuthRegistry
-from app.oauth.schemas import ProviderMeta
-from app.oauthlib.base import IOAuth2
+from app.oauthlib.registry import OAuthRegistry
+from app.oauthlib.base import OAuth2Flow
 from app.oauthlib.google import GoogleOAuth
 from app.oauthlib.telegram import TelegramOAuth
 from app.oauthlib.yandex import YandexOAuth
 
+google_oauth = GoogleOAuth(
+    google_settings.client_id,
+    google_settings.client_secret,
+    f"{oauth_settings.base_redirect_url}/telegram",
+)
+yandex_oauth = YandexOAuth(
+    yandex_settings.client_id,
+    yandex_settings.client_secret,
+    f"{oauth_settings.base_redirect_url}/yandex",
+)
+telegram_oauth = TelegramOAuth(
+    telegram_settings.bot_token,
+    redirect_uri=f"{main_settings.api_url}/oauth/redirect/telegram",
+)
+
 registry = OAuthRegistry(
-    base_redirect_url=oauth_settings.base_redirect_url,
     base_authorization_url=oauth_settings.base_authorization_url,
     base_revoke_url=oauth_settings.base_revoke_url,
 )
 
 
-if google_settings.enabled:
-
-    @registry.provider("google", "Google", "fa-google", "#F44336")
-    def get_google(meta: ProviderMeta) -> IOAuth2:
-        return GoogleOAuth(
-            google_settings.client_id,
-            google_settings.client_secret,
-            meta.redirect_uri,
-        )
-
-
-if telegram_settings.enabled:
-
-    @registry.provider("telegram", "Telegram", "fa-telegram", "#03A9F4")
-    def get_telegram(_meta: ProviderMeta) -> IOAuth2:
-        return TelegramOAuth(
-            telegram_settings.bot_token,
-            f"{main_settings.api_url}/oauth/redirect/telegram",
-        )
+@registry.provider(
+    "google",
+    title="Google",
+    icon="fa-google",
+    color="#F44336",
+    enabled=google_settings.enabled,
+)
+def get_google() -> OAuth2Flow:
+    return google_oauth
 
 
-if yandex_settings.enabled:
+@registry.provider(
+    "telegram",
+    title="Telegram",
+    icon="fa-telegram",
+    color="#03A9F4",
+    enabled=telegram_settings.enabled,
+)
+def get_telegram() -> OAuth2Flow:
+    return telegram_oauth
 
-    @registry.provider("yandex", "Yandex", "fa-yandex", "#EA4335")
-    def get_yandex(meta: ProviderMeta) -> IOAuth2:
-        return YandexOAuth(
-            yandex_settings.client_id,
-            yandex_settings.client_secret,
-            meta.redirect_uri,
-        )
+
+@registry.provider(
+    "yandex",
+    title="Yandex",
+    icon="fa-yandex",
+    color="#EA4335",
+    enabled=yandex_settings.enabled,
+)
+def get_yandex() -> OAuth2Flow:
+    return yandex_oauth

@@ -29,6 +29,6 @@ class ProviderMeta(BaseModel):
     title: str
     icon: str
     color: str
-    redirect_uri: str
     authorization_url: str
     revoke_url: str
+    enabled: bool = True

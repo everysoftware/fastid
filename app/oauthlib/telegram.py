@@ -1,14 +1,14 @@
 import datetime
 import hashlib
 import hmac
-from typing import Any, Self
+from typing import Any, Self, Sequence
 from urllib.parse import urlencode
 
 from aiogram import Bot
 
 from app.authlib.oauth import TokenResponse
 from app.authlib.openid import DiscoveryDocument
-from app.oauthlib.base import IOAuth2
+from app.oauthlib.base import ImplicitFlow
 from app.oauthlib.exceptions import OAuth2Error
 from app.oauthlib.schemas import (
     OpenID,
@@ -17,24 +17,22 @@ from app.oauthlib.schemas import (
 from app.oauthlib.utils import replace_localhost
 
 
-class TelegramOAuth(IOAuth2):
+class TelegramOAuth(ImplicitFlow):
     provider = "telegram"
     default_scope = ["write"]
-
-    _bot: Bot
-    _token: TokenResponse | None = None
-    _telegram_token: TelegramCallback | None = None
 
     def __init__(
         self,
         bot_token: str,
+        expires_in: int = 5 * 60,
         redirect_uri: str | None = None,
         scope: list[str] | None = None,
-        *,
-        expires_in: int = 5 * 60,
     ) -> None:
         self._bot = Bot(token=bot_token)
         self.expires_in = expires_in
+
+        self._token: TokenResponse | None = None
+        self._telegram_token: TelegramCallback | None = None
 
         super().__init__(
             str(self._bot.id), self._bot.token, redirect_uri, scope
@@ -81,28 +79,22 @@ class TelegramOAuth(IOAuth2):
     def get_authorization_url(
         self,
         *,
-        scope: list[str] | None = None,
+        scope: Sequence[str] | None = None,
         redirect_uri: str | None = None,
-        params: dict[str, Any] | None = None,
         state: str | None = None,
+        params: dict[str, Any] | None = None,
     ) -> str:
         params = params or {}
         redirect_uri = replace_localhost(redirect_uri or self.redirect_uri)
         login_params = {
             "bot_id": self._bot.id,
             "origin": redirect_uri,
-            "request_access": self.scope,
+            "request_access": scope or self.scope,
             **params,
         }
         return f"{self.discovery.authorization_endpoint}?{urlencode(login_params)}"
 
-    async def authorize(
-        self,
-        callback: TelegramCallback,
-        *,
-        params: dict[str, Any] | None = None,
-        headers: dict[str, str] | None = None,
-    ) -> TokenResponse:
+    async def authorize(self, callback: TelegramCallback) -> TokenResponse:
         self._telegram_token = callback
         response = callback.model_dump()
         code_hash = response.pop("hash")
@@ -125,11 +117,7 @@ class TelegramOAuth(IOAuth2):
         self._token = TokenResponse(access_token=callback.hash)
         return self.token
 
-    async def userinfo(
-        self,
-        *,
-        headers: dict[str, str] | None = None,
-    ) -> OpenID:
+    async def userinfo(self) -> OpenID:
         return self.openid_from_response(self.telegram_token.model_dump())
 
     async def __aenter__(self) -> Self:
@@ -140,3 +128,8 @@ class TelegramOAuth(IOAuth2):
         self, exc_type: type[Exception], exc_value: Exception, traceback: Any
     ) -> None:
         await self._bot.__aexit__(exc_type, exc_value, traceback)
+
+    async def get_username(self) -> str:
+        username = (await self._bot.get_me()).username
+        assert username is not None
+        return username
