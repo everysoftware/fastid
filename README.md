@@ -135,7 +135,7 @@ def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
 Run the server:
 
 ```bash
-  fastapi dev test_client/app.py
+fastapi dev test_client/app.py
 ```
 
 Go to [http://localhost:8000/login](http://localhost:8000/login) to login in FastID. You will be redirected to
