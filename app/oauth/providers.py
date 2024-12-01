@@ -5,7 +5,7 @@ from app.oauth.config import (
     telegram_settings,
     yandex_settings,
 )
-from app.oauthlib.registry import OAuthRegistry
+from app.oauthlib.registry import ProviderRegistry
 from app.oauthlib.base import OAuth2Flow
 from app.oauthlib.google import GoogleOAuth
 from app.oauthlib.telegram import TelegramOAuth
@@ -26,7 +26,7 @@ telegram_oauth = TelegramOAuth(
     redirect_uri=f"{main_settings.api_url}/oauth/redirect/telegram",
 )
 
-registry = OAuthRegistry(
+registry = ProviderRegistry(
     base_authorization_url=oauth_settings.base_authorization_url,
     base_revoke_url=oauth_settings.base_revoke_url,
 )

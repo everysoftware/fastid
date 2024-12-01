@@ -2,9 +2,10 @@ from typing import MutableMapping, Callable
 
 from app.oauth.schemas import ProviderMeta
 from app.oauthlib.base import OAuth2Flow
+from app.oauthlib.exceptions import OAuth2Error
 
 
-class OAuthRegistry:
+class ProviderRegistry:
     def __init__(
         self,
         *,
@@ -48,4 +49,8 @@ class OAuthRegistry:
         return wrapper
 
     def get(self, name: str) -> OAuth2Flow:
+        if name not in self._registry:
+            raise OAuth2Error(f"Provider {name} not found")
+        if not self._meta[name].enabled:
+            raise OAuth2Error(f"Provider {name} is disabled")
         return self._registry[name]()
