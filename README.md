@@ -132,11 +132,19 @@ def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
     return user
 ```
 
-* Go to [http://localhost:8000/login](http://localhost:8000/login) to start the authentication process.
+Run the server:
 
-* After successful login, you will be redirected to [http://localhost:8000/callback](http://localhost:8000/callback).
+```bash
+  fastapi dev test_client/app.py
+```
 
-* Then you can access the protected route [http://localhost:8000/test](http://localhost:8000/test).
+Go to [http://localhost:8000/login](http://localhost:8000/login) to login in FastID. You will be redirected to
+FastID to enter your credentials. After successful login you will be redirected back to the client app
+and receive an access token.
+
+Now you can access the protected route [http://localhost:8000/test](http://localhost:8000/test):
+
+![Sign In](assets/test_response.png)
 
 See the full example in the `test_client` directory.
 
