@@ -49,6 +49,8 @@ The key features are:
 
 5. Enjoy!
 
+> To set up observability, you can use [this](https://github.com/everysoftware/fastapi-obs) preset.
+
 ## Overview
 
 FastID is available at [http://localhost:8012](http://localhost:8012)
@@ -138,22 +140,9 @@ def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
 
 See the full example in the `test_client` directory.
 
-## Screenshots
+## Compatibility
 
-![Sign In](assets/signin.png)
-![Sign Up](assets/signup.png)
-![Profile](assets/profile.png)
-![Connections](assets/connections.png)
-![Action Confirmation](assets/action_confirmation.png)
-![Change Password](assets/change_password.png)
-![Delete Account](assets/delete_account.png)
-![Admin Login](assets/admin_login.png)
-![Admin Apps](assets/admin_apps.png)
-![Admin Users](assets/admin_users.png)
-
-## OpenID Metadata
-
-OpenID Metadata is available
+OpenID metadata is available
 at [http://localhost:8012/.well-known/openid-configuration](http://localhost:8012/.well-known/openid-configuration).
 
 ```json
@@ -198,8 +187,17 @@ at [http://localhost:8012/.well-known/openid-configuration](http://localhost:801
 }
 ```
 
-## Observability
+## Screenshots
 
-**FastID** integrates perfectly with [this preset](https://github.com/everysoftware/fastapi-obs)
+![Sign In](assets/signin.png)
+![Sign Up](assets/signup.png)
+![Profile](assets/profile.png)
+![Connections](assets/connections.png)
+![Action Confirmation](assets/action_confirmation.png)
+![Change Password](assets/change_password.png)
+![Delete Account](assets/delete_account.png)
+![Admin Login](assets/admin_login.png)
+![Admin Apps](assets/admin_apps.png)
+![Admin Users](assets/admin_users.png)
 
 **Made with ❤️**
