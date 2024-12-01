@@ -5,7 +5,7 @@ from typing import Annotated, Callable, Coroutine, Any
 import typer
 
 from app.auth.schemas import UserCreate
-from app.cli.service import CLIUseCases
+from app.cli.service import CLIManager
 
 app = typer.Typer()
 
@@ -22,12 +22,13 @@ def typer_async[**P, T](
 
 @app.command()
 def hc() -> None:
+    """Health check. Print hello world"""
     typer.echo("Hello, World!")
 
 
 @app.command()
 @typer_async
-async def register_user(
+async def newuser(
     first_name: Annotated[str, typer.Option(prompt=True)] = "New",
     last_name: Annotated[str, typer.Option(prompt=True)] = "User",
     email: Annotated[str, typer.Option(prompt=True)] = "user@example.com",
@@ -37,8 +38,9 @@ async def register_user(
     ] = "password",
     is_admin: Annotated[bool, typer.Option(prompt=True)] = False,
 ) -> None:
-    async with CLIUseCases() as use_cases:
-        await use_cases.register_user(
+    """Register a new user or admin"""
+    async with CLIManager() as manager:
+        await manager.register_user(
             UserCreate(
                 first_name=first_name,
                 last_name=last_name,
@@ -47,7 +49,3 @@ async def register_user(
             ),
             is_admin,
         )
-
-
-if __name__ == "__main__":
-    app()

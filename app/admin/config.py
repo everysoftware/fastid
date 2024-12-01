@@ -6,6 +6,8 @@ from app.base.schemas import BaseSettings
 
 class AdminSettings(BaseSettings):
     enabled: bool = True
+    username: str = "admin"
+    password: str = "admin"
     favicon_url: HttpUrl = HttpUrl(
         "https://fastapi.tiangolo.com/img/favicon.png"
     )

@@ -1,58 +1,87 @@
 # FastID
 
-Customizable and ready-to-use identity server written in Python
+**Effortless authentication solution for your services**
 
-![Sign In](assets/signin.png)
+---
 
-## Key features
+[![Test](https://github.com/everysoftware/fastid/actions/workflows/test.yml/badge.svg)](https://github.com/everysoftware/fastid/actions/workflows/test.yml)
+[![CodeQL Advanced](https://github.com/everysoftware/fastid/actions/workflows/codeql.yml/badge.svg)](https://github.com/everysoftware/fastid/actions/workflows/codeql.yml)
 
-* Complies with OpenID Connect
-* Login via social networks: Google, Telegram, Yandex, etc.
-* Action confirmation with one-time codes
-* Admin panel to manage users & connected apps
-* Plugin system to extend the functionality
-* Metrics & tracing complied with OpenTelemetry
-* Written in Python using FastAPI
+---
+
+## Features
+
+FastID is responsible for authentication, user management and single account for all your applications.
+
+The key features are:
+
+* **Security**. Built with security in mind. It uses JWT tokens, OAuth 2.0 and OpenID Connect.
+* **Admin Interface**. Comes with an admin interface to manage users and applications.
+* **Social Login**. Supports social login with Google, Telegram, Yandex, and others.
+* **Notifications**. Sends welcome messages and verification codes via email and Telegram.
+* **Plugins**. Offers a plugin system to extend the functionality.
+* **Observability**. Metrics and tracing complied with OpenTelemetry.
+* **Pythonic**. FastID is the best choice for Python apps.
 
 ## Installation
 
 1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/everysoftware/fastid
-    ```
+     ```bash
+     git clone https://github.com/everysoftware/fastid
+     ```
 
 2. Generate RSA keys:
 
-    ```bash
-    mkdir certs
-    openssl genrsa -out certs/jwt-private.pem 2048
-    openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
-    ```
+     ```bash
+     mkdir certs
+     openssl genrsa -out certs/jwt-private.pem 2048
+     openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
+     ```
 
 3. Create a `.env` file. Use the `.env.example` as a reference.
+
 4. Run the application:
 
     ```bash
     make up
     ```
 
-## Observability
+5. Enjoy!
 
-**FastID** integrates perfectly with [this preset](https://github.com/everysoftware/fastapi-obs)
+FastID is now available at [http://localhost:8012](http://localhost:8012)
 
-## OIDC configuration
+![Sign In](assets/signin.png)
 
-You can get the OIDC configuration by visiting the `/.well-known/openid-configuration` endpoint.
-Response example:
+API docs are available at [http://localhost:8012/api/v1/docs](http://localhost:8012/api/v1/docs)
+
+![API Docs](assets/api_docs.png)
+
+Admin is available at: [http://localhost:8012/admin](http://localhost:8012/admin) (default credentials:
+`admin`/`admin`)
+
+![Admin Login](assets/admin_login.png)
+
+## Integration
+
+1. Create new app in admin.
+
+![Sign In](assets/create_app.png)
+
+## OpenID Connect
+
+Configuration is available
+at [http://localhost:8012/.well-known/openid-configuration](http://localhost:8012/.well-known/openid-configuration).
+
+The response will look like this:
 
 ```json
 {
-  "issuer": "http://localhost:8000",
-  "authorization_endpoint": "http://localhost:8000/authorize",
-  "token_endpoint": "http://localhost:8000/api/v1/token",
-  "userinfo_endpoint": "http://localhost:8000/api/v1/userinfo",
-  "jwks_uri": "http://localhost:8000/.well-known/jwks.json",
+  "issuer": "http://localhost:8012",
+  "authorization_endpoint": "http://localhost:8012/authorize",
+  "token_endpoint": "http://localhost:8012/api/v1/token",
+  "userinfo_endpoint": "http://localhost:8012/api/v1/userinfo",
+  "jwks_uri": "http://localhost:8012/.well-known/jwks.json",
   "scopes_supported": [
     "openid",
     "email",
@@ -100,5 +129,9 @@ Response example:
 ![Admin Login](assets/admin_login.png)
 ![Admin Apps](assets/admin_apps.png)
 ![Admin Users](assets/admin_users.png)
+
+## Observability
+
+**FastID** integrates perfectly with [this preset](https://github.com/everysoftware/fastapi-obs)
 
 **Made with ❤️**

@@ -10,7 +10,6 @@ from app.main.modules import Module, Plugin
 from app.obs.config import obs_settings
 from app.obs.metrics import MetricsPlugin
 from app.obs.tracing import TracingPlugin
-from app.testing.main import TestAppModule
 
 modules: list[Module] = []
 api_plugins: list[Plugin] = [
@@ -40,9 +39,6 @@ modules.append(
         plugins=api_plugins,
     )
 )
-
-if main_settings.debug:
-    modules.append(TestAppModule())
 
 if admin_settings.enabled:
     modules.append(

@@ -21,16 +21,12 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: unless-stopped
-    ports:
-      - "5432:5432"
 
   redis:
     image: redis:latest
     env_file:
       - .env
     restart: unless-stopped
-    ports:
-      - "6379:6379"
     # Set credentials & logging
     command: >
       sh -c '
@@ -52,7 +48,7 @@ services:
       - .env
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8012:8000"
     depends_on:
       - db
       - redis

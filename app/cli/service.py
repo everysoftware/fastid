@@ -8,7 +8,7 @@ from app.db.connection import session_factory
 from app.db.uow import AlchemyUOW
 
 
-class CLIUseCases:
+class CLIManager:
     def __init__(self) -> None:
         self.uow = AlchemyUOW(session_factory)
 
