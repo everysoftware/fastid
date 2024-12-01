@@ -229,7 +229,7 @@ class OAuth2TokenRequest(BaseModel):
     Token Request is sent by the client to the authorization server to obtain an access token.
     """
 
-    grant_type: OAuth2Grant = OAuth2Grant.password
+    grant_type: OAuth2Grant
     client_id: str = ""
     client_secret: str = ""
     username: str = ""

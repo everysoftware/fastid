@@ -11,7 +11,7 @@
 
 ## Features
 
-FastID is responsible for authentication, user management and single account for all your applications.
+FastID is responsible for authentication, user management and single account for all your services.
 
 The key features are:
 
@@ -49,7 +49,9 @@ The key features are:
 
 5. Enjoy!
 
-FastID is now available at [http://localhost:8012](http://localhost:8012)
+## Overview
+
+FastID is available at [http://localhost:8012](http://localhost:8012)
 
 ![Sign In](assets/signin.png)
 
@@ -64,16 +66,95 @@ Admin is available at: [http://localhost:8012/admin](http://localhost:8012/admin
 
 ## Integration
 
-1. Create new app in admin.
+Create new app in admin to get `client_id` and `client_secret`.
 
 ![Sign In](assets/create_app.png)
 
-## OpenID Connect
+Here is an example of integration with FastAPI:
 
-Configuration is available
+```python
+from typing import Any, Annotated
+from urllib.parse import urlencode
+
+import httpx
+from fastapi import FastAPI, Response, Request, Depends, HTTPException
+from fastapi.responses import RedirectResponse
+
+from test_client.config import settings
+
+app = FastAPI()
+
+
+@app.get("/login")
+def login(request: Request) -> Any:
+    params = {
+        "response_type": "code",
+        "client_id": settings.client_id,
+        "redirect_uri": request.url_for("callback"),
+    }
+    url = f"{settings.fastid_url}/authorize?{urlencode(params)}"
+    return RedirectResponse(url=url)
+
+
+@app.get("/callback")
+def callback(code: str) -> Any:
+    token_data = httpx.post(
+        f"{settings.fastid_url}/api/v1/token",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        data={
+            "grant_type": "authorization_code",
+            "client_id": settings.client_id,
+            "client_secret": settings.client_secret,
+            "code": code,
+        },
+    )
+    token = token_data.json()
+    response = Response(content="You are now logged in!")
+    response.set_cookie("access_token", token["access_token"])
+    return response
+
+
+def current_user(request: Request) -> dict[str, Any]:
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(401, "No access token")
+    response = httpx.get(
+        f"{settings.fastid_url}/api/v1/userinfo",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    return response.json()
+
+
+@app.get("/test")
+def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
+    return user
+```
+
+* Go to [http://localhost:8000/login](http://localhost:8000/login) to start the authentication process.
+
+* After successful login, you will be redirected to [http://localhost:8000/callback](http://localhost:8000/callback).
+
+* Then you can access the protected route [http://localhost:8000/test](http://localhost:8000/test).
+
+See the full example in the `test_client` directory.
+
+## Screenshots
+
+![Sign In](assets/signin.png)
+![Sign Up](assets/signup.png)
+![Profile](assets/profile.png)
+![Connections](assets/connections.png)
+![Action Confirmation](assets/action_confirmation.png)
+![Change Password](assets/change_password.png)
+![Delete Account](assets/delete_account.png)
+![Admin Login](assets/admin_login.png)
+![Admin Apps](assets/admin_apps.png)
+![Admin Users](assets/admin_users.png)
+
+## OpenID Metadata
+
+OpenID Metadata is available
 at [http://localhost:8012/.well-known/openid-configuration](http://localhost:8012/.well-known/openid-configuration).
-
-The response will look like this:
 
 ```json
 {
@@ -116,19 +197,6 @@ The response will look like this:
   ]
 }
 ```
-
-## Screenshots
-
-![Sign In](assets/signin.png)
-![Sign Up](assets/signup.png)
-![Profile](assets/profile.png)
-![Connections](assets/connections.png)
-![Action Confirmation](assets/action_confirmation.png)
-![Change Password](assets/change_password.png)
-![Delete Account](assets/delete_account.png)
-![Admin Login](assets/admin_login.png)
-![Admin Apps](assets/admin_apps.png)
-![Admin Users](assets/admin_users.png)
 
 ## Observability
 
