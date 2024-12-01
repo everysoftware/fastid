@@ -5,12 +5,11 @@ from starlette.requests import Request
 
 from app.authlib.oauth import OAuth2Callback
 from app.base.types import UUID
-from app.main import logging
+from app.logging.dependencies import log
 from app.oauth.models import OAuthAccount
 from app.oauth.service import OAuthUseCases
 from app.oauthlib.schemas import TelegramCallback, UniversalCallback
 
-logger = logging.get_logger(__name__)
 OAuthAccountsDep = Annotated[OAuthUseCases, Depends()]
 
 
@@ -21,7 +20,7 @@ async def get_account(
 
 
 def valid_callback(oauth_name: str, request: Request) -> UniversalCallback:
-    logger.info("OAuth callback received: request_url=%s", str(request.url))
+    log.info("OAuth callback received: request_url=%s", str(request.url))
     callback: UniversalCallback
     if oauth_name != "telegram":
         callback = OAuth2Callback.model_validate(request.query_params)

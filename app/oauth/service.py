@@ -12,7 +12,7 @@ from app.oauth.exceptions import (
     OAuthAccountInUse,
 )
 from app.oauth.models import OAuthAccount
-from app.oauth.providers import registry
+from app.oauth.providers import RegistryDep
 from app.oauth.repositories import (
     IsAccountBelongToUser,
     IsAccountConnected,
@@ -22,18 +22,18 @@ from app.oauthlib.schemas import UniversalCallback, OpenIDBearer
 
 
 class OAuthUseCases(UseCase):
-    def __init__(self, uow: UOWDep) -> None:
+    def __init__(self, uow: UOWDep, registry: RegistryDep) -> None:
         self.uow = uow
+        self.registry = registry
 
-    @staticmethod
-    async def get_authorization_url(oauth_name: str) -> str:
-        async with registry.get(oauth_name) as oauth:
+    async def get_authorization_url(self, provider_name: str) -> str:
+        async with self.registry.get(provider_name) as oauth:
             return oauth.get_authorization_url()
 
     async def authorize(
-        self, oauth_name: str, callback: UniversalCallback
+        self, provider_name: str, callback: UniversalCallback
     ) -> TokenResponse:
-        open_id = await self._callback(oauth_name, callback)
+        open_id = await self._callback(provider_name, callback)
         account = await self.uow.oauth_accounts.find(
             IsAccountConnected(open_id.provider, open_id.id)
         )
@@ -45,9 +45,9 @@ class OAuthUseCases(UseCase):
         return token_backend.to_response(at)
 
     async def connect(
-        self, user: User, oauth_name: str, callback: UniversalCallback
+        self, user: User, provider_name: str, callback: UniversalCallback
     ) -> OAuthAccount:
-        open_id = await self._callback(oauth_name, callback)
+        open_id = await self._callback(provider_name, callback)
         account = await self.uow.oauth_accounts.find(
             IsAccountConnected(open_id.provider, open_id.id)
         )
@@ -77,20 +77,19 @@ class OAuthUseCases(UseCase):
             sorting=Sorting(),
         )
 
-    async def revoke(self, user: User, oauth_name: str) -> OAuthAccount:
+    async def revoke(self, user: User, provider_name: str) -> OAuthAccount:
         account = await self.uow.oauth_accounts.find_one(
-            IsAccountExists(user.id, oauth_name)
+            IsAccountExists(user.id, provider_name)
         )
         user.disconnect_open_id(account.provider)
         account = await self.uow.oauth_accounts.remove(account)
         await self.uow.commit()
         return account
 
-    @staticmethod
     async def _callback(
-        oauth_name: str, callback: UniversalCallback
+        self, provider_name: str, callback: UniversalCallback
     ) -> OpenIDBearer:
-        async with registry.get(oauth_name) as oauth:
+        async with self.registry.get(provider_name) as oauth:
             token = await oauth.authorize(callback)
             open_id = await oauth.userinfo()
             return OpenIDBearer(

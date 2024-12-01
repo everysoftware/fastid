@@ -1,6 +1,6 @@
 from typing import MutableMapping, Callable
 
-from app.oauth.schemas import ProviderMeta
+from app.oauth.schemas import ProviderMeta, RegistryMeta
 from app.oauthlib.base import OAuth2Flow
 from app.oauthlib.exceptions import OAuth2Error
 
@@ -12,15 +12,11 @@ class ProviderRegistry:
         base_authorization_url: str,
         base_revoke_url: str,
     ) -> None:
+        self.metadata = RegistryMeta()
         self.base_authorization_url = base_authorization_url
         self.base_revoke_url = base_revoke_url
 
-        self._meta: MutableMapping[str, ProviderMeta] = {}
-        self._registry: MutableMapping[str, Callable[[], OAuth2Flow]] = {}
-
-    @property
-    def meta(self) -> MutableMapping[str, ProviderMeta]:
-        return self._meta
+        self._providers: MutableMapping[str, Callable[[], OAuth2Flow]] = {}
 
     def provider(
         self,
@@ -30,10 +26,10 @@ class ProviderRegistry:
         icon: str,
         color: str,
         enabled: bool = True,
-    ) -> Callable[[Callable[[], OAuth2Flow]], None]:
+    ) -> Callable[[Callable[[], OAuth2Flow]], Callable[[], OAuth2Flow]]:
         def wrapper(
             factory: Callable[[], OAuth2Flow],
-        ) -> None:
+        ) -> Callable[[], OAuth2Flow]:
             meta = ProviderMeta(
                 name=name,
                 title=title,
@@ -43,14 +39,15 @@ class ProviderRegistry:
                 revoke_url=f"{self.base_revoke_url}/{name}",
                 enabled=enabled,
             )
-            self._meta[name] = meta
-            self._registry[name] = factory
+            self.metadata.providers[name] = meta
+            self._providers[name] = factory
+            return factory
 
         return wrapper
 
     def get(self, name: str) -> OAuth2Flow:
-        if name not in self._registry:
+        if name not in self.metadata.providers:
             raise OAuth2Error(f"Provider {name} not found")
-        if not self._meta[name].enabled:
+        if not self.metadata.providers[name].enabled:
             raise OAuth2Error(f"Provider {name} is disabled")
-        return self._registry[name]()
+        return self._providers[name]()

@@ -1,17 +1,22 @@
-from typing import Any, Annotated
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Request, Response, Depends
+from fastapi import APIRouter, Depends
+from fastapi import Request, Response
 from fastapi.responses import RedirectResponse
 from starlette import status
 
 from app.auth.backend import cookie_transport
 from app.auth.config import auth_settings
-from app.auth.dependencies import UserDep, get_optional_user
+from app.auth.dependencies import UserDep
+from app.auth.dependencies import get_optional_user
 from app.auth.models import User
+from app.base.pagination import PageDTO
 from app.frontend.templating import templates
 from app.oauth.config import oauth_settings
-from app.oauth.dependencies import OAuthAccountsDep, valid_callback
+from app.oauth.dependencies import OAuthAccountsDep
+from app.oauth.dependencies import valid_callback
 from app.oauth.providers import get_telegram
+from app.oauth.schemas import OAuthAccountDTO
 from app.oauthlib.schemas import UniversalCallback
 from app.oauthlib.telegram import TelegramOAuth
 
@@ -87,3 +92,15 @@ async def telegram_redirect(
             "bot_username": await oauth.get_username(),
         },
     )
+
+
+@router.get(
+    "/",
+    response_model=PageDTO[OAuthAccountDTO],
+    status_code=status.HTTP_200_OK,
+)
+async def paginate(
+    service: OAuthAccountsDep,
+    user: UserDep,
+) -> Any:
+    return await service.paginate(user)

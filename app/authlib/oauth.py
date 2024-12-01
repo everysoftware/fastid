@@ -265,9 +265,11 @@ class TokenResponse(BaseModel):
     access_token: str | None = None
     refresh_token: str | None = None
     id_token: str | None = None
-    token_type: str | None = "bearer"
+    token_type: str | None = "Bearer"
     scope: str | None = None
     expires_in: int | None = Field(
         None,
         description="Token expiration time in seconds",
     )
+
+    model_config = ConfigDict(extra="allow")

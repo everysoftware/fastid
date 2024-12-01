@@ -15,7 +15,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.main import logging
+from app.logging.dependencies import provider
 from app.main.modules import Plugin
 
 default_formatter = uvicorn.logging.DefaultFormatter(
@@ -36,9 +36,9 @@ instrumented_formatter = uvicorn.logging.DefaultFormatter(
 
 
 def patch_logging() -> None:
-    logging.get_handler("default").setFormatter(default_formatter)
-    logging.get_handler("access").setFormatter(access_formatter)
-    logging.get_handler("instrumented").setFormatter(instrumented_formatter)
+    provider.handler("default").setFormatter(default_formatter)
+    provider.handler("access").setFormatter(access_formatter)
+    provider.handler("instrumented").setFormatter(instrumented_formatter)
 
 
 Instrument = Literal["logger", "httpx", "sqlalchemy"]

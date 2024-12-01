@@ -1,7 +1,7 @@
 from typing import Any
 
 from app.authlib.openid import DiscoveryDocument
-from app.oauthlib.httpx_integration import HTTPXOAuth2
+from app.oauthlib.httpx import HTTPXOAuth2
 from app.oauthlib.schemas import OpenID
 
 

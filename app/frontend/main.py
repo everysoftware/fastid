@@ -38,7 +38,7 @@ class FrontendModule(Module):
         templates.env.globals["app_title"] = self.title
         templates.env.globals["favicon_url"] = self.favicon_url
         templates.env.globals["logo_url"] = self.logo_url
-        templates.env.globals["available_providers"] = registry.meta
+        templates.env.globals["providers_meta"] = registry.metadata
 
     def install(self, app: FastAPI) -> None:
         self._set_templates_env()

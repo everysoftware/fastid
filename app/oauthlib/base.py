@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import (
     Any,
-    ClassVar,
     Sequence,
     Self,
 )
@@ -12,21 +11,8 @@ from app.oauthlib.schemas import OpenID
 
 
 class OAuth2Flow(ABC):
-    provider: ClassVar[str] = NotImplemented
-    default_scope: ClassVar[Sequence[str]] = []
-
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        redirect_uri: str | None = None,
-        scope: Sequence[str] | None = None,
-    ) -> None:
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.redirect_uri = redirect_uri
-        self.scope = scope or self.default_scope
-        self.is_authorized = False
+    provider: str = NotImplemented
+    default_scope: Sequence[str] = []
 
     @property
     @abstractmethod
@@ -42,7 +28,6 @@ class OAuth2Flow(ABC):
         *,
         scope: Sequence[str] | None = None,
         redirect_uri: str | None = None,
-        state: str | None = None,
         params: dict[str, Any] | None = None,
     ) -> str: ...
 
@@ -61,7 +46,7 @@ class OAuth2Flow(ABC):
 
     @abstractmethod
     async def __aexit__(
-        self, exc_type: type[Exception], exc_value: Exception, traceback: Any
+        self, exc_type: Any, exc_value: Any, traceback: Any
     ) -> None: ...
 
 
@@ -74,16 +59,11 @@ class ImplicitFlow(OAuth2Flow, ABC):
 
 
 class AuthorizationCodeFlow(OAuth2Flow, ABC):
-    use_state: ClassVar[bool] = True
-    use_pkce: ClassVar[bool] = False
-    code_challenge_method: ClassVar[str] = "S256"
-    code_challenge_length: ClassVar[int] = 96
-
     @abstractmethod
     async def authorize(
         self,
         callback: OAuth2Callback,
         *,
-        params: dict[str, Any] | None = None,
+        body: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
     ) -> TokenResponse: ...

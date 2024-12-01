@@ -5,9 +5,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from app.base.schemas import ErrorResponse, INTERNAL_ERR
-from app.main import logging
-
-logger = logging.get_logger(__name__)
+from app.logging.dependencies import log
 
 
 class ClientError(Exception):
@@ -63,7 +61,7 @@ class Unauthorized(ClientError):
 def client_exception_handler(
     request: Request, ex: ClientError
 ) -> JSONResponse:
-    logger.info(
+    log.info(
         '[BE] "%s %s" response: %s', request.method, request.url, repr(ex)
     )
     return JSONResponse(
@@ -79,7 +77,7 @@ def client_exception_handler(
 def unhandled_exception_handler(
     request: Request, ex: Exception
 ) -> JSONResponse:
-    logger.exception(f'"{request.method} {request.url}" failed: {repr(ex)}')
+    log.exception(f'"{request.method} {request.url}" failed: {repr(ex)}')
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=INTERNAL_ERR.model_dump(mode="json"),

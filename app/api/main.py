@@ -5,10 +5,8 @@ from fastapi import FastAPI
 from app.api.exceptions import add_exception_handlers
 from app.api.lifespan import LifespanTasks
 from app.api.routing import api_router
-from app.main import logging
+from app.logging.dependencies import log
 from app.main.modules import Module, Plugin
-
-logger = logging.get_logger(__name__)
 
 
 class APIModule(Module):
@@ -47,7 +45,5 @@ class APIModule(Module):
         for plugin in self.plugins:
             plugin.install(api_app)
         installed = [plugin.plugin_name for plugin in self.plugins]
-        logger.info(
-            "API plugins (%d): %s", len(installed), ", ".join(installed)
-        )
+        log.info("API plugins (%d): %s", len(installed), ", ".join(installed))
         app.mount(self.base_url, api_app)

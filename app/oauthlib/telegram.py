@@ -18,25 +18,25 @@ from app.oauthlib.utils import replace_localhost
 
 
 class TelegramOAuth(ImplicitFlow):
-    provider = "telegram"
-    default_scope = ["write"]
+    provider: str = "telegram"
+    default_scope: Sequence[str] = ["write"]
 
     def __init__(
         self,
         bot_token: str,
-        expires_in: int = 5 * 60,
         redirect_uri: str | None = None,
-        scope: list[str] | None = None,
+        scope: Sequence[str] | None = None,
+        *,
+        expires_in: int = 5 * 60,
     ) -> None:
-        self._bot = Bot(token=bot_token)
+        self.bot_token = bot_token
+        self.redirect_uri = redirect_uri
+        self.scope = scope if scope else self.default_scope
         self.expires_in = expires_in
 
+        self._bot: Bot | None = None
         self._token: TokenResponse | None = None
         self._telegram_token: TelegramCallback | None = None
-
-        super().__init__(
-            str(self._bot.id), self._bot.token, redirect_uri, scope
-        )
 
     @property
     def discovery(self) -> DiscoveryDocument:
@@ -51,9 +51,17 @@ class TelegramOAuth(ImplicitFlow):
         return self._token
 
     @property
+    def bot(self) -> Bot:
+        if self._bot is None:
+            raise OAuth2Error("No bot available. Please enter the context.")
+        return self._bot
+
+    @property
     def telegram_token(self) -> TelegramCallback:
         if self._telegram_token is None:
-            raise OAuth2Error("No Telegram token available")
+            raise OAuth2Error(
+                "No Telegram token available. Please authorize first."
+            )
         return self._telegram_token
 
     def openid_from_response(
@@ -87,7 +95,7 @@ class TelegramOAuth(ImplicitFlow):
         params = params or {}
         redirect_uri = replace_localhost(redirect_uri or self.redirect_uri)
         login_params = {
-            "bot_id": self._bot.id,
+            "bot_id": self.bot.id,
             "origin": redirect_uri,
             "request_access": scope or self.scope,
             **params,
@@ -102,7 +110,7 @@ class TelegramOAuth(ImplicitFlow):
             sorted(f"{k}={v}" for k, v in response.items())
         )
         computed_hash = hmac.new(
-            hashlib.sha256(self.client_secret.encode()).digest(),
+            hashlib.sha256(self.bot_token.encode()).digest(),
             data_check_string.encode(),
             "sha256",
         ).hexdigest()
@@ -121,15 +129,16 @@ class TelegramOAuth(ImplicitFlow):
         return self.openid_from_response(self.telegram_token.model_dump())
 
     async def __aenter__(self) -> Self:
+        self._bot = Bot(token=self.bot_token)
         await self._bot.__aenter__()
         return self
 
     async def __aexit__(
-        self, exc_type: type[Exception], exc_value: Exception, traceback: Any
+        self, exc_type: Any, exc_value: Any, traceback: Any
     ) -> None:
-        await self._bot.__aexit__(exc_type, exc_value, traceback)
+        await self.bot.__aexit__(exc_type, exc_value, traceback)
 
     async def get_username(self) -> str:
-        username = (await self._bot.get_me()).username
+        username = (await self.bot.get_me()).username
         assert username is not None
         return username

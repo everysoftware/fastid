@@ -79,7 +79,7 @@
                         <div class="card-body">
                             <h4 class="card-title mb-4">Connections</h4>
 
-                            {% for provider in available_providers.values() %}
+                            {% for provider in providers_meta.enabled_providers %}
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="d-flex align-items-center">
                                         <i class="fab {{ provider.icon }} fa-2x fa-fw me-3"

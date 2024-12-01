@@ -6,14 +6,11 @@ from app.db.connection import engine
 from app.frontend.main import FrontendModule
 from app.main.config import main_settings
 from app.main.factory import app_factory
-from app.main.logging import configure_logging
 from app.main.modules import Module, Plugin
 from app.obs.config import obs_settings
 from app.obs.metrics import MetricsPlugin
 from app.obs.tracing import TracingPlugin
 from app.testing.main import TestAppModule
-
-configure_logging()
 
 modules: list[Module] = []
 api_plugins: list[Plugin] = [

@@ -3,10 +3,8 @@ from typing import Sequence, Any, AsyncIterator
 
 from fastapi import FastAPI
 
-from app.main import logging
+from app.logging.dependencies import log
 from app.main.modules import Module
-
-logger = logging.get_logger(__name__)
 
 
 def app_factory(
@@ -29,7 +27,7 @@ def app_factory(
     for module in modules:
         module.install(app)
     installed = [module.module_name for module in modules]
-    logger.info(
+    log.info(
         "Installed modules (%d): %s", len(installed), ", ".join(installed)
     )
     return app

@@ -29,7 +29,7 @@ UserDep = Annotated[User, user_dep]
 
 
 async def get_optional_user(service: AuthDep, request: Request) -> User | None:
-    token = auth_bus.parse_request(request)
+    token = auth_bus.parse_request(request, auto_error=False)
     if token is None:
         return None
     try:
