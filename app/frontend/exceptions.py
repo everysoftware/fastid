@@ -6,11 +6,24 @@ from app.base.schemas import ErrorResponse, INTERNAL_ERR
 from app.logging.dependencies import log
 
 
+class Authorized(ClientError):
+    status_code = status.HTTP_307_TEMPORARY_REDIRECT
+    error_code = "authorized"
+    message = "Already authorized"
+
+
 def unauthorized_handler(request: Request, ex: Unauthorized) -> Response:
     log.info(
         '[FE] "%s %s" response: %s', request.method, request.url, repr(ex)
     )
     return RedirectResponse(url="/login")
+
+
+def authorized_handler(request: Request, ex: Authorized) -> Response:
+    log.info(
+        '[FE] "%s %s" response: %s', request.method, request.url, repr(ex)
+    )
+    return RedirectResponse(url="/profile")
 
 
 def client_exception_handler(
@@ -40,6 +53,7 @@ def unhandled_exception_handler(
 
 
 def add_exception_handlers(app: FastAPI) -> None:
+    app.add_exception_handler(Authorized, unauthorized_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Unauthorized, unauthorized_handler)  # type: ignore[arg-type]
     app.add_exception_handler(ClientError, client_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, unhandled_exception_handler)

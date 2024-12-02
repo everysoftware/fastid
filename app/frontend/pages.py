@@ -10,8 +10,8 @@ from app.auth.backend import cookie_transport
 from app.authlib.openid import DiscoveryDocument, JWKS
 from app.frontend.dependencies import (
     valid_consent,
+    get_optional_user,
     get_user,
-    get_one_user,
     action_verified,
 )
 from app.frontend.openid import discovery_document, jwks
@@ -29,14 +29,17 @@ def index() -> Response:
 @router.get("/register")
 def register(
     request: Request,
+    user: Annotated[User | None, Depends(get_optional_user)],
 ) -> Response:
+    if user:
+        return RedirectResponse(url="/profile")
     return templates.TemplateResponse("register.html", {"request": request})
 
 
 @router.get("/login")
 def login(
     request: Request,
-    user: Annotated[User | None, Depends(get_user)],
+    user: Annotated[User | None, Depends(get_optional_user)],
 ) -> Response:
     if user:
         return RedirectResponse(url="/profile")
@@ -46,7 +49,7 @@ def login(
 @router.get("/authorize")
 async def authorize(
     request: Request,
-    user: Annotated[User | None, Depends(get_user)],
+    user: Annotated[User | None, Depends(get_optional_user)],
     consent: Annotated[OAuth2ConsentRequest, Depends(valid_consent)],
     authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
 ) -> Response:
@@ -69,7 +72,7 @@ async def authorize(
 async def profile(
     request: Request,
     oauth_accounts: OAuthAccountsDep,
-    user: Annotated[User, Depends(get_one_user)],
+    user: Annotated[User, Depends(get_user)],
 ) -> Response:
     page = await oauth_accounts.paginate(user)
     connected = {a.provider for a in page.items}
@@ -82,7 +85,7 @@ async def profile(
 @router.get("/verify-action")
 def verify_action(
     request: Request,
-    user: Annotated[User, Depends(get_one_user)],
+    user: Annotated[User, Depends(get_user)],
     verified: Annotated[bool, Depends(action_verified)],
     action: Literal["change-email", "change-password", "delete-account"],
 ) -> Response:
@@ -97,7 +100,7 @@ def verify_action(
 @router.get("/change-email")
 def change_email(
     request: Request,
-    user: Annotated[User, Depends(get_one_user)],
+    user: Annotated[User, Depends(get_user)],
     verified: Annotated[bool, Depends(action_verified)],
 ) -> Any:
     if not verified:
@@ -111,7 +114,7 @@ def change_email(
 @router.get("/change-password")
 def change_password(
     request: Request,
-    user: Annotated[User, Depends(get_one_user)],
+    user: Annotated[User, Depends(get_user)],
     verified: Annotated[bool, Depends(action_verified)],
 ) -> Response:
     if not verified:
@@ -125,7 +128,7 @@ def change_password(
 @router.get("/delete-account")
 def delete_account(
     request: Request,
-    user: Annotated[User, Depends(get_one_user)],
+    user: Annotated[User, Depends(get_user)],
     verified: Annotated[bool, Depends(action_verified)],
 ) -> Response:
     if not verified:

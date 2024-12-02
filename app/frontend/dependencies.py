@@ -15,7 +15,7 @@ from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
 
 
-async def get_user(
+async def get_optional_user(
     auth: AuthDep,
     token: Annotated[str | None, Depends(cookie_transport)],
 ) -> User | None:
@@ -27,7 +27,7 @@ async def get_user(
         return None
 
 
-async def get_one_user(
+async def get_user(
     auth: AuthDep,
     token: Annotated[str | None, Depends(cookie_transport)],
 ) -> User:
@@ -35,8 +35,8 @@ async def get_one_user(
         raise Unauthorized()
     try:
         return await auth.get_userinfo(token)
-    except ClientError:
-        raise Unauthorized() from None
+    except ClientError as e:
+        raise Unauthorized() from e
 
 
 def action_verified(
