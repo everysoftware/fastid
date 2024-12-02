@@ -24,9 +24,9 @@ api_router = APIRouter(
 secured_router = APIRouter(dependencies=[Depends(f) for f in auth_flows])
 secured_router.include_router(auth_router)
 secured_router.include_router(oauth_router)
-secured_router.include_router(admin_auth_router)
 secured_router.include_router(notifier_router)
 secured_router.include_router(profile_router)
+secured_router.include_router(admin_auth_router)
 
 api_router.include_router(secured_router)
 
