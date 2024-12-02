@@ -30,7 +30,4 @@ document.addEventListener("DOMContentLoaded", () => {
             location.assign("/profile");
         }
     });
-    document.getElementById("changePasswordBtn").addEventListener("click", () => {
-        document.getElementById("changePasswordForm").requestSubmit();
-    });
 });
