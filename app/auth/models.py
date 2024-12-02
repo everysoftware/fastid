@@ -5,13 +5,13 @@ from typing import Self, TYPE_CHECKING, Literal
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from app.auth.exceptions import WrongPassword, NoPermission
+from app.auth.backend import hasher
+from app.auth.exceptions import WrongPassword
 from app.auth.schemas import UserCreate
 from app.base.models import Entity
 from app.base.types import uuid
 from app.oauth.config import telegram_settings
 from app.oauthlib.schemas import OpenIDBearer
-from app.auth.backend import hasher
 
 if TYPE_CHECKING:
     from app.oauth.models import OAuthAccount
@@ -74,9 +74,12 @@ class User(Entity):
             email=open_id.email,
         )
         user.verify()
-        if open_id.provider == "telegram":
-            user.telegram_id = int(open_id.id)
+        user.connect_open_id(open_id)
         return user
+
+    def connect_open_id(self, open_id: OpenIDBearer) -> None:
+        if open_id.provider == "telegram":
+            self.telegram_id = int(open_id.id)
 
     def disconnect_open_id(self, provider: str) -> None:
         if provider == "telegram":
@@ -100,15 +103,3 @@ class User(Entity):
 
     def verify(self) -> None:
         self.is_verified = True
-
-    def assert_superuser(self) -> None:
-        if not self.is_superuser:
-            raise NoPermission()
-
-    def assert_active(self) -> None:
-        if not self.is_active:
-            raise NoPermission()
-
-    def assert_verified(self) -> None:
-        if not self.is_verified:
-            raise NoPermission()

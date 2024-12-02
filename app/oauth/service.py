@@ -103,7 +103,9 @@ class OAuthUseCases(UseCase):
             if open_id.email
             else None
         )
-        if not user:
+        if user:
+            user.connect_open_id(open_id)
+        else:
             user = User.from_open_id(open_id)
             user = await self.uow.users.add(user)
         account = OAuthAccount.from_open_id(open_id, user)

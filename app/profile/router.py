@@ -51,7 +51,10 @@ async def change_password(
 
 
 @router.delete(
-    "/users/me", response_model=UserDTO, status_code=status.HTTP_200_OK
+    "/users/me",
+    dependencies=[Depends(Requires(action_verified=True))],
+    response_model=UserDTO,
+    status_code=status.HTTP_200_OK,
 )
 async def delete(service: ProfilesDep, user: UserDep) -> Any:
     return await service.delete_account(user)

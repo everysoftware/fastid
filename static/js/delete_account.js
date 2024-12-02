@@ -21,8 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.ok) {
                 alert("Your account has been deleted.");
                 location.reload();
-            } else {
-                alert("Failed to delete the account. Please try again.");
             }
         }
     });
