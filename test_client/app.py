@@ -35,7 +35,7 @@ def callback(code: str) -> Any:
     )
     token = token_data.json()
     response = Response(content="You are now logged in!")
-    response.set_cookie("access_token", token["access_token"])
+    response.set_cookie("access_token", token["access_token"], httponly=True)
     return response
 
 

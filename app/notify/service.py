@@ -1,7 +1,4 @@
 import secrets
-from typing import Annotated
-
-from fastapi import Depends
 
 from app.auth.backend import token_backend
 from app.auth.config import auth_settings
@@ -9,17 +6,18 @@ from app.auth.models import User
 from app.auth.utils import otp
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
-from app.notify.adapters import MailAdapter, TelegramAdapter
 from app.notify.base import Notification
 from app.notify.exceptions import WrongCode
+from app.notify.mail import MailDep
 from app.notify.schemas import VerifyTokenRequest
+from app.notify.telegram import TelegramDep
 
 
 class NotificationUseCases(UseCase):
     def __init__(
         self,
-        mail: Annotated[MailAdapter, Depends()],
-        telegram: Annotated[TelegramAdapter, Depends()],
+        mail: MailDep,
+        telegram: TelegramDep,
         cache: CacheDep,
     ) -> None:
         self.mail = mail

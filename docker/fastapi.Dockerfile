@@ -86,4 +86,4 @@ COPY ./certs ./certs
 COPY ./docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["gunicorn -w 4 -k app.main.workers.MyUvicornWorker \"$APP_DIR.main.app:app\" -b 0.0.0.0:8000"]
+CMD ["gunicorn -w 1 -k app.main.workers.MyUvicornWorker \"$APP_DIR.main.app:app\" -b 0.0.0.0:8000"]

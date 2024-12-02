@@ -13,7 +13,7 @@ router = APIRouter(prefix="/notify", tags=["Notify"])
 
 
 @router.post("/otp")
-async def otp_request(
+def otp_request(
     user: UserDep,
     service: NotifyDep,
     dto: Annotated[OTPRequest, Depends()],
