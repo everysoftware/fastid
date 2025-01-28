@@ -11,68 +11,56 @@
 
 ## Features
 
-FastID is responsible for authentication, user management and single account for all your services.
-
-The key features are:
-
 * **Security**. Built with security in mind. It uses JWT tokens, OAuth 2.0 and OpenID Connect.
-* **Admin Interface**. Comes with an admin interface to manage users and applications.
-* **Social Login**. Supports social login with Google, Telegram, Yandex, and others.
+* **Admin Panel**. Comes with an admin interface to manage users and applications.
 * **Notifications**. Sends welcome messages and verification codes via email and Telegram.
-* **Plugins**. Offers a plugin system to extend the functionality.
 * **Observability**. Metrics and tracing complied with OpenTelemetry.
-* **Pythonic**. FastID is the best choice for Python apps.
+* **Social Login**. Supports social login with Google, Telegram, Yandex, and others.
+* **Plugins**. Offers a plugin system to extend the functionality.
 
 ## Installation
 
-1. Clone the repository:
+Clone the repository:
 
-     ```bash
-     git clone https://github.com/everysoftware/fastid
-     ```
+```bash
+  git clone https://github.com/everysoftware/fastid
+```
 
-2. Generate RSA keys:
+Generate RSA keys:
 
-     ```bash
-     mkdir certs
-     openssl genrsa -out certs/jwt-private.pem 2048
-     openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
-     ```
+```bash
+  mkdir certs
+  openssl genrsa -out certs/jwt-private.pem 2048
+  openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
+```
 
-3. Create a `.env` file. Use the `.env.example` as a reference.
+Create a `.env` file based on `.env.example` and run the server:
 
-4. Run the application:
+```bash
+  make up
+```
 
-    ```bash
-    make up
-    ```
-
-5. Enjoy!
-
-> To set up observability, you can use [this](https://github.com/everysoftware/fastapi-obs) preset.
-
-## Overview
-
-FastID is available at [http://localhost:8012](http://localhost:8012)
+FastID is available at [http://localhost:8012](http://localhost:8012):
 
 ![Sign In](assets/signin.png)
 
-API docs are available at [http://localhost:8012/api/v1/docs](http://localhost:8012/api/v1/docs)
-
-![API Docs](assets/api_docs.png)
-
-Admin is available at: [http://localhost:8012/admin](http://localhost:8012/admin) (default credentials:
-`admin`/`admin`)
+Admin panel is available at: [http://localhost:8012/admin](http://localhost:8012/admin) (default credentials:
+`admin`/`admin`):
 
 ![Admin Login](assets/admin_login.png)
 
-## Integration
+> To set up observability, you can use [this](https://github.com/everysoftware/fastapi-obs) preset.
 
-Create new app in admin to get `client_id` and `client_secret`.
+Enjoy! 🚀
+
+## Get Started
+
+Login to admin panel: [http://localhost:8012/admin](http://localhost:8012/admin) and create new app to obtain
+`client_id` and `client_secret`.
 
 ![Sign In](assets/create_app.png)
 
-Here is an example of integration with FastAPI:
+Here is an example of client app that uses FastID for authentication:
 
 ```python
 from typing import Any, Annotated
@@ -135,7 +123,7 @@ def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
 Run the server:
 
 ```bash
-fastapi dev test_client/app.py
+  fastapi dev test_client/app.py
 ```
 
 Go to [http://localhost:8000/login](http://localhost:8000/login) to login in FastID. You will be redirected to
@@ -148,7 +136,11 @@ Now you can access the protected route [http://localhost:8000/test](http://local
 
 See the full example in the `test_client` directory.
 
-## Compatibility
+## API Reference
+
+API docs are available at [http://localhost:8012/api/v1/docs](http://localhost:8012/api/v1/docs)
+
+![API Docs](assets/api_docs.png)
 
 OpenID metadata is available
 at [http://localhost:8012/.well-known/openid-configuration](http://localhost:8012/.well-known/openid-configuration).

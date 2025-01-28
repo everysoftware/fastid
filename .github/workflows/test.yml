@@ -28,21 +28,3 @@ jobs:
         run: |
           poetry run make format
           poetry run make lint
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install SSH key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
-      - name: Deploy to server
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_IP_ADDRESS }} <<EOF
-            cd home/fastid
-            git pull
-            make up-prod
-          EOF
