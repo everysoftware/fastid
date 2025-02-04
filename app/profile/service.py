@@ -3,7 +3,7 @@ from app.auth.exceptions import (
     UserAlreadyExists,
 )
 from app.auth.models import User
-from app.auth.repositories import ActiveUserSpecification
+from app.auth.repositories import UserEmailSpecification
 from app.auth.schemas import (
     UserUpdate,
     UserChangeEmail,
@@ -39,7 +39,7 @@ class ProfileUseCases(UseCase):
         return user
 
     async def change_email(self, user: User, dto: UserChangeEmail) -> User:
-        check_user = await self.uow.users.find(ActiveUserSpecification(dto.new_email))
+        check_user = await self.uow.users.find(UserEmailSpecification(dto.new_email))
         if check_user is not None:
             raise UserAlreadyExists()
         user.change_email(dto.new_email)
