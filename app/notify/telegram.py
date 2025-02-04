@@ -10,22 +10,16 @@ from app.oauth.config import telegram_settings
 
 class TelegramAdapter:
     def __init__(self, bot_token: str) -> None:
-        self._bot = Bot(
-            bot_token, default=DefaultBotProperties(parse_mode="Markdown")
-        )
+        self._bot = Bot(bot_token, default=DefaultBotProperties(parse_mode="Markdown"))
 
     async def send(self, notification: Notification) -> None:
-        await self._bot.send_message(
-            notification.user_telegram_id, notification.as_markdown()
-        )
+        await self._bot.send_message(notification.user_telegram_id, notification.as_markdown())
 
     async def __aenter__(self) -> Self:
         await self._bot.__aenter__()
         return self
 
-    async def __aexit__(
-        self, exc_type: Any, exc_val: Any, exc_tb: Any
-    ) -> None:
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         await self._bot.__aexit__(exc_type, exc_val, exc_tb)
 
 

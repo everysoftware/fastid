@@ -303,13 +303,13 @@ tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
 
 [[package]]
 name = "auth365"
-version = "0.1.1"
+version = "0.1.2"
 description = "Asynchronous OAuth 2.0 client for such platforms as Google, GitHub, Yandex, etc."
 optional = false
 python-versions = "<4.0,>=3.12"
 files = [
-    {file = "auth365-0.1.1-py3-none-any.whl", hash = "sha256:a984b59e836b5a8aa9c0c702f0fc496c712794062a56a644d5fd2288ef24f806"},
-    {file = "auth365-0.1.1.tar.gz", hash = "sha256:764a585fc79b8d29de9a6bd039fe346a5e6c8d020c8e8a349da9d2719c9acbc5"},
+    {file = "auth365-0.1.2-py3-none-any.whl", hash = "sha256:56271940db0add8519d22ec0d7ee909fa2f5118e478192b8ba479fab5ab11dc3"},
+    {file = "auth365-0.1.2.tar.gz", hash = "sha256:2b14890468d151bc36fe9019efecfef12fce354debf96103940912fd6b750892"},
 ]
 
 [package.dependencies]
@@ -3542,4 +3542,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "2a659bd28085b5557395476928012236a6c1c176f5db0e7d0ac9e0b945241364"
+content-hash = "33423d718136a499ab30ee83998499760371bf33ea89bf9a49458ed354e1700d"

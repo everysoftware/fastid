@@ -95,9 +95,7 @@ class AlchemyRepository(IRepository[T], ABC):
     def _apply_sorting(self, stmt: S, sorting: Sorting) -> S:
         for entry in sorting.render(self.model_type):
             attr = getattr(self.model_type, entry.field)
-            stmt = stmt.order_by(
-                attr.asc() if entry.order == "asc" else attr.desc()
-            )
+            stmt = stmt.order_by(attr.asc() if entry.order == "asc" else attr.desc())
         return stmt
 
     def _apply_params(

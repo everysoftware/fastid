@@ -31,9 +31,7 @@ class User(Entity):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_verified: Mapped[bool] = mapped_column(default=False)
 
-    oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
-        back_populates="user", cascade="delete"
-    )
+    oauth_accounts: Mapped[list[OAuthAccount]] = relationship(back_populates="user", cascade="delete")
 
     @hybrid_property
     def is_oauth(self) -> bool:

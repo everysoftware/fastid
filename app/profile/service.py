@@ -39,18 +39,14 @@ class ProfileUseCases(UseCase):
         return user
 
     async def change_email(self, user: User, dto: UserChangeEmail) -> User:
-        check_user = await self.uow.users.find(
-            ActiveUserSpecification(dto.new_email)
-        )
+        check_user = await self.uow.users.find(ActiveUserSpecification(dto.new_email))
         if check_user is not None:
             raise UserAlreadyExists()
         user.change_email(dto.new_email)
         await self.uow.commit()
         return user
 
-    async def change_password(
-        self, user: User, dto: UserChangePassword
-    ) -> User:
+    async def change_password(self, user: User, dto: UserChangePassword) -> User:
         user.set_password(dto.password)
         await self.uow.commit()
         return user
@@ -60,12 +56,8 @@ class ProfileUseCases(UseCase):
         await self.uow.commit()
         return user
 
-    async def get_many(
-        self, pagination: Pagination, sorting: Sorting
-    ) -> Page[User]:
-        return await self.uow.users.get_many(
-            pagination=pagination, sorting=sorting
-        )
+    async def get_many(self, pagination: Pagination, sorting: Sorting) -> Page[User]:
+        return await self.uow.users.get_many(pagination=pagination, sorting=sorting)
 
     async def grant_superuser(self, user: User) -> User:
         user.grant_superuser()

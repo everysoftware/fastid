@@ -69,9 +69,7 @@ class UUIDMixin(Mixin):
 
 
 class AuditMixin(Mixin):
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        default=naive_utc, sort_order=100
-    )
+    created_at: Mapped[datetime.datetime] = mapped_column(default=naive_utc, sort_order=100)
     updated_at: Mapped[datetime.datetime] = mapped_column(
         default=naive_utc,
         onupdate=naive_utc,

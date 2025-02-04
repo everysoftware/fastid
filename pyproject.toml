@@ -30,7 +30,7 @@ opentelemetry-instrumentation-httpx = "^0.48b0"
 fast-depends = "^2.4.12"
 uuid-utils = "^0.9.0"
 typer = "^0.14.0"
-auth365 = "^0.1.1"
+auth365 = "^0.1.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -51,7 +51,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 fix = true
 indent-width = 4
-line-length = 79
+line-length = 120
 target-version = "py312"
 output-format = "concise"
 

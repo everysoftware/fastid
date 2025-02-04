@@ -9,7 +9,7 @@ from app.oauth.schemas import ProviderMeta, RegistryMeta
 class OAuth2Flow(Protocol):
     provider: str
 
-    def get_authorization_url(
+    async def get_authorization_url(
         self,
         *args: Any,
         **kwargs: Any,
@@ -25,9 +25,7 @@ class OAuth2Flow(Protocol):
 
     async def __aenter__(self) -> Self: ...
 
-    async def __aexit__(
-        self, exc_type: Any, exc_value: Any, traceback: Any
-    ) -> None: ...
+    async def __aexit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None: ...
 
 
 class ProviderRegistry:

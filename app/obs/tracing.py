@@ -70,13 +70,9 @@ class TracingPlugin(Plugin):
         )
         tracer = TracerProvider(resource=resource)
         trace.set_tracer_provider(tracer)
-        tracer.add_span_processor(
-            BatchSpanProcessor(OTLPSpanExporter(endpoint=self.export_url))
-        )
+        tracer.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=self.export_url)))
         if "logger" in self.instrument:
-            LoggingInstrumentor().instrument(
-                tracer_provider=tracer, set_logging_format=True
-            )
+            LoggingInstrumentor().instrument(tracer_provider=tracer, set_logging_format=True)
         if "httpx" in self.instrument:
             HTTPXClientInstrumentor().instrument(tracer_provider=tracer)
         if "sqlalchemy" in self.instrument:

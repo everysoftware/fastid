@@ -1,5 +1,6 @@
 from typing import Annotated
 
+from auth365.exceptions import Auth365Error
 from fastapi import Depends
 from starlette.requests import Request
 
@@ -17,8 +18,9 @@ from app.auth.schemas import OAuth2ConsentRequest
 
 async def get_optional_user(
     auth: AuthDep,
-    token: Annotated[str | None, Depends(cookie_transport)],
+    request: Request,
 ) -> User | None:
+    token = cookie_transport.get_token(request)
     if token is None:
         return None
     try:
@@ -29,8 +31,9 @@ async def get_optional_user(
 
 async def get_user(
     auth: AuthDep,
-    token: Annotated[str | None, Depends(cookie_transport)],
+    request: Request,
 ) -> User:
+    token = cookie_transport.get_token(request)
     if token is None:
         raise Unauthorized()
     try:
@@ -40,13 +43,14 @@ async def get_user(
 
 
 def action_verified(
-    token: Annotated[str | None, Depends(verify_token_transport)],
+    request: Request,
 ) -> bool:
+    token = verify_token_transport.get_token(request)
     if token is None:
         return False
     try:
-        token_backend.validate_custom("verify", token)
-    except ClientError:
+        token_backend.validate("verify", token)
+    except Auth365Error:
         return False
     return True
 

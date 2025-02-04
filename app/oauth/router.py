@@ -34,9 +34,7 @@ async def oauth_login(
     url = await service.get_authorization_url(oauth_name)
     if not redirect:
         return url
-    return RedirectResponse(
-        status_code=status.HTTP_307_TEMPORARY_REDIRECT, url=url
-    )
+    return RedirectResponse(status_code=status.HTTP_307_TEMPORARY_REDIRECT, url=url)
 
 
 @router.get(
@@ -47,13 +45,9 @@ async def oauth_callback(
     oauth: OAuthAccountsDep,
     user: Annotated[User | None, Depends(get_optional_user)],
     oauth_name: str,
-    callback: Annotated[
-        OAuth2Callback | TelegramCallback, Depends(valid_callback)
-    ],
+    callback: Annotated[OAuth2Callback | TelegramCallback, Depends(valid_callback)],
 ) -> Any:
-    response: Response = RedirectResponse(
-        url=auth_settings.authorization_endpoint
-    )
+    response: Response = RedirectResponse(url=auth_settings.authorization_endpoint)
     if user is not None:
         await oauth.connect(user, oauth_name, callback)
         return response

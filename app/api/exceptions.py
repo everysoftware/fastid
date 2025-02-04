@@ -31,9 +31,7 @@ class ClientError(Exception):
         if headers is not None:
             self.headers = headers
         # make exception serializable
-        super().__init__(
-            self.message, self.error_code, self.status_code, self.headers
-        )
+        super().__init__(self.message, self.error_code, self.status_code, self.headers)
 
     def __repr__(self) -> str:
         class_name = self.__class__.__name__
@@ -46,9 +44,7 @@ class LongValidationError(RequestValidationError):
 
 class ValidationError(LongValidationError):
     def __init__(self, msg: str) -> None:
-        super().__init__(
-            [{"loc": "request", "msg": msg, "type": "invalid_request"}]
-        )
+        super().__init__([{"loc": "request", "msg": msg, "type": "invalid_request"}])
 
 
 class Unauthorized(ClientError):
@@ -58,12 +54,8 @@ class Unauthorized(ClientError):
     headers = {"WWW-Authenticate": "Bearer"}
 
 
-def client_exception_handler(
-    request: Request, ex: ClientError
-) -> JSONResponse:
-    log.info(
-        '[BE] "%s %s" response: %s', request.method, request.url, repr(ex)
-    )
+def client_exception_handler(request: Request, ex: ClientError) -> JSONResponse:
+    log.info('[BE] "%s %s" response: %s', request.method, request.url, repr(ex))
     return JSONResponse(
         status_code=ex.status_code,
         content=ErrorResponse(
@@ -74,9 +66,7 @@ def client_exception_handler(
     )
 
 
-def unhandled_exception_handler(
-    request: Request, ex: Exception
-) -> JSONResponse:
+def unhandled_exception_handler(request: Request, ex: Exception) -> JSONResponse:
     log.exception(f'"{request.method} {request.url}" failed: {repr(ex)}')
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

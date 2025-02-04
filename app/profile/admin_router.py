@@ -31,9 +31,7 @@ async def update_by_id(
 
 
 @router.delete("/users/{user_id}", response_model=UserDTO)
-async def delete_by_id(
-    service: ProfilesDep, user: Annotated[User, Depends(get_user_by_id)]
-) -> Any:
+async def delete_by_id(service: ProfilesDep, user: Annotated[User, Depends(get_user_by_id)]) -> Any:
     return await service.delete_account(user)
 
 

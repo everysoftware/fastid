@@ -17,9 +17,7 @@ class DBHelper:
             echo=self.echo,
             pool_pre_ping=True,
         )
-        self.session_factory = async_sessionmaker(
-            self.engine, expire_on_commit=False
-        )
+        self.session_factory = async_sessionmaker(self.engine, expire_on_commit=False)
 
 
 db = DBHelper(db_settings.url, echo=db_settings.echo)

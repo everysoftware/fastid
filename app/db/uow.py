@@ -21,9 +21,7 @@ class AlchemyUOW(IUnitOfWork):
     oauth_accounts: OAuthAccountRepository
     apps: AppRepository
 
-    def __init__(
-        self, session_factory: async_sessionmaker[AsyncSession]
-    ) -> None:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
     async def begin(self) -> None:

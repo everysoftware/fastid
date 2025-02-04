@@ -1,5 +1,7 @@
+from auth365.exceptions import Auth365Error
+
 from app.auth.backend import token_backend
-from app.auth.exceptions import UserIDNotFound, UserAlreadyExists
+from app.auth.exceptions import UserIDNotFound, UserAlreadyExists, InvalidToken
 from app.auth.models import User
 from app.auth.repositories import ActiveUserSpecification
 from app.auth.schemas import UserCreate
@@ -22,7 +24,10 @@ class AuthUseCases(UseCase):
         return user
 
     async def get_userinfo(self, token: str) -> User:
-        payload = token_backend.validate_at(token)
+        try:
+            payload = token_backend.validate("access", token)
+        except Auth365Error as e:
+            raise InvalidToken() from e
         user = await self.uow.users.get(UUID(payload.sub))
         if user is None:
             raise UserIDNotFound()

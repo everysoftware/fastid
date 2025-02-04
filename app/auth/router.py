@@ -1,5 +1,6 @@
 from typing import Any, Annotated
 
+from auth365.schemas import TokenResponse, OAuth2Grant
 from fastapi import APIRouter, status, Depends, Form, BackgroundTasks
 
 from app.auth.backend import cookie_transport
@@ -15,16 +16,13 @@ from app.auth.schemas import (
     UserCreate,
     UserDTO,
 )
-from app.authlib.oauth import TokenResponse, OAuth2Grant
 from app.notify.dependencies import NotifyDep
 from app.notify.notifications import WelcomeNotification
 
 router = APIRouter(tags=["Auth"])
 
 
-@router.post(
-    "/register", status_code=status.HTTP_201_CREATED, response_model=UserDTO
-)
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=UserDTO)
 async def register(
     service: AuthDep,
     notify: NotifyDep,
@@ -51,21 +49,15 @@ async def authorize(
         case OAuth2Grant.password:
             token = await password_grant.authorize(form.as_password_grant())
         case OAuth2Grant.authorization_code:
-            token = await authorization_code_grant.authorize(
-                form.as_authorization_code_grant()
-            )
+            token = await authorization_code_grant.authorize(form.as_authorization_code_grant())
         case OAuth2Grant.refresh_token:
-            token = await refresh_token_grant.authorize(
-                form.as_refresh_token_grant()
-            )
+            token = await refresh_token_grant.authorize(form.as_refresh_token_grant())
         case _:
             raise NotSupportedGrant()
     return cookie_transport.get_login_response(token)
 
 
-@router.get(
-    "/userinfo", response_model=UserDTO, status_code=status.HTTP_200_OK
-)
+@router.get("/userinfo", response_model=UserDTO, status_code=status.HTTP_200_OK)
 def me(user: UserDep) -> Any:
     return user
 

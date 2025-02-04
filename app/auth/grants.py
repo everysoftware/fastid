@@ -1,34 +1,38 @@
 from abc import abstractmethod
 from typing import Any
 
+from auth365.exceptions import Auth365Error
+from auth365.schemas import (
+    JWTPayload,
+    TokenResponse,
+    OAuth2PasswordRequest,
+    OAuth2Callback,
+    OAuth2AuthorizationCodeRequest,
+    OAuth2RefreshTokenRequest,
+)
+
 from app.apps.exceptions import (
     InvalidClientCredentials,
     InvalidAuthorizationCode,
 )
 from app.apps.models import App
 from app.apps.repositories import IsActiveApp
+from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.exceptions import (
     NotSupportedResponseType,
     NoPermission,
     UserEmailNotFound,
+    InvalidToken,
 )
 from app.auth.models import User
 from app.auth.repositories import ActiveUserSpecification
 from app.auth.schemas import OAuth2ConsentRequest
-from app.auth.backend import token_backend
-from app.authlib.oauth import (
-    TokenResponse,
-    OAuth2PasswordRequest,
-    OAuth2AuthorizationCodeRequest,
-    OAuth2RefreshTokenRequest,
-    OAuth2Callback,
-)
+from app.auth.utils import otp
 from app.base.service import UseCase
 from app.base.types import UUID
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
-from app.auth.utils import otp
 
 
 class Grant(UseCase):
@@ -45,9 +49,7 @@ class Grant(UseCase):
             raise InvalidClientCredentials()
         return app
 
-    async def authenticate_client(
-        self, client_id: str, client_secret: str
-    ) -> App:
+    async def authenticate_client(self, client_id: str, client_secret: str) -> App:
         app = await self.validate_client(client_id)
         app.verify_secret(client_secret)
         return app
@@ -55,30 +57,29 @@ class Grant(UseCase):
     def grant(self, user: User, scope: str) -> TokenResponse:
         if "admin" in scope and not user.is_superuser:
             raise NoPermission()
-        at = self.token_backend.create_at(user.id, scope=scope)
+        at = self.token_backend.create("access", JWTPayload(sub=str(user.id), scope=scope))
         if "openid" in scope:
-            it = self.token_backend.create_it(
-                user.id,
+            payload = JWTPayload(
+                sub=str(user.id),
                 name=user.display_name,
                 given_name=user.first_name,
                 family_name=user.last_name,
                 email=user.email,
                 email_verified=user.is_verified,
             )
+            it = self.token_backend.create("id", payload)
         else:
             it = None
         if "offline_access" in scope:
-            rt = self.token_backend.create_rt(user.id, scope=scope)
+            rt = self.token_backend.create("refresh", JWTPayload(sub=str(user.id), scope=scope))
         else:
             rt = None
-        return self.token_backend.to_response(at=at, rt=rt, it=it)
+        return TokenResponse(access_token=at, id_token=it, refresh_token=rt)
 
 
 class PasswordGrant(Grant):
     async def authorize(self, form: OAuth2PasswordRequest) -> TokenResponse:
-        user = await self.uow.users.find(
-            ActiveUserSpecification(form.username)
-        )
+        user = await self.uow.users.find(ActiveUserSpecification(form.username))
         if user is None:
             raise UserEmailNotFound()
         user.verify_password(form.password)
@@ -90,9 +91,7 @@ class AuthorizationCodeGrant(Grant):
         super().__init__(uow)
         self.cache = cache
 
-    async def validate_consent(
-        self, consent: OAuth2ConsentRequest
-    ) -> OAuth2ConsentRequest:
+    async def validate_consent(self, consent: OAuth2ConsentRequest) -> OAuth2ConsentRequest:
         if consent.response_type != "code":
             raise NotSupportedResponseType()
         assert consent.client_id is not None
@@ -101,27 +100,19 @@ class AuthorizationCodeGrant(Grant):
         app.verify_redirect_uri(consent.redirect_uri)
         return consent
 
-    async def approve_consent(
-        self, consent: OAuth2ConsentRequest, user: User
-    ) -> str:
+    async def approve_consent(self, consent: OAuth2ConsentRequest, user: User) -> str:
         code = otp()
         await self.cache.set(
             f"ac:{consent.client_id}:{code}",
             f"{user.id}:{consent.scope}",
             expire=auth_settings.authorization_code_expires_in,
         )
-        callback = OAuth2Callback(
-            code=code, state=consent.state, redirect_uri=consent.redirect_uri
-        )
+        callback = OAuth2Callback(code=code, state=consent.state, redirect_uri=consent.redirect_uri)
         return callback.get_url()
 
-    async def authorize(
-        self, form: OAuth2AuthorizationCodeRequest
-    ) -> TokenResponse:
+    async def authorize(self, form: OAuth2AuthorizationCodeRequest) -> TokenResponse:
         await self.authenticate_client(form.client_id, form.client_secret)
-        data = await self.cache.get(
-            f"ac:{form.client_id}:{form.code}", cast=str
-        )
+        data = await self.cache.get(f"ac:{form.client_id}:{form.code}", cast=str)
         await self.cache.delete(f"ac:{form.client_id}:{form.code}")
         if data is None:
             raise InvalidAuthorizationCode()
@@ -136,7 +127,10 @@ class RefreshTokenGrant(Grant):
         form: OAuth2RefreshTokenRequest,
     ) -> TokenResponse:
         await self.authenticate_client(form.client_id, form.client_secret)
-        content = self.token_backend.validate_rt(form.refresh_token)
+        try:
+            content = self.token_backend.validate("refresh", form.refresh_token)
+        except Auth365Error as e:
+            raise InvalidToken() from e
         assert content.scope is not None
         user = await self.uow.users.get_one(UUID(content.sub))
         return self.grant(user, content.scope)

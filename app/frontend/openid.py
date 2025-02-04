@@ -1,10 +1,10 @@
 import base64
 
+from auth365.schemas import DiscoveryDocument, JWTPayload, JWKS, JWK
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from app.auth.config import auth_settings
-from app.authlib.openid import DiscoveryDocument, JWK, JWKS, IDTokenClaims
 
 discovery_document = DiscoveryDocument(
     issuer=auth_settings.issuer,
@@ -17,14 +17,12 @@ discovery_document = DiscoveryDocument(
     grant_types_supported=["authorization_code", "refresh_token"],
     subject_types_supported=["public"],
     id_token_signing_alg_values_supported=["RS256"],
-    claims_supported=list(IDTokenClaims.model_fields),
+    claims_supported=list(JWTPayload.model_fields),
 )
 
 
 def get_jwks() -> JWKS:
-    public_key = serialization.load_pem_public_key(
-        auth_settings.jwt_public_key.read_bytes()
-    )
+    public_key = serialization.load_pem_public_key(auth_settings.jwt_public_key.read_bytes())
     assert isinstance(public_key, rsa.RSAPublicKey)
     public_numbers = public_key.public_numbers()
     n = public_numbers.n
@@ -34,16 +32,8 @@ def get_jwks() -> JWKS:
         use="sig",
         alg="RS256",
         kid="primary",
-        n=base64.urlsafe_b64encode(
-            n.to_bytes((n.bit_length() + 7) // 8, "big")
-        )
-        .decode("utf-8")
-        .rstrip("="),
-        e=base64.urlsafe_b64encode(
-            e.to_bytes((e.bit_length() + 7) // 8, "big")
-        )
-        .decode("utf-8")
-        .rstrip("="),
+        n=base64.urlsafe_b64encode(n.to_bytes((n.bit_length() + 7) // 8, "big")).decode("utf-8").rstrip("="),
+        e=base64.urlsafe_b64encode(e.to_bytes((e.bit_length() + 7) // 8, "big")).decode("utf-8").rstrip("="),
     )
     return JWKS(keys=[key])
 

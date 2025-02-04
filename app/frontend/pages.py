@@ -1,5 +1,6 @@
 from typing import Any, Annotated, Literal
 
+from auth365.schemas import DiscoveryDocument, JWKS
 from fastapi import APIRouter, Request, Response, Depends, status
 from fastapi.responses import RedirectResponse
 
@@ -7,7 +8,6 @@ from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
 from app.auth.backend import cookie_transport
-from app.authlib.openid import DiscoveryDocument, JWKS
 from app.frontend.dependencies import (
     valid_consent,
     get_optional_user,
@@ -55,15 +55,11 @@ async def authorize(
 ) -> Response:
     if user is None:
         request.session["consent"] = consent.model_dump(mode="json")
-        return templates.TemplateResponse(
-            "authorize.html", {"request": request}
-        )
+        return templates.TemplateResponse("authorize.html", {"request": request})
     else:
         # User is authenticated, redirect to specified redirect URI with code
         request.session.clear()
-        redirect_uri = await authorization_code_grant.approve_consent(
-            consent, user
-        )
+        redirect_uri = await authorization_code_grant.approve_consent(consent, user)
         response = RedirectResponse(redirect_uri)
     return response
 

@@ -16,9 +16,7 @@ class CacheAdapter:
         keys = await self.client.keys(f"{self.key}:{pattern}")
         return set(keys)
 
-    async def set(
-        self, key: str, value: Any, expire: int | None = None
-    ) -> str:
+    async def set(self, key: str, value: Any, expire: int | None = None) -> str:
         json_str = json.dumps(value, ensure_ascii=True)
         await self.client.set(f"{self.key}:{key}", json_str, ex=expire)
         return json_str

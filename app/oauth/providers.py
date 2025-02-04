@@ -51,7 +51,7 @@ telegram_oauth = TelegramImplicitOAuth(
     enabled=google_settings.enabled,
 )
 def get_google() -> OAuth2Flow:
-    return google_oauth  # type: ignore[return-value]
+    return google_oauth
 
 
 @registry.provider(
@@ -62,7 +62,7 @@ def get_google() -> OAuth2Flow:
     enabled=telegram_settings.enabled,
 )
 def get_telegram() -> OAuth2Flow:
-    return telegram_oauth  # type: ignore[return-value]
+    return telegram_oauth
 
 
 @registry.provider(
@@ -73,4 +73,4 @@ def get_telegram() -> OAuth2Flow:
     enabled=yandex_settings.enabled,
 )
 def get_yandex() -> OAuth2Flow:
-    return yandex_oauth  # type: ignore[return-value]
+    return yandex_oauth

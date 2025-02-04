@@ -9,9 +9,7 @@ from app.auth.models import User
 from app.auth.service import AuthUseCases
 
 auth_flows = [
-    OAuth2PasswordBearer(
-        tokenUrl="auth/token", scheme_name="Password", auto_error=False
-    ),
+    OAuth2PasswordBearer(tokenUrl="auth/token", scheme_name="Password", auto_error=False),
 ]
 
 AuthDep = Annotated[AuthUseCases, Depends()]

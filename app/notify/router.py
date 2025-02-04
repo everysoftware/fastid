@@ -22,9 +22,7 @@ def otp_request(
     if dto.new_email is None:
         notification = VerificationNotification(user)
     else:
-        notification = VerificationNotification(
-            user, method="email", new_email=dto.new_email
-        )
+        notification = VerificationNotification(user, method="email", new_email=dto.new_email)
     background.add_task(service.push_code, notification)
 
 
