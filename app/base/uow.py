@@ -34,9 +34,7 @@ class IUnitOfWork(ABC):
         await self.begin()
         return self
 
-    async def __aexit__(
-        self, exc_type: Any, exc_value: Any, traceback: Any
-    ) -> None:
+    async def __aexit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         if exc_type is not None:
             await self.rollback()
         else:

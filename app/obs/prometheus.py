@@ -29,21 +29,15 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
                 return route.path, True
         return request.url.path, False
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         method = request.method
         path, is_defined = self.get_path(request)
 
         if not is_defined:
             return await call_next(request)
 
-        panels.REQUESTS_IN_PROGRESS.labels(
-            method=method, path=path, app_name=self.app_name
-        ).inc()
-        panels.REQUESTS.labels(
-            method=method, path=path, app_name=self.app_name
-        ).inc()
+        panels.REQUESTS_IN_PROGRESS.labels(method=method, path=path, app_name=self.app_name).inc()
+        panels.REQUESTS.labels(method=method, path=path, app_name=self.app_name).inc()
         before_time = time.perf_counter()
 
         try:
@@ -63,9 +57,9 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
             # Retrieve trace id for exemplar
             span = trace.get_current_span()
             trace_id = trace.format_trace_id(span.get_span_context().trace_id)
-            panels.REQUESTS_PROCESSING_TIME.labels(
-                method=method, path=path, app_name=self.app_name
-            ).observe(after_time - before_time, exemplar={"TraceID": trace_id})
+            panels.REQUESTS_PROCESSING_TIME.labels(method=method, path=path, app_name=self.app_name).observe(
+                after_time - before_time, exemplar={"TraceID": trace_id}
+            )
         finally:
             panels.RESPONSES.labels(
                 method=method,
@@ -73,8 +67,6 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
                 status_code=status_code,  # noqa
                 app_name=self.app_name,
             ).inc()
-            panels.REQUESTS_IN_PROGRESS.labels(
-                method=method, path=path, app_name=self.app_name
-            ).dec()
+            panels.REQUESTS_IN_PROGRESS.labels(method=method, path=path, app_name=self.app_name).dec()
 
         return response

@@ -1,8 +1,31 @@
-from typing import MutableMapping, Callable
+from typing import MutableMapping, Callable, Protocol, Any, Self
 
+from auth365.schemas import TokenResponse, OpenID
+
+from app.oauth.exceptions import OAuthProviderNotFound, OAuthProviderDisabled
 from app.oauth.schemas import ProviderMeta, RegistryMeta
-from app.oauthlib.base import OAuth2Flow
-from app.oauthlib.exceptions import OAuth2Error
+
+
+class OAuth2Flow(Protocol):
+    provider: str
+
+    async def get_authorization_url(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str: ...
+
+    async def authorize(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> TokenResponse: ...
+
+    async def userinfo(self, *args: Any, **kwargs: Any) -> OpenID: ...
+
+    async def __aenter__(self) -> Self: ...
+
+    async def __aexit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None: ...
 
 
 class ProviderRegistry:
@@ -15,7 +38,6 @@ class ProviderRegistry:
         self.metadata = RegistryMeta()
         self.base_authorization_url = base_authorization_url
         self.base_revoke_url = base_revoke_url
-
         self._providers: MutableMapping[str, Callable[[], OAuth2Flow]] = {}
 
     def provider(
@@ -47,7 +69,7 @@ class ProviderRegistry:
 
     def get(self, name: str) -> OAuth2Flow:
         if name not in self.metadata.providers:
-            raise OAuth2Error(f"Provider {name} not found")
+            raise OAuthProviderNotFound()
         if not self.metadata.providers[name].enabled:
-            raise OAuth2Error(f"Provider {name} is disabled")
+            raise OAuthProviderDisabled()
         return self._providers[name]()

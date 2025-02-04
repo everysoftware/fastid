@@ -42,3 +42,17 @@ class UserIDNotFound(ClientError):
 class WrongPassword(Unauthorized):
     message = "Wrong password"
     error_code = "wrong_password"
+
+
+class NoTokenProvided(Unauthorized):
+    message = "No access token provided"
+    error_code = "no_token_provided"
+
+
+class InvalidToken(Unauthorized):
+    message = "Invalid token"
+    error_code = "invalid_token"
+
+
+class InvalidTokenType(Unauthorized):
+    error_code = "invalid_token_type"

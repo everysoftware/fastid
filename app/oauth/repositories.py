@@ -14,9 +14,7 @@ class IOAuthAccountRepository(IRepository[OAuthAccount], ABC):
     pass
 
 
-class OAuthAccountRepository(
-    IOAuthAccountRepository, AlchemyRepository[OAuthAccount]
-):
+class OAuthAccountRepository(IOAuthAccountRepository, AlchemyRepository[OAuthAccount]):
     model_type = OAuthAccount
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Self, TYPE_CHECKING, Literal
 
+from auth365.schemas import OpenIDBearer
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
@@ -11,7 +12,6 @@ from app.auth.schemas import UserCreate
 from app.base.models import Entity
 from app.base.types import uuid
 from app.oauth.config import telegram_settings
-from app.oauthlib.schemas import OpenIDBearer
 
 if TYPE_CHECKING:
     from app.oauth.models import OAuthAccount
@@ -31,9 +31,7 @@ class User(Entity):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_verified: Mapped[bool] = mapped_column(default=False)
 
-    oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
-        back_populates="user", cascade="delete"
-    )
+    oauth_accounts: Mapped[list[OAuthAccount]] = relationship(back_populates="user", cascade="delete")
 
     @hybrid_property
     def is_oauth(self) -> bool:

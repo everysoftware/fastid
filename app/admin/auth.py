@@ -8,10 +8,7 @@ from app.auth.config import auth_settings
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         data = await request.form()
-        if (
-            data["username"] != admin_settings.username
-            or data["password"] != admin_settings.password
-        ):
+        if data["username"] != admin_settings.username or data["password"] != admin_settings.password:
             return False
         request.session.update({"authenticated": True})
         return True

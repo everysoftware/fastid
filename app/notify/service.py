@@ -1,5 +1,7 @@
 import secrets
 
+from auth365.schemas import JWTPayload
+
 from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.models import User
@@ -56,8 +58,6 @@ class NotificationUseCases(UseCase):
         if not secrets.compare_digest(user_code, code):
             raise WrongCode()
 
-    async def authorize_with_code(
-        self, user: User, request: VerifyTokenRequest
-    ) -> str:
+    async def authorize_with_code(self, user: User, request: VerifyTokenRequest) -> str:
         await self.validate_code(user, request.code)
-        return token_backend.create_custom("verify", {"sub": str(user.id)})
+        return token_backend.create("verify", JWTPayload(sub=str(user.id)))

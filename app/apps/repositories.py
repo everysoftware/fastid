@@ -22,9 +22,7 @@ class IsActiveApp(AlchemySpecification):
         self.client_id = client_id
 
     def apply[T: Select[Any]](self, stmt: T) -> T:
-        return stmt.where(
-            App.client_id == self.client_id, App.is_active.is_(True)
-        )
+        return stmt.where(App.client_id == self.client_id, App.is_active.is_(True))
 
 
 class IsActiveAppSlug(AlchemySpecification):

@@ -3,6 +3,18 @@ from starlette import status
 from app.api.exceptions import ClientError
 
 
+class OAuthProviderNotFound(ClientError):
+    message = "OAuth provider not found"
+    error_code = "oauth_provider_not_found"
+    status_code = status.HTTP_400_BAD_REQUEST
+
+
+class OAuthProviderDisabled(ClientError):
+    message = "OAuth provider disabled"
+    error_code = "oauth_provider_disabled"
+    status_code = status.HTTP_400_BAD_REQUEST
+
+
 class OAuthAccountNotFound(ClientError):
     message = "OAuth account with this id not found"
     error_code = "oauth_account_not_found"

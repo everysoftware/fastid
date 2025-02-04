@@ -45,9 +45,7 @@ class ErrorResponse(BaseModel):
 
 
 OK: Final = ErrorResponse(msg="ok", type="ok")
-INTERNAL_ERR: Final = ErrorResponse(
-    msg="Internal Server Error", type="unexpected_error"
-)
+INTERNAL_ERR: Final = ErrorResponse(msg="Internal Server Error", type="unexpected_error")
 
 
 # Settings

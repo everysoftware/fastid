@@ -1,5 +1,6 @@
 from typing import Annotated, Any
 
+from auth365.schemas import OAuth2Callback, TelegramCallback
 from fastapi import APIRouter, Depends
 from fastapi import Request, Response
 from fastapi.responses import RedirectResponse
@@ -15,10 +16,7 @@ from app.frontend.templating import templates
 from app.oauth.config import oauth_settings
 from app.oauth.dependencies import OAuthAccountsDep
 from app.oauth.dependencies import valid_callback
-from app.oauth.providers import get_telegram
 from app.oauth.schemas import OAuthAccountDTO
-from app.oauthlib.schemas import UniversalCallback
-from app.oauthlib.telegram import TelegramOAuth
 
 router = APIRouter(prefix="/oauth", tags=["OAuth"])
 
@@ -36,9 +34,7 @@ async def oauth_login(
     url = await service.get_authorization_url(oauth_name)
     if not redirect:
         return url
-    return RedirectResponse(
-        status_code=status.HTTP_307_TEMPORARY_REDIRECT, url=url
-    )
+    return RedirectResponse(status_code=status.HTTP_307_TEMPORARY_REDIRECT, url=url)
 
 
 @router.get(
@@ -49,11 +45,9 @@ async def oauth_callback(
     oauth: OAuthAccountsDep,
     user: Annotated[User | None, Depends(get_optional_user)],
     oauth_name: str,
-    callback: Annotated[UniversalCallback, Depends(valid_callback)],
+    callback: Annotated[OAuth2Callback | TelegramCallback, Depends(valid_callback)],
 ) -> Any:
-    response: Response = RedirectResponse(
-        url=auth_settings.authorization_endpoint
-    )
+    response: Response = RedirectResponse(url=auth_settings.authorization_endpoint)
     if user is not None:
         await oauth.connect(user, oauth_name, callback)
         return response
@@ -81,7 +75,7 @@ async def oauth_revoke(
     status_code=status.HTTP_200_OK,
 )
 async def telegram_redirect(
-    request: Request, oauth: Annotated[TelegramOAuth, Depends(get_telegram)]
+    request: Request,
 ) -> Any:
     return templates.TemplateResponse(
         request,
@@ -89,7 +83,6 @@ async def telegram_redirect(
         {
             "request": request,
             "redirect_uri": f"{oauth_settings.base_redirect_url}/telegram",
-            "bot_username": await oauth.get_username(),
         },
     )
 

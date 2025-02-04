@@ -1,11 +1,11 @@
+from auth365.schemas import (
+    OAuth2TokenRequest as BaseOAuth2TokenRequest,
+    OAuth2ConsentRequest as BaseOAuth2ConsentRequest,
+)
 from pydantic import (
     Field,
 )
 
-from app.authlib.oauth import (
-    OAuth2TokenRequest as AuthlibOAuth2TokenRequest,
-    OAuth2ConsentRequest as AuthlibOAuth2ConsentRequest,
-)
 from app.base.schemas import BaseModel, EntityDTO
 
 
@@ -41,9 +41,9 @@ class UserChangePassword(BaseModel):
     password: str
 
 
-class OAuth2TokenRequest(AuthlibOAuth2TokenRequest):
+class OAuth2TokenRequest(BaseOAuth2TokenRequest):
     pass
 
 
-class OAuth2ConsentRequest(AuthlibOAuth2ConsentRequest):
+class OAuth2ConsentRequest(BaseOAuth2ConsentRequest):
     scope: str = "openid email name"

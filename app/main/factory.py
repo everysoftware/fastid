@@ -27,7 +27,5 @@ def app_factory(
     for module in modules:
         module.install(app)
     installed = [module.module_name for module in modules]
-    log.info(
-        "Installed modules (%d): %s", len(installed), ", ".join(installed)
-    )
+    log.info("Installed modules (%d): %s", len(installed), ", ".join(installed))
     return app

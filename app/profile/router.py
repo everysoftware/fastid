@@ -15,9 +15,7 @@ from app.profile.dependencies import ProfilesDep
 router = APIRouter(tags=["Users"])
 
 
-@router.patch(
-    "/users/me/profile", response_model=UserDTO, status_code=status.HTTP_200_OK
-)
+@router.patch("/users/me/profile", response_model=UserDTO, status_code=status.HTTP_200_OK)
 async def patch(
     service: ProfilesDep,
     user: UserDep,
@@ -32,9 +30,7 @@ async def patch(
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def change_email(
-    service: ProfilesDep, user: UserDep, dto: UserChangeEmail
-) -> Any:
+async def change_email(service: ProfilesDep, user: UserDep, dto: UserChangeEmail) -> Any:
     return await service.change_email(user, dto)
 
 
@@ -44,9 +40,7 @@ async def change_email(
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def change_password(
-    service: ProfilesDep, user: UserDep, dto: UserChangePassword
-) -> Any:
+async def change_password(service: ProfilesDep, user: UserDep, dto: UserChangePassword) -> Any:
     return await service.change_password(user, dto)
 
 

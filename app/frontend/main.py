@@ -49,9 +49,7 @@ class FrontendModule(Module):
             secret_key=auth_settings.jwt_private_key,
             session_cookie="fastidsession",
         )
-        app.mount(
-            self.static_url, StaticFiles(directory="static"), name="static"
-        )
+        app.mount(self.static_url, StaticFiles(directory="static"), name="static")
         main_router = APIRouter()
         for router in routers:
             main_router.include_router(router)
