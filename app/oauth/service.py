@@ -2,7 +2,7 @@ from auth365.schemas import TelegramCallback, OAuth2Callback, OpenIDBearer, JWTP
 
 from app.auth.backend import token_backend
 from app.auth.models import User
-from app.auth.repositories import ActiveUserSpecification
+from app.auth.repositories import UserEmailSpecification
 from app.base.pagination import Page, LimitOffset
 from app.base.service import UseCase
 from app.base.sorting import Sorting
@@ -15,9 +15,9 @@ from app.oauth.exceptions import (
 from app.oauth.models import OAuthAccount
 from app.oauth.providers import RegistryDep
 from app.oauth.repositories import (
-    IsAccountBelongToUser,
-    IsAccountConnected,
-    IsAccountExists,
+    UserAccountPageSpecification,
+    ProviderAccountSpecification,
+    UserAccountSpecification,
 )
 
 
@@ -32,7 +32,7 @@ class OAuthUseCases(UseCase):
 
     async def authorize(self, provider_name: str, callback: OAuth2Callback | TelegramCallback) -> TokenResponse:
         open_id = await self._callback(provider_name, callback)
-        account = await self.uow.oauth_accounts.find(IsAccountConnected(open_id.provider, open_id.id))
+        account = await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
         if not account:
             account = await self._register(open_id)
         user = await self.uow.users.get_one(account.user_id)
@@ -47,7 +47,7 @@ class OAuthUseCases(UseCase):
         callback: OAuth2Callback | TelegramCallback,
     ) -> OAuthAccount:
         open_id = await self._callback(provider_name, callback)
-        account = await self.uow.oauth_accounts.find(IsAccountConnected(open_id.provider, open_id.id))
+        account = await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
         if account:
             raise OAuthAccountInUse()
         account = OAuthAccount.from_open_id(open_id, user)
@@ -69,13 +69,13 @@ class OAuthUseCases(UseCase):
         user: User,
     ) -> Page[OAuthAccount]:
         return await self.uow.oauth_accounts.get_many(
-            IsAccountBelongToUser(user.id),
+            UserAccountPageSpecification(user.id),
             pagination=LimitOffset(limit=10),
             sorting=Sorting(),
         )
 
     async def revoke(self, user: User, provider_name: str) -> OAuthAccount:
-        account = await self.uow.oauth_accounts.find_one(IsAccountExists(user.id, provider_name))
+        account = await self.uow.oauth_accounts.find_one(UserAccountSpecification(user.id, provider_name))
         user.disconnect_open_id(account.provider)
         account = await self.uow.oauth_accounts.remove(account)
         await self.uow.commit()
@@ -91,7 +91,7 @@ class OAuthUseCases(UseCase):
             )
 
     async def _register(self, open_id: OpenIDBearer) -> OAuthAccount:
-        user = await self.uow.users.find(ActiveUserSpecification(open_id.email)) if open_id.email else None
+        user = await self.uow.users.find(UserEmailSpecification(open_id.email)) if open_id.email else None
         if user:
             user.connect_open_id(open_id)
         else:

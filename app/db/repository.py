@@ -8,7 +8,7 @@ from app.base.models import Entity
 from app.base.pagination import Page, Pagination, LimitOffset
 from app.base.repository import IRepository
 from app.base.sorting import Sorting
-from app.base.specification import ISpecification
+from app.base.specification import Specification
 from app.base.types import UUID
 from app.db.exceptions import NoResultFound
 
@@ -16,7 +16,7 @@ T = TypeVar("T", bound=Entity)
 S = TypeVar("S", bound=Select[Any])
 
 
-class AlchemyRepository(IRepository[T], ABC):
+class SQLAlchemyRepository(IRepository[T], ABC):
     model_type: ClassVar[type[Entity]]
 
     def __init__(
@@ -41,7 +41,7 @@ class AlchemyRepository(IRepository[T], ABC):
             raise NoResultFound()
         return model
 
-    async def find(self, criteria: ISpecification) -> T | None:
+    async def find(self, criteria: Specification) -> T | None:
         stmt = self._apply_params(
             self._select(),
             criteria=criteria,
@@ -50,7 +50,7 @@ class AlchemyRepository(IRepository[T], ABC):
         result = await self.session.scalars(stmt)
         return result.first()
 
-    async def find_one(self, criteria: ISpecification) -> T:
+    async def find_one(self, criteria: Specification) -> T:
         model = await self.find(criteria)
         if model is None:
             raise NoResultFound()
@@ -62,7 +62,7 @@ class AlchemyRepository(IRepository[T], ABC):
 
     async def get_many(
         self,
-        criteria: ISpecification | None = None,
+        criteria: Specification | None = None,
         pagination: Pagination = LimitOffset(),
         sorting: Sorting | None = None,
     ) -> Page[T]:
@@ -83,7 +83,7 @@ class AlchemyRepository(IRepository[T], ABC):
         return select(self.model_type)
 
     @staticmethod
-    def _apply_criteria(stmt: S, criteria: ISpecification) -> S:
+    def _apply_criteria(stmt: S, criteria: Specification) -> S:
         return cast(S, criteria.apply(stmt))
 
     @staticmethod
@@ -101,7 +101,7 @@ class AlchemyRepository(IRepository[T], ABC):
     def _apply_params(
         self,
         stmt: S,
-        criteria: ISpecification | None = None,
+        criteria: Specification | None = None,
         pagination: Pagination = LimitOffset(),
         sorting: Sorting | None = None,
     ) -> S:

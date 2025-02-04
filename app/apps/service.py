@@ -1,6 +1,6 @@
 from app.apps.exceptions import AppNotFound
 from app.apps.models import App
-from app.apps.repositories import IsActiveApp
+from app.apps.repositories import AppClientIDSpecification
 from app.apps.schemas import AppCreate
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
@@ -17,7 +17,7 @@ class AppUseCases(UseCase):
         return await self.uow.apps.add(app)
 
     async def get(self, client_id: str) -> App | None:
-        return await self.uow.apps.find(IsActiveApp(client_id))
+        return await self.uow.apps.find(AppClientIDSpecification(client_id))
 
     async def get_one(self, client_id: str) -> App:
         app = await self.get(client_id)

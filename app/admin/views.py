@@ -87,5 +87,5 @@ class OAuthAccountAdmin(BaseView, model=OAuthAccount):
     ]
 
     column_searchable_list = [
-        User.email,
+        OAuthAccount.email,
     ]

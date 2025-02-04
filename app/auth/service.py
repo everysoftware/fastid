@@ -3,7 +3,7 @@ from auth365.exceptions import Auth365Error
 from app.auth.backend import token_backend
 from app.auth.exceptions import UserIDNotFound, UserAlreadyExists, InvalidToken
 from app.auth.models import User
-from app.auth.repositories import ActiveUserSpecification
+from app.auth.repositories import UserEmailSpecification
 from app.auth.schemas import UserCreate
 from app.base.service import UseCase
 from app.base.types import UUID
@@ -15,7 +15,7 @@ class AuthUseCases(UseCase):
         self.uow = uow
 
     async def register(self, dto: UserCreate) -> User:
-        user = await self.uow.users.find(ActiveUserSpecification(dto.email))
+        user = await self.uow.users.find(UserEmailSpecification(dto.email))
         if user is not None:
             raise UserAlreadyExists()
         user = User.from_create(dto)

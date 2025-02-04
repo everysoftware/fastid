@@ -16,7 +16,7 @@ from app.apps.exceptions import (
     InvalidAuthorizationCode,
 )
 from app.apps.models import App
-from app.apps.repositories import IsActiveApp
+from app.apps.repositories import AppClientIDSpecification
 from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.exceptions import (
@@ -26,7 +26,7 @@ from app.auth.exceptions import (
     InvalidToken,
 )
 from app.auth.models import User
-from app.auth.repositories import ActiveUserSpecification
+from app.auth.repositories import UserEmailSpecification
 from app.auth.schemas import OAuth2ConsentRequest
 from app.auth.utils import otp
 from app.base.service import UseCase
@@ -44,7 +44,7 @@ class Grant(UseCase):
     async def authorize(self, form: Any) -> TokenResponse: ...
 
     async def validate_client(self, client_id: str) -> App:
-        app = await self.uow.apps.find(IsActiveApp(client_id))
+        app = await self.uow.apps.find(AppClientIDSpecification(client_id))
         if app is None:
             raise InvalidClientCredentials()
         return app
@@ -79,7 +79,7 @@ class Grant(UseCase):
 
 class PasswordGrant(Grant):
     async def authorize(self, form: OAuth2PasswordRequest) -> TokenResponse:
-        user = await self.uow.users.find(ActiveUserSpecification(form.username))
+        user = await self.uow.users.find(UserEmailSpecification(form.username))
         if user is None:
             raise UserEmailNotFound()
         user.verify_password(form.password)
