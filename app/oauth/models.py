@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Self, TYPE_CHECKING
 from uuid import UUID
 
+from auth365.schemas import OpenIDBearer
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.base.models import Entity
-from app.oauthlib.schemas import OpenIDBearer
 
 if TYPE_CHECKING:
     from app.auth.models import User

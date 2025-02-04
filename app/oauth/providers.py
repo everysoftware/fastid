@@ -1,5 +1,8 @@
 from typing import Annotated
 
+from auth365.providers.google import GoogleOAuth
+from auth365.providers.telegram import TelegramImplicitOAuth
+from auth365.providers.yandex import YandexOAuth
 from fastapi import Depends
 
 from app.main.config import main_settings
@@ -9,10 +12,7 @@ from app.oauth.config import (
     telegram_settings,
     yandex_settings,
 )
-from app.oauth.registry import ProviderRegistry
-from app.oauthlib.google import GoogleOAuth
-from app.oauthlib.telegram import TelegramOAuth
-from app.oauthlib.yandex import YandexOAuth
+from app.oauth.registry import ProviderRegistry, OAuth2Flow
 
 registry = ProviderRegistry(
     base_authorization_url=oauth_settings.base_authorization_url,
@@ -37,7 +37,7 @@ yandex_oauth = YandexOAuth(
     yandex_settings.client_secret,
     f"{oauth_settings.base_redirect_url}/yandex",
 )
-telegram_oauth = TelegramOAuth(
+telegram_oauth = TelegramImplicitOAuth(
     telegram_settings.bot_token,
     redirect_uri=f"{main_settings.api_url}/oauth/redirect/telegram",
 )
@@ -50,8 +50,8 @@ telegram_oauth = TelegramOAuth(
     color="#F44336",
     enabled=google_settings.enabled,
 )
-def get_google() -> GoogleOAuth:
-    return google_oauth
+def get_google() -> OAuth2Flow:
+    return google_oauth  # type: ignore[return-value]
 
 
 @registry.provider(
@@ -61,8 +61,8 @@ def get_google() -> GoogleOAuth:
     color="#03A9F4",
     enabled=telegram_settings.enabled,
 )
-def get_telegram() -> TelegramOAuth:
-    return telegram_oauth
+def get_telegram() -> OAuth2Flow:
+    return telegram_oauth  # type: ignore[return-value]
 
 
 @registry.provider(
@@ -72,5 +72,5 @@ def get_telegram() -> TelegramOAuth:
     color="#EA4335",
     enabled=yandex_settings.enabled,
 )
-def get_yandex() -> YandexOAuth:
-    return yandex_oauth
+def get_yandex() -> OAuth2Flow:
+    return yandex_oauth  # type: ignore[return-value]

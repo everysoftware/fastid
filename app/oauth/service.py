@@ -1,3 +1,5 @@
+from auth365.schemas import TelegramCallback, OAuth2Callback, OpenIDBearer
+
 from app.auth.backend import token_backend
 from app.auth.models import User
 from app.auth.repositories import ActiveUserSpecification
@@ -18,7 +20,6 @@ from app.oauth.repositories import (
     IsAccountConnected,
     IsAccountExists,
 )
-from app.oauthlib.schemas import UniversalCallback, OpenIDBearer
 
 
 class OAuthUseCases(UseCase):
@@ -28,10 +29,10 @@ class OAuthUseCases(UseCase):
 
     async def get_authorization_url(self, provider_name: str) -> str:
         async with self.registry.get(provider_name) as oauth:
-            return oauth.get_authorization_url()
+            return await oauth.get_authorization_url()
 
     async def authorize(
-        self, provider_name: str, callback: UniversalCallback
+        self, provider_name: str, callback: OAuth2Callback | TelegramCallback
     ) -> TokenResponse:
         open_id = await self._callback(provider_name, callback)
         account = await self.uow.oauth_accounts.find(
@@ -45,7 +46,10 @@ class OAuthUseCases(UseCase):
         return token_backend.to_response(at)
 
     async def connect(
-        self, user: User, provider_name: str, callback: UniversalCallback
+        self,
+        user: User,
+        provider_name: str,
+        callback: OAuth2Callback | TelegramCallback,
     ) -> OAuthAccount:
         open_id = await self._callback(provider_name, callback)
         account = await self.uow.oauth_accounts.find(
@@ -87,7 +91,7 @@ class OAuthUseCases(UseCase):
         return account
 
     async def _callback(
-        self, provider_name: str, callback: UniversalCallback
+        self, provider_name: str, callback: OAuth2Callback | TelegramCallback
     ) -> OpenIDBearer:
         async with self.registry.get(provider_name) as oauth:
             token = await oauth.authorize(callback)
