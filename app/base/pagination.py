@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypeVar, Generic, Sequence
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from pydantic import computed_field, Field
+from pydantic import Field, computed_field
 
 from app.base.models import Entity
 from app.base.schemas import BaseModel
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class Pagination(BaseModel):

@@ -1,8 +1,9 @@
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
-from pydantic import field_validator, AnyHttpUrl
+from pydantic import AnyHttpUrl, field_validator
 
-from app.base.schemas import EntityDTO, BaseModel
+from app.base.schemas import BaseModel, EntityDTO
 
 
 class AppBase(BaseModel):
@@ -14,7 +15,7 @@ class AppBase(BaseModel):
     is_active: bool = True
 
     @field_validator("redirect_uris", mode="before")
-    def validate_redirect_uris(cls, v: Any) -> Any:
+    def validate_redirect_uris(self, v: Any) -> Any:
         if isinstance(v, str):
             return v.split(";")
         return v

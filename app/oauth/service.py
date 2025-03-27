@@ -1,22 +1,22 @@
-from auth365.schemas import TelegramCallback, OAuth2Callback, OpenIDBearer, JWTPayload, TokenResponse
+from auth365.schemas import JWTPayload, OAuth2Callback, OpenIDBearer, TelegramCallback, TokenResponse
 
 from app.auth.backend import token_backend
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
-from app.base.pagination import Page, LimitOffset
+from app.base.pagination import LimitOffset, Page
 from app.base.service import UseCase
 from app.base.sorting import Sorting
-from app.base.types import UUID
+from app.base.types import UUIDv7
 from app.db.dependencies import UOWDep
 from app.oauth.exceptions import (
-    OAuthAccountNotFound,
-    OAuthAccountInUse,
+    OAuthAccountInUseError,
+    OAuthAccountNotFoundError,
 )
 from app.oauth.models import OAuthAccount
 from app.oauth.providers import RegistryDep
 from app.oauth.repositories import (
-    UserAccountPageSpecification,
     ProviderAccountSpecification,
+    UserAccountPageSpecification,
     UserAccountSpecification,
 )
 
@@ -49,19 +49,19 @@ class OAuthUseCases(UseCase):
         open_id = await self._callback(provider_name, callback)
         account = await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
         if account:
-            raise OAuthAccountInUse()
+            raise OAuthAccountInUseError()
         account = OAuthAccount.from_open_id(open_id, user)
         account = await self.uow.oauth_accounts.add(account)
         await self.uow.commit()
         return account
 
-    async def get(self, account_id: UUID) -> OAuthAccount | None:
+    async def get(self, account_id: UUIDv7) -> OAuthAccount | None:
         return await self.uow.oauth_accounts.get(account_id)
 
-    async def get_one(self, account_id: UUID) -> OAuthAccount:
+    async def get_one(self, account_id: UUIDv7) -> OAuthAccount:
         account = await self.get(account_id)
         if not account:
-            raise OAuthAccountNotFound()
+            raise OAuthAccountNotFoundError()
         return account
 
     async def paginate(

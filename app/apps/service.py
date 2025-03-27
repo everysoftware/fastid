@@ -1,4 +1,4 @@
-from app.apps.exceptions import AppNotFound
+from app.apps.exceptions import AppNotFoundError
 from app.apps.models import App
 from app.apps.repositories import AppClientIDSpecification
 from app.apps.schemas import AppCreate
@@ -22,5 +22,5 @@ class AppUseCases(UseCase):
     async def get_one(self, client_id: str) -> App:
         app = await self.get(client_id)
         if app is None:
-            raise AppNotFound()
+            raise AppNotFoundError()
         return app

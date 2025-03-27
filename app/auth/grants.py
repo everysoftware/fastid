@@ -4,33 +4,33 @@ from typing import Any
 from auth365.exceptions import Auth365Error
 from auth365.schemas import (
     JWTPayload,
-    TokenResponse,
-    OAuth2PasswordRequest,
-    OAuth2Callback,
     OAuth2AuthorizationCodeRequest,
+    OAuth2Callback,
+    OAuth2PasswordRequest,
     OAuth2RefreshTokenRequest,
+    TokenResponse,
 )
 
 from app.apps.exceptions import (
-    InvalidClientCredentials,
-    InvalidAuthorizationCode,
+    InvalidAuthorizationCodeError,
+    InvalidClientCredentialsError,
 )
 from app.apps.models import App
 from app.apps.repositories import AppClientIDSpecification
 from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.exceptions import (
-    NotSupportedResponseType,
-    NoPermission,
-    UserEmailNotFound,
-    InvalidToken,
+    InvalidTokenError,
+    NoPermissionError,
+    NotSupportedResponseTypeError,
+    UserEmailNotFoundError,
 )
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
 from app.auth.schemas import OAuth2ConsentRequest
 from app.auth.utils import otp
 from app.base.service import UseCase
-from app.base.types import UUID
+from app.base.types import UUIDv7
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
 
@@ -46,7 +46,7 @@ class Grant(UseCase):
     async def validate_client(self, client_id: str) -> App:
         app = await self.uow.apps.find(AppClientIDSpecification(client_id))
         if app is None:
-            raise InvalidClientCredentials()
+            raise InvalidClientCredentialsError()
         return app
 
     async def authenticate_client(self, client_id: str, client_secret: str) -> App:
@@ -56,7 +56,7 @@ class Grant(UseCase):
 
     def grant(self, user: User, scope: str) -> TokenResponse:
         if "admin" in scope and not user.is_superuser:
-            raise NoPermission()
+            raise NoPermissionError()
         at = self.token_backend.create("access", JWTPayload(sub=str(user.id), scope=scope))
         if "openid" in scope:
             payload = JWTPayload(
@@ -81,7 +81,7 @@ class PasswordGrant(Grant):
     async def authorize(self, form: OAuth2PasswordRequest) -> TokenResponse:
         user = await self.uow.users.find(UserEmailSpecification(form.username))
         if user is None:
-            raise UserEmailNotFound()
+            raise UserEmailNotFoundError()
         user.verify_password(form.password)
         return self.grant(user, form.scope)
 
@@ -93,7 +93,7 @@ class AuthorizationCodeGrant(Grant):
 
     async def validate_consent(self, consent: OAuth2ConsentRequest) -> OAuth2ConsentRequest:
         if consent.response_type != "code":
-            raise NotSupportedResponseType()
+            raise NotSupportedResponseTypeError()
         assert consent.client_id is not None
         assert consent.redirect_uri is not None
         app = await self.validate_client(consent.client_id)
@@ -112,12 +112,11 @@ class AuthorizationCodeGrant(Grant):
 
     async def authorize(self, form: OAuth2AuthorizationCodeRequest) -> TokenResponse:
         await self.authenticate_client(form.client_id, form.client_secret)
-        data = await self.cache.get(f"ac:{form.client_id}:{form.code}", cast=str)
-        await self.cache.delete(f"ac:{form.client_id}:{form.code}")
+        data = await self.cache.pop(f"ac:{form.client_id}:{form.code}", cast=str)
         if data is None:
-            raise InvalidAuthorizationCode()
+            raise InvalidAuthorizationCodeError()
         user_id, scope = data.split(":")
-        user = await self.uow.users.get_one(UUID(user_id))
+        user = await self.uow.users.get_one(UUIDv7(user_id))
         return self.grant(user, scope)
 
 
@@ -130,7 +129,7 @@ class RefreshTokenGrant(Grant):
         try:
             content = self.token_backend.validate("refresh", form.refresh_token)
         except Auth365Error as e:
-            raise InvalidToken() from e
+            raise InvalidTokenError() from e
         assert content.scope is not None
-        user = await self.uow.users.get_one(UUID(content.sub))
+        user = await self.uow.users.get_one(UUIDv7(content.sub))
         return self.grant(user, content.scope)

@@ -1,7 +1,7 @@
 import datetime
 
+from auth365.fastapi.transport import CookieTransport, HeaderTransport
 from auth365.jwt import JWTBackend
-from auth365.fastapi.transport import HeaderTransport, CookieTransport
 from auth365.schemas import JWTConfig
 from passlib.context import CryptContext
 

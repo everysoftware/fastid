@@ -8,7 +8,7 @@ from app.auth.permissions import Requires
 from app.auth.schemas import UserDTO, UserUpdate
 from app.base.pagination import LimitOffset, PageDTO
 from app.base.sorting import Sorting
-from app.profile.dependencies import get_user_by_id, ProfilesDep
+from app.profile.dependencies import ProfilesDep, get_user_by_id
 
 router = APIRouter(
     tags=["Admin"],

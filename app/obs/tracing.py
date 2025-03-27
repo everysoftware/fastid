@@ -1,4 +1,5 @@
-from typing import Any, Literal, Sequence
+from collections.abc import Sequence
+from typing import Any, Literal
 
 import uvicorn.logging
 from fastapi import FastAPI

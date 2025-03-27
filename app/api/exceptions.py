@@ -4,7 +4,7 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from app.base.schemas import ErrorResponse, INTERNAL_ERR
+from app.base.schemas import INTERNAL_ERR, ErrorResponse
 from app.logging.dependencies import log
 
 
@@ -47,7 +47,7 @@ class ValidationError(LongValidationError):
         super().__init__([{"loc": "request", "msg": msg, "type": "invalid_request"}])
 
 
-class Unauthorized(ClientError):
+class UnauthorizedError(ClientError):
     message = "Unauthorized"
     error_code = "unauthorized"
     status_code = status.HTTP_401_UNAUTHORIZED
@@ -67,7 +67,7 @@ def client_exception_handler(request: Request, ex: ClientError) -> JSONResponse:
 
 
 def unhandled_exception_handler(request: Request, ex: Exception) -> JSONResponse:
-    log.exception(f'"{request.method} {request.url}" failed: {repr(ex)}')
+    log.exception(f'"{request.method} {request.url}" failed: {ex!r}')
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=INTERNAL_ERR.model_dump(mode="json"),

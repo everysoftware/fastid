@@ -1,18 +1,18 @@
-from typing import Any, Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from auth365.schemas import DiscoveryDocument, JWKS
-from fastapi import APIRouter, Request, Response, Depends, status
+from auth365.schemas import JWKS, DiscoveryDocument
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
 
+from app.auth.backend import cookie_transport
 from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
-from app.auth.backend import cookie_transport
 from app.frontend.dependencies import (
-    valid_consent,
+    action_verified,
     get_optional_user,
     get_user,
-    action_verified,
+    valid_consent,
 )
 from app.frontend.openid import discovery_document, jwks
 from app.frontend.templating import templates

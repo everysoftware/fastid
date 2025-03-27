@@ -6,17 +6,17 @@ Create Date: 2024-09-09 17:55:03.266529
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "5781ebeb542c"
-down_revision: Union[str, None] = "bd54ebc87d2a"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "bd54ebc87d2a"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -41,9 +41,7 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id", name=op.f("sso_accounts_pkey")),
     )
-    op.create_index(
-        op.f("sso_accounts_email_idx"), "sso_accounts", ["email"], unique=False
-    )
+    op.create_index(op.f("sso_accounts_email_idx"), "sso_accounts", ["email"], unique=False)
     op.create_index(
         op.f("sso_accounts_user_id_idx"),
         "sso_accounts",
@@ -62,28 +60,14 @@ def downgrade() -> None:
         "oidc_accounts",
         sa.Column("id", sa.UUID(), autoincrement=False, nullable=False),
         sa.Column("user_id", sa.UUID(), autoincrement=False, nullable=False),
-        sa.Column(
-            "provider", sa.VARCHAR(), autoincrement=False, nullable=False
-        ),
-        sa.Column(
-            "access_token", sa.VARCHAR(), autoincrement=False, nullable=False
-        ),
-        sa.Column(
-            "id_token", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
-        sa.Column(
-            "refresh_token", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
+        sa.Column("provider", sa.VARCHAR(), autoincrement=False, nullable=False),
+        sa.Column("access_token", sa.VARCHAR(), autoincrement=False, nullable=False),
+        sa.Column("id_token", sa.VARCHAR(), autoincrement=False, nullable=True),
+        sa.Column("refresh_token", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column("email", sa.VARCHAR(), autoincrement=False, nullable=True),
-        sa.Column(
-            "first_name", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
-        sa.Column(
-            "last_name", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
-        sa.Column(
-            "display_name", sa.VARCHAR(), autoincrement=False, nullable=True
-        ),
+        sa.Column("first_name", sa.VARCHAR(), autoincrement=False, nullable=True),
+        sa.Column("last_name", sa.VARCHAR(), autoincrement=False, nullable=True),
+        sa.Column("display_name", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column("picture", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column(
             "created_at",
@@ -99,17 +83,11 @@ def downgrade() -> None:
             autoincrement=False,
             nullable=False,
         ),
-        sa.Column(
-            "account_id", sa.VARCHAR(), autoincrement=False, nullable=False
-        ),
+        sa.Column("account_id", sa.VARCHAR(), autoincrement=False, nullable=False),
         sa.PrimaryKeyConstraint("id", name="oidc_accounts_pkey"),
     )
-    op.create_index(
-        "oidc_accounts_user_id_idx", "oidc_accounts", ["user_id"], unique=False
-    )
-    op.create_index(
-        "oidc_accounts_email_idx", "oidc_accounts", ["email"], unique=False
-    )
+    op.create_index("oidc_accounts_user_id_idx", "oidc_accounts", ["user_id"], unique=False)
+    op.create_index("oidc_accounts_email_idx", "oidc_accounts", ["email"], unique=False)
     op.drop_index(op.f("sso_accounts_user_id_idx"), table_name="sso_accounts")
     op.drop_index(op.f("sso_accounts_email_idx"), table_name="sso_accounts")
     op.drop_table("sso_accounts")

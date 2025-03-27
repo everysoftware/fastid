@@ -1,10 +1,10 @@
 import random
-from typing import Mapping
+from collections.abc import Mapping
 
 from auth365.fastapi.transport import Transport
 from fastapi import Request
 
-from app.auth.exceptions import NoTokenProvided
+from app.auth.exceptions import NoTokenProvidedError
 
 
 class AuthBus:
@@ -22,7 +22,7 @@ class AuthBus:
             if token:
                 return token
         if auto_error:
-            raise NoTokenProvided()
+            raise NoTokenProvidedError()
         return None
 
     def __call__(self, request: Request) -> str | None:

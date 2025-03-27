@@ -1,21 +1,18 @@
 from typing import Annotated, Any
 
 from auth365.schemas import OAuth2Callback, TelegramCallback
-from fastapi import APIRouter, Depends
-from fastapi import Request, Response
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from starlette import status
 
 from app.auth.backend import cookie_transport
 from app.auth.config import auth_settings
-from app.auth.dependencies import UserDep
-from app.auth.dependencies import get_optional_user
+from app.auth.dependencies import UserDep, get_optional_user
 from app.auth.models import User
 from app.base.pagination import PageDTO
 from app.frontend.templating import templates
 from app.oauth.config import oauth_settings
-from app.oauth.dependencies import OAuthAccountsDep
-from app.oauth.dependencies import valid_callback
+from app.oauth.dependencies import OAuthAccountsDep, valid_callback
 from app.oauth.schemas import OAuthAccountDTO
 
 router = APIRouter(prefix="/oauth", tags=["OAuth"])

@@ -6,17 +6,17 @@ Create Date: 2024-10-17 20:21:09.898681
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "523057551f5c"
-down_revision: Union[str, None] = "55aea0333e65"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "55aea0333e65"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -44,12 +44,8 @@ def downgrade() -> None:
         sa.Column("id", sa.UUID(), autoincrement=False, nullable=False),
         sa.Column("name", sa.VARCHAR(), autoincrement=False, nullable=False),
         sa.Column("secret", sa.VARCHAR(), autoincrement=False, nullable=False),
-        sa.Column(
-            "redirect_uris", sa.VARCHAR(), autoincrement=False, nullable=False
-        ),
-        sa.Column(
-            "is_active", sa.BOOLEAN(), autoincrement=False, nullable=False
-        ),
+        sa.Column("redirect_uris", sa.VARCHAR(), autoincrement=False, nullable=False),
+        sa.Column("is_active", sa.BOOLEAN(), autoincrement=False, nullable=False),
         sa.Column(
             "created_at",
             postgresql.TIMESTAMP(),

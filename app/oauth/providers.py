@@ -7,12 +7,12 @@ from fastapi import Depends
 
 from app.main.config import main_settings
 from app.oauth.config import (
-    oauth_settings,
     google_settings,
+    oauth_settings,
     telegram_settings,
     yandex_settings,
 )
-from app.oauth.registry import ProviderRegistry, OAuth2Flow
+from app.oauth.registry import OAuth2Flow, ProviderRegistry
 
 registry = ProviderRegistry(
     base_authorization_url=oauth_settings.base_authorization_url,

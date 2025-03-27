@@ -1,7 +1,7 @@
 from typing import Any
 
 from app.base.specification import Specification
-from app.base.types import UUID
+from app.base.types import UUIDv7
 from app.db.repository import SQLAlchemyRepository
 from app.oauth.models import OAuthAccount
 
@@ -11,7 +11,7 @@ class OAuthAccountRepository(SQLAlchemyRepository[OAuthAccount]):
 
 
 class UserAccountSpecification(Specification):
-    def __init__(self, user_id: UUID, provider: str) -> None:
+    def __init__(self, user_id: UUIDv7, provider: str) -> None:
         self.user_id = user_id
         self.provider = provider
 
@@ -23,7 +23,7 @@ class UserAccountSpecification(Specification):
 
 
 class UserAccountPageSpecification(Specification):
-    def __init__(self, user_id: UUID) -> None:
+    def __init__(self, user_id: UUIDv7) -> None:
         self.user_id = user_id
 
     def apply(self, stmt: Any) -> Any:

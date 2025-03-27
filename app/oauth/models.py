@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from typing import Self, TYPE_CHECKING
-from uuid import UUID
+from typing import TYPE_CHECKING, Self
 
-from auth365.schemas import OpenIDBearer
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.base.models import Entity
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
+    from auth365.schemas import OpenIDBearer
+
     from app.auth.models import User
 
 

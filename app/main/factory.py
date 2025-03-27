@@ -1,5 +1,6 @@
+from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
-from typing import Sequence, Any, AsyncIterator
+from typing import Any
 
 from fastapi import FastAPI
 

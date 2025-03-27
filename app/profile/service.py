@@ -1,18 +1,18 @@
 from app.auth.exceptions import (
-    UserIDNotFound,
-    UserAlreadyExists,
+    UserAlreadyExistsError,
+    UserIDNotFoundError,
 )
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
 from app.auth.schemas import (
-    UserUpdate,
     UserChangeEmail,
     UserChangePassword,
+    UserUpdate,
 )
-from app.base.pagination import Pagination, Page
+from app.base.pagination import Page, Pagination
 from app.base.service import UseCase
 from app.base.sorting import Sorting
-from app.base.types import UUID
+from app.base.types import UUIDv7
 from app.db.dependencies import UOWDep
 
 
@@ -20,13 +20,13 @@ class ProfileUseCases(UseCase):
     def __init__(self, uow: UOWDep) -> None:
         self.uow = uow
 
-    async def get(self, user_id: UUID) -> User | None:
+    async def get(self, user_id: UUIDv7) -> User | None:
         return await self.uow.users.get(user_id)
 
-    async def get_one(self, user_id: UUID) -> User:
+    async def get_one(self, user_id: UUIDv7) -> User:
         user = await self.get(user_id)
         if user is None:
-            raise UserIDNotFound()
+            raise UserIDNotFoundError()
         return user
 
     async def update_profile(
@@ -41,7 +41,7 @@ class ProfileUseCases(UseCase):
     async def change_email(self, user: User, dto: UserChangeEmail) -> User:
         check_user = await self.uow.users.find(UserEmailSpecification(dto.new_email))
         if check_user is not None:
-            raise UserAlreadyExists()
+            raise UserAlreadyExistsError()
         user.change_email(dto.new_email)
         await self.uow.commit()
         return user

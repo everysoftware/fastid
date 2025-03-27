@@ -1,6 +1,8 @@
 from auth365.schemas import (
-    OAuth2TokenRequest as BaseOAuth2TokenRequest,
     OAuth2ConsentRequest as BaseOAuth2ConsentRequest,
+)
+from auth365.schemas import (
+    OAuth2TokenRequest as BaseOAuth2TokenRequest,
 )
 from pydantic import (
     Field,

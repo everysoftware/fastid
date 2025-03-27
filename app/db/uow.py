@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import abc
 from abc import ABC
-
-from typing import cast, Self, Any
-
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-)
+from typing import TYPE_CHECKING, Any, Self, cast
 
 from app.apps.repositories import AppRepository
 from app.auth.repositories import UserRepository
 from app.oauth.repositories import OAuthAccountRepository
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import (
+        AsyncSession,
+        async_sessionmaker,
+    )
 
 
 class IUnitOfWork(ABC):
