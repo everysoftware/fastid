@@ -1,6 +1,6 @@
 import base64
 
-from auth365.schemas import DiscoveryDocument, JWTPayload, JWKS, JWK
+from auth365.schemas import JWK, JWKS, DiscoveryDocument, JWTPayload
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 

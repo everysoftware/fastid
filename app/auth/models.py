@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-from typing import Self, TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Self
 
-from auth365.schemas import OpenIDBearer
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.auth.backend import hasher
-from app.auth.exceptions import WrongPassword
-from app.auth.schemas import UserCreate
+from app.auth.exceptions import WrongPasswordError
 from app.base.models import Entity
 from app.base.types import uuid
 from app.oauth.config import telegram_settings
 
 if TYPE_CHECKING:
+    from auth365.schemas import OpenIDBearer
+
+    from app.auth.schemas import UserCreate
     from app.oauth.models import OAuthAccount
 
 NotificationMethod = Literal["email", "telegram"]
@@ -91,7 +92,7 @@ class User(Entity):
 
     def verify_password(self, password: str) -> None:
         if not hasher.verify(password, self.hashed_password):
-            raise WrongPassword()
+            raise WrongPasswordError()
 
     def grant_superuser(self) -> None:
         self.is_superuser = True

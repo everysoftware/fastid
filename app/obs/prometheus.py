@@ -1,7 +1,6 @@
 import time
 
-from fastapi import Request, Response
-from fastapi import status
+from fastapi import Request, Response, status
 from opentelemetry import trace
 from starlette.middleware.base import (
     BaseHTTPMiddleware,
@@ -10,8 +9,8 @@ from starlette.middleware.base import (
 from starlette.routing import Match
 from starlette.types import ASGIApp
 
-from app.obs import panels
 from app.api.exceptions import unhandled_exception_handler
+from app.obs import panels
 
 
 class PrometheusMiddleware(BaseHTTPMiddleware):
@@ -64,7 +63,7 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
             panels.RESPONSES.labels(
                 method=method,
                 path=path,
-                status_code=status_code,  # noqa
+                status_code=status_code,
                 app_name=self.app_name,
             ).inc()
             panels.REQUESTS_IN_PROGRESS.labels(method=method, path=path, app_name=self.app_name).dec()

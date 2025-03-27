@@ -6,7 +6,7 @@ from sqlalchemy import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.admin.auth import admin_auth
-from app.admin.views import OAuthAccountAdmin, UserAdmin, OAuthClientAdmin
+from app.admin.views import OAuthAccountAdmin, OAuthClientAdmin, UserAdmin
 from app.main.modules import Module
 
 

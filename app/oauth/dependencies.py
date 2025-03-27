@@ -4,7 +4,7 @@ from auth365.schemas import OAuth2Callback, TelegramCallback
 from fastapi import Depends
 from starlette.requests import Request
 
-from app.base.types import UUID
+from app.base.types import UUIDv7
 from app.logging.dependencies import log
 from app.oauth.models import OAuthAccount
 from app.oauth.service import OAuthUseCases
@@ -12,7 +12,7 @@ from app.oauth.service import OAuthUseCases
 OAuthAccountsDep = Annotated[OAuthUseCases, Depends()]
 
 
-async def get_account(service: OAuthAccountsDep, account_id: UUID) -> OAuthAccount:
+async def get_account(service: OAuthAccountsDep, account_id: UUIDv7) -> OAuthAccount:
     return await service.get_one(account_id)
 
 

@@ -1,14 +1,14 @@
-from typing import Any, Annotated
+from typing import Annotated, Any
 
-from auth365.schemas import TokenResponse, OAuth2Grant
-from fastapi import APIRouter, status, Depends, Form, BackgroundTasks
+from auth365.schemas import OAuth2Grant, TokenResponse
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, status
 
 from app.auth.backend import cookie_transport
 from app.auth.dependencies import AuthDep, UserDep
-from app.auth.exceptions import NotSupportedGrant
+from app.auth.exceptions import NotSupportedGrantError
 from app.auth.grants import (
-    PasswordGrant,
     AuthorizationCodeGrant,
+    PasswordGrant,
     RefreshTokenGrant,
 )
 from app.auth.schemas import (
@@ -53,7 +53,7 @@ async def authorize(
         case OAuth2Grant.refresh_token:
             token = await refresh_token_grant.authorize(form.as_refresh_token_grant())
         case _:
-            raise NotSupportedGrant()
+            raise NotSupportedGrantError()
     return cookie_transport.get_login_response(token)
 
 

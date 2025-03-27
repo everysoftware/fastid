@@ -1,4 +1,4 @@
-from typing import Self, Any
+from typing import Any, Self
 
 from app.cache.dependencies import redis_client
 

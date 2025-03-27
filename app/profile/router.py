@@ -1,14 +1,14 @@
 from typing import Any
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, Depends, status
 
 from app.auth.dependencies import UserDep
 from app.auth.permissions import Requires
 from app.auth.schemas import (
-    UserDTO,
-    UserUpdate,
     UserChangeEmail,
     UserChangePassword,
+    UserDTO,
+    UserUpdate,
 )
 from app.profile.dependencies import ProfilesDep
 

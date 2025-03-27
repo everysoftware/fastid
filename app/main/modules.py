@@ -1,9 +1,9 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from fastapi import FastAPI
 
 
-class Module(ABC):
+class Module:
     module_name = "unknown_module"
 
     @abstractmethod
@@ -16,7 +16,7 @@ class Module(ABC):
         pass
 
 
-class Plugin(ABC):
+class Plugin:
     plugin_name: str = "unknown_plugin"
 
     @abstractmethod

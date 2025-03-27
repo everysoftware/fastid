@@ -1,4 +1,4 @@
-from typing import Self, Any, Annotated
+from typing import Annotated, Any, Self
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties

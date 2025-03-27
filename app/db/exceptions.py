@@ -2,9 +2,9 @@ class RepositoryError(Exception):
     pass
 
 
-class NoResultFound(RepositoryError):
+class NoResultFoundError(RepositoryError):
     pass
 
 
-class MultipleResultsFound(RepositoryError):
+class MultipleResultsFoundError(RepositoryError):
     pass

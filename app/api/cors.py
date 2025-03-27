@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +22,7 @@ class CORSPlugin(Plugin):
 
     def install(self, app: FastAPI) -> None:
         app.add_middleware(
-            CORSMiddleware,  # noqa
+            CORSMiddleware,
             allow_origins=self.origins,
             allow_origin_regex=self.origin_regex,
             allow_credentials=True,

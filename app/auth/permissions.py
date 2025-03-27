@@ -1,8 +1,8 @@
 from fastapi import Request
 
-from app.auth.backend import verify_token_transport, token_backend
+from app.auth.backend import token_backend, verify_token_transport
 from app.auth.dependencies import UserDep
-from app.auth.exceptions import NoPermission
+from app.auth.exceptions import NoPermissionError
 from app.auth.models import User
 
 
@@ -28,11 +28,11 @@ class Requires:
     ) -> User:
         verify_token = verify_token_transport.get_token(request)
         if self.superuser is not None and user.is_superuser != self.superuser:
-            raise NoPermission()
+            raise NoPermissionError()
         if self.email_verified is not None and user.is_verified != self.email_verified:
-            raise NoPermission()
+            raise NoPermissionError()
         if self.active is not None and user.is_active != self.active:
-            raise NoPermission()
+            raise NoPermissionError()
         if self.action_verified and (verify_token is None or not self.token_backend.validate("verify", verify_token)):
-            raise NoPermission()
+            raise NoPermissionError()
         return user

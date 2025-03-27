@@ -1,8 +1,9 @@
-from typing import MutableMapping, Callable, Protocol, Any, Self
+from collections.abc import Callable, MutableMapping
+from typing import Any, Protocol, Self
 
-from auth365.schemas import TokenResponse, OpenID
+from auth365.schemas import OpenID, TokenResponse
 
-from app.oauth.exceptions import OAuthProviderNotFound, OAuthProviderDisabled
+from app.oauth.exceptions import OAuthProviderDisabledError, OAuthProviderNotFoundError
 from app.oauth.schemas import ProviderMeta, RegistryMeta
 
 
@@ -69,7 +70,7 @@ class ProviderRegistry:
 
     def get(self, name: str) -> OAuth2Flow:
         if name not in self.metadata.providers:
-            raise OAuthProviderNotFound()
+            raise OAuthProviderNotFoundError()
         if not self.metadata.providers[name].enabled:
-            raise OAuthProviderDisabled()
+            raise OAuthProviderDisabledError()
         return self._providers[name]()

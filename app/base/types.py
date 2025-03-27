@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 import datetime
-from uuid import UUID as PythonUUID
+from uuid import UUID
 
 from uuid_utils import uuid7
 
-UUID = PythonUUID
+UUIDv7 = UUID
 
 
 def uuid_hex() -> str:
     return uuid7().hex
 
 
-def uuid() -> UUID:
-    return UUID(uuid_hex())
+def uuid() -> UUIDv7:
+    return UUIDv7(uuid_hex())
 
 
 def naive_utc() -> datetime.datetime:

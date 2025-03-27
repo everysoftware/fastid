@@ -6,17 +6,17 @@ Create Date: 2024-11-13 01:05:57.727313
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "3282fde15451"
-down_revision: Union[str, None] = "f02ee2d85935"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "f02ee2d85935"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -43,18 +43,10 @@ def downgrade() -> None:
         "oauth_clients",
         sa.Column("id", sa.UUID(), autoincrement=False, nullable=False),
         sa.Column("name", sa.VARCHAR(), autoincrement=False, nullable=False),
-        sa.Column(
-            "client_id", sa.VARCHAR(), autoincrement=False, nullable=False
-        ),
-        sa.Column(
-            "client_secret", sa.VARCHAR(), autoincrement=False, nullable=False
-        ),
-        sa.Column(
-            "redirect_uris", sa.VARCHAR(), autoincrement=False, nullable=False
-        ),
-        sa.Column(
-            "is_active", sa.BOOLEAN(), autoincrement=False, nullable=False
-        ),
+        sa.Column("client_id", sa.VARCHAR(), autoincrement=False, nullable=False),
+        sa.Column("client_secret", sa.VARCHAR(), autoincrement=False, nullable=False),
+        sa.Column("redirect_uris", sa.VARCHAR(), autoincrement=False, nullable=False),
+        sa.Column("is_active", sa.BOOLEAN(), autoincrement=False, nullable=False),
         sa.Column(
             "created_at",
             postgresql.TIMESTAMP(),

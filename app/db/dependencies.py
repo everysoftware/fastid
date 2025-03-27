@@ -1,9 +1,10 @@
-from typing import Annotated, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Annotated
 
 from fastapi import Depends
 
 from app.db.connection import session_factory
-from app.db.uow import SQLAlchemyUOW, IUnitOfWork
+from app.db.uow import IUnitOfWork, SQLAlchemyUOW
 
 
 async def get_uow() -> AsyncIterator[IUnitOfWork]:

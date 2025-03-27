@@ -1,9 +1,10 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Literal, cast, Sequence, Self
+from typing import Literal, Self, cast
 
+from app.api.exceptions import ValidationError
 from app.base.models import Entity
 from app.base.schemas import BaseModel
-from app.api.exceptions import ValidationError
 
 
 @dataclass

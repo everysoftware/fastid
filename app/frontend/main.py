@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import FastAPI, APIRouter
+from fastapi import APIRouter, FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
@@ -45,7 +45,7 @@ class FrontendModule(Module):
         frontend_app = FastAPI(title=self.title, **self.fastapi_kwargs)
         add_exception_handlers(frontend_app)
         frontend_app.add_middleware(
-            SessionMiddleware,  # noqa
+            SessionMiddleware,
             secret_key=auth_settings.jwt_private_key,
             session_cookie="fastidsession",
         )

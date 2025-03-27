@@ -1,9 +1,9 @@
-from typing import MutableMapping, Sequence
+from collections.abc import MutableMapping, Sequence
 
 from pydantic import Field
 
-from app.base.schemas import EntityDTO, BaseModel
-from app.base.types import UUID
+from app.base.schemas import BaseModel, EntityDTO
+from app.base.types import UUIDv7
 
 
 class OAuthAccountBase(BaseModel):
@@ -25,7 +25,7 @@ class OAuthAccountBase(BaseModel):
 
 
 class OAuthAccountDTO(EntityDTO, OAuthAccountBase):
-    user_id: UUID
+    user_id: UUIDv7
 
 
 class ProviderMeta(BaseModel):
@@ -43,7 +43,7 @@ class RegistryMeta(BaseModel):
 
     @property
     def enabled_providers(self) -> Sequence[ProviderMeta]:
-        return [meta for meta in self.providers.values()]
+        return list(self.providers.values())
 
     @property
     def any_enabled(self) -> bool:

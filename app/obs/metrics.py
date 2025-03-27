@@ -3,14 +3,14 @@ import logging
 from fastapi import FastAPI
 from prometheus_client import REGISTRY
 from prometheus_client.openmetrics.exposition import (
-    generate_latest,
     CONTENT_TYPE_LATEST,
+    generate_latest,
 )
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.obs.prometheus import PrometheusMiddleware
 from app.main.modules import Plugin
+from app.obs.prometheus import PrometheusMiddleware
 
 
 class EndpointFilter(logging.Filter):
@@ -28,13 +28,13 @@ class MetricsPlugin(Plugin):
         access_logger = logging.getLogger("uvicorn.access")
         access_logger.addFilter(EndpointFilter())
         app.add_middleware(
-            PrometheusMiddleware,  # noqa
+            PrometheusMiddleware,
             app_name=self.app_name,
         )
         app.add_route("/metrics", get_metrics)
 
 
-def get_metrics(request: Request) -> Response:  # noqa
+def get_metrics(request: Request) -> Response:
     return Response(
         generate_latest(REGISTRY),  # type: ignore[no-untyped-call]
         headers={"Content-Type": CONTENT_TYPE_LATEST},

@@ -1,16 +1,17 @@
 from abc import ABC
-from typing import TypeVar, Any, ClassVar, Sequence, cast
+from collections.abc import Sequence
+from typing import Any, ClassVar, TypeVar, cast
 
-from sqlalchemy import select, Select
+from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.base.models import Entity
-from app.base.pagination import Page, Pagination, LimitOffset
+from app.base.pagination import LimitOffset, Page, Pagination
 from app.base.repository import IRepository
 from app.base.sorting import Sorting
 from app.base.specification import Specification
-from app.base.types import UUID
-from app.db.exceptions import NoResultFound
+from app.base.types import UUIDv7
+from app.db.exceptions import NoResultFoundError
 
 T = TypeVar("T", bound=Entity)
 S = TypeVar("S", bound=Select[Any])
@@ -29,16 +30,16 @@ class SQLAlchemyRepository(IRepository[T], ABC):
         self.session.add(model)
         return model
 
-    async def get(self, id: UUID) -> T | None:
+    async def get(self, id: UUIDv7) -> T | None:
         model = await self.session.get(self.model_type, id)
         if model is None:
             return None
         return cast(T, model)
 
-    async def get_one(self, id: UUID) -> T:
+    async def get_one(self, id: UUIDv7) -> T:
         model = await self.get(id)
         if model is None:
-            raise NoResultFound()
+            raise NoResultFoundError()
         return model
 
     async def find(self, criteria: Specification) -> T | None:
@@ -53,7 +54,7 @@ class SQLAlchemyRepository(IRepository[T], ABC):
     async def find_one(self, criteria: Specification) -> T:
         model = await self.find(criteria)
         if model is None:
-            raise NoResultFound()
+            raise NoResultFoundError()
         return model
 
     async def remove(self, model: T) -> T:
@@ -76,7 +77,7 @@ class SQLAlchemyRepository(IRepository[T], ABC):
         )
         return self._to_page(result.all())
 
-    def _to_page(self, entities: Sequence[Any]) -> Page[T]:  # noqa
+    def _to_page(self, entities: Sequence[Any]) -> Page[T]:
         return Page(items=entities)
 
     def _select(self) -> Select[tuple[T]]:

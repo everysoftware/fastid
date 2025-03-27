@@ -1,8 +1,8 @@
-from typing import Any, Annotated
+from typing import Annotated, Any
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import FastAPI, Response, Request, Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 
 from test_client.config import settings
@@ -47,7 +47,7 @@ def current_user(request: Request) -> dict[str, Any]:
         f"{settings.fastid_url}/api/v1/userinfo",
         headers={"Authorization": f"Bearer {token}"},
     )
-    return response.json()
+    return response.json()  # type: ignore[no-any-return]
 
 
 @app.get("/test")
