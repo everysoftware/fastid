@@ -1,4 +1,4 @@
-import random
+import secrets
 from collections.abc import Mapping
 
 from auth365.fastapi.transport import Transport
@@ -30,4 +30,4 @@ class AuthBus:
 
 
 def otp() -> str:
-    return str(random.randint(100000, 999999))
+    return str(secrets.choice(range(100_000, 1_000_000)))
