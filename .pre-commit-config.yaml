@@ -10,6 +10,7 @@
 #
 # git commit --no-verify
 
+default_stages: [pre-commit, pre-merge-commit]
 default_language_version:
   python: python3.12
 repos:
@@ -17,21 +18,48 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
+        stages: [pre-commit, pre-merge-commit, manual]
         args:
           - --maxkb=2000
       - id: check-toml
+        stages: [pre-commit, pre-merge-commit, manual]
       - id: check-yaml
+        stages: [pre-commit, pre-merge-commit, manual]
         args:
           - --unsafe
       - id: end-of-file-fixer
+        stages: [pre-commit, pre-merge-commit, manual]
       - id: trailing-whitespace
+        stages: [pre-commit, pre-merge-commit, manual]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+    -   id: codespell
+        stages: [pre-commit, pre-merge-commit, manual]
+        args: [--ignore-words=.codespell-whitelist.txt]
+
   - repo: local
     hooks:
-      - id: fix
-        name: fix
+      - id: lint
+        name: Linter
+        stages: [pre-commit, pre-merge-commit, manual]
         language: system
-        entry: make fix
+        entry: make lint
 
-ci:
-  autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
-  autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
+  - repo: local
+    hooks:
+      - id: static-analysis
+        name: Static analysis
+        language: system
+        entry: make static
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: [
+#          '--baseline', '.secrets.baseline',
+        ]
+        exclude: package.lock.json
+        stages: [ pre-commit, pre-merge-commit, manual ]

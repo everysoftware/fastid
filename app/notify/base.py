@@ -6,8 +6,8 @@ from jinja2 import Environment, FileSystemLoader
 from app.auth.models import User
 from app.notify.config import notify_settings
 
-html_env = Environment(loader=FileSystemLoader("templates/notifications/html"))
-md_env = Environment(loader=FileSystemLoader("templates/notifications/md"))
+html_env = Environment(loader=FileSystemLoader("templates/notifications/html"), autoescape=True)
+md_env = Environment(loader=FileSystemLoader("templates/notifications/md"), autoescape=True)
 
 html_env.globals["from_name"] = notify_settings.from_name
 md_env.globals["from_name"] = notify_settings.from_name

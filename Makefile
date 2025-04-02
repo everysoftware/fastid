@@ -34,22 +34,31 @@ format:
 
 .PHONY: lint
 lint:
+	echo "Running ruff linter (isort, flake, pyupgrade, etc. replacement)..."
 	ruff check . --fix
-	mypy .
-
-.PHONY: fix
-fix:
-	ruff check . --fix --unsafe-fixes
+	echo "Running ruff formatter (black replacement)..."
 	ruff format .
+	echo "Running codespell to find typos..."
+	codespell .
+
+.PHONY: static
+static:
+	echo "Running mypy..."
 	mypy .
+	echo "Running bandit..."
+	bandit -c pyproject.toml -r app
+
+.PHONY: check
+check:
+	pre-commit run
 
 .PHONY: generate
 generate: deps
-	@alembic revision -m "$(NAME)" --autogenerate
-	@alembic upgrade head
-	@alembic downgrade -1
-	@alembic upgrade head
-	@alembic downgrade -1
+	alembic revision -m "$(NAME)" --autogenerate
+	alembic upgrade head
+	alembic downgrade -1
+	alembic upgrade head
+	alembic downgrade -1
 
 PHONY: upgrade
 upgrade: deps
