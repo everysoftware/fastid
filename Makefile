@@ -1,10 +1,11 @@
 APP_PATH = app
-TESTS_PATH = tests
 LOGS_SINCE = 10m
 
-.PHONY: run
-run:
+.PHONY: deps
+deps:
 	docker-compose up db redis -d
+
+.PHONY: deps
 	uvicorn $(APP_PATH):app --host 0.0.0.0 --port 8000
 
 .PHONY: up
@@ -15,9 +16,9 @@ up:
 up-prod:
 	docker-compose -f docker-compose.yml -f docker-compose-prod.yml up --build -d
 
-.PHONY: logs
-logs:
-	docker-compose logs --since $(LOGS_SINCE) --follow
+.PHONY: test
+test: deps
+	pytest . -s -v
 
 .PHONY: stop
 stop:
@@ -34,12 +35,13 @@ format:
 .PHONY: lint
 lint:
 	ruff check . --fix
-	mypy . --install-types --exclude tests
+	mypy .
 
 .PHONY: fix
 fix:
-	make lint
-	make format
+	ruff check . --fix --unsafe-fixes
+	ruff format .
+	mypy .
 
 PHONY: generate
 generate:

@@ -20,6 +20,8 @@ services:
       - .env
     volumes:
       - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5412:5432"
     restart: unless-stopped
 
   redis:
@@ -38,6 +40,8 @@ services:
       '
     volumes:
       - redis_data:/var/lib/redis/data
+    ports:
+      - "6312:6379"
 
   fastapi:
     build:

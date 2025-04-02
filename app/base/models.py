@@ -1,6 +1,7 @@
 import datetime
 from enum import Enum
 from typing import Any, Self
+from uuid import UUID
 
 from sqlalchemy import BigInteger, MetaData, Uuid, inspect
 from sqlalchemy import Enum as SAEnum
@@ -11,12 +12,12 @@ from sqlalchemy.orm import (
 )
 
 from app.base.schemas import BaseModel
-from app.base.types import UUIDv7, naive_utc, uuid
+from app.base.types import naive_utc, uuid
 
 type_map = {
     int: BigInteger,
     Enum: SAEnum(Enum, native_enum=False),
-    UUIDv7: Uuid(as_uuid=False),
+    UUID: Uuid(as_uuid=False),
 }
 
 NAMING_CONVENTION = {
@@ -59,7 +60,7 @@ class Mixin:
 
 
 class UUIDMixin(Mixin):
-    id: Mapped[UUIDv7] = mapped_column(
+    id: Mapped[UUID] = mapped_column(
         primary_key=True,
         default=uuid,
         sort_order=-100,
