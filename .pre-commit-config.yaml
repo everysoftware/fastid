@@ -59,7 +59,7 @@ repos:
     hooks:
       - id: detect-secrets
         args: [
-#          '--baseline', '.secrets.baseline',
+          '--baseline', '.secrets.baseline',
         ]
         exclude: package.lock.json
         stages: [ pre-commit, pre-merge-commit, manual ]

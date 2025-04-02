@@ -34,18 +34,18 @@ format:
 
 .PHONY: lint
 lint:
-	echo "Running ruff linter (isort, flake, pyupgrade, etc. replacement)..."
+	@echo "Running ruff linter (isort, flake, pyupgrade, etc. replacement)..."
 	ruff check . --fix
-	echo "Running ruff formatter (black replacement)..."
+	@echo "Running ruff formatter (black replacement)..."
 	ruff format .
-	echo "Running codespell to find typos..."
+	@echo "Running codespell to find typos..."
 	codespell .
 
 .PHONY: static
 static:
-	echo "Running mypy..."
+	@echo "Running mypy..."
 	mypy .
-	echo "Running bandit..."
+	@echo "Running bandit..."
 	bandit -c pyproject.toml -r app
 
 .PHONY: check
