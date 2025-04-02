@@ -43,19 +43,20 @@ fix:
 	ruff format .
 	mypy .
 
-PHONY: generate
-generate:
-	docker-compose up db -d
-	alembic revision --autogenerate
+.PHONY: generate
+generate: deps
+	@alembic revision -m "$(NAME)" --autogenerate
+	@alembic upgrade head
+	@alembic downgrade -1
+	@alembic upgrade head
+	@alembic downgrade -1
 
 PHONY: upgrade
-upgrade:
-	docker-compose up db -d
+upgrade: deps
 	alembic upgrade head
 
 PHONY: downgrade
-downgrade:
-	docker-compose up db -d
+downgrade: deps
 	alembic downgrade -1
 
 # Windows only

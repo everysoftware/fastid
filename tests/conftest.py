@@ -29,13 +29,12 @@ async def engine() -> AsyncIterator[AsyncEngine]:
 
 
 @pytest.fixture(scope="session")
-async def conn(engine: AsyncEngine) -> AsyncIterator[AsyncConnection]:
-    async with engine.begin() as conn:  # type: AsyncConnection
-        yield conn
+async def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    return _session_factory
 
 
 @pytest.fixture(scope="session", autouse=True)
-def db_url(conn: AsyncConnection) -> str:
+def db_url(engine: AsyncEngine) -> str:
     logger.info("Applying migrations to temporary database")
     upgrade(alembic_config, "head")
     logger.info("Migrated database to latest version")
@@ -43,9 +42,10 @@ def db_url(conn: AsyncConnection) -> str:
     return test_db_url
 
 
-@pytest.fixture(scope="session")
-async def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    return _session_factory
+@pytest.fixture
+async def conn(engine: AsyncEngine) -> AsyncIterator[AsyncConnection]:
+    async with engine.begin() as conn:  # type: AsyncConnection
+        yield conn
 
 
 @pytest.fixture
