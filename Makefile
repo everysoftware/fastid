@@ -28,10 +28,6 @@ stop:
 restart:
 	docker-compose restart
 
-.PHONY: format
-format:
-	ruff format .
-
 .PHONY: lint
 lint:
 	@echo "Running ruff linter (isort, flake, pyupgrade, etc. replacement)..."

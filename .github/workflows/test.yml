@@ -24,7 +24,6 @@ jobs:
           pip install poetry
           poetry config virtualenvs.create false
           poetry install
-      - name: Lint
+      - name: Run checkers
         run: |
-          poetry run make format
-          poetry run make lint
+          poetry run make check
