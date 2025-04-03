@@ -56,12 +56,10 @@ async def authorize(
     if user is None:
         request.session["consent"] = consent.model_dump(mode="json")
         return templates.TemplateResponse("authorize.html", {"request": request})
-    else:
-        # User is authenticated, redirect to specified redirect URI with code
-        request.session.clear()
-        redirect_uri = await authorization_code_grant.approve_consent(consent, user)
-        response = RedirectResponse(redirect_uri)
-    return response
+    # User is authenticated, redirect to specified redirect URI with code
+    request.session.clear()
+    redirect_uri = await authorization_code_grant.approve_consent(consent, user)
+    return RedirectResponse(redirect_uri)
 
 
 @router.get("/profile")

@@ -70,7 +70,7 @@ class ProviderRegistry:
 
     def get(self, name: str) -> OAuth2Flow:
         if name not in self.metadata.providers:
-            raise OAuthProviderNotFoundError()
+            raise OAuthProviderNotFoundError
         if not self.metadata.providers[name].enabled:
-            raise OAuthProviderDisabledError()
+            raise OAuthProviderDisabledError
         return self._providers[name]()

@@ -38,4 +38,4 @@ def hc() -> dict[str, Any]:
 
 @api_router.get("/exc", include_in_schema=False)
 def exc() -> dict[str, Any]:
-    raise Exception("test exception")
+    raise ValueError("test exception")

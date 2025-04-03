@@ -41,7 +41,6 @@ pytest = "^8.2.0"
 pytest-asyncio = "^0.23.6"
 sqlalchemy-utils = "^0.41.2"
 faker = "^28.4.1"
-bandit = "^1.8.3"
 codespell = "^2.4.1"
 detect-secrets = "^1.5.0"
 
@@ -68,13 +67,33 @@ select = [
     "C90",  # mccabe
     "N",  # pep8-naming
     "ASYNC",  # flake8-async
-    "C4",  # flake8-comprehensions
     "T20",  # flake8-print
     "SIM",  # flake8-simplify
     "PT",  # flake8-pytest-style
     "PTH",  # flake8-puse-pathlib
     "TCH",  # flake8-type-checking
     "PERF",  # Perflint
+    # new
+    "S",  # flake8-bandit
+    "FBT",  # flake8-boolean-trap
+    "A",  # flake8-builtins
+    "DTZ",  # flake8-datetimez
+    "FA",  # flake8-future-annotations
+    "LOG",  # flake8-logging
+    "G",  # flake8-logging-format
+    "INP",  # flake8-no-pep420
+    "PIE",  # flake8-pie
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "SLF",  # flake8-self
+    "SLOT",  # flake8-slots
+    "TID",  # flake8-tidy-imports
+    "ARG",  # flake8-unused-arguments
+    "FLY",  # flynt
+    "PGH",  # pygrep-hooks
+    "PL",  # pylint
+    "FURB",  # refurb
+    "TRY",  # tryceratops
 ]
 ignore = [
     "E501",  # line too long, handled by formatter later
@@ -82,7 +101,14 @@ ignore = [
     "C901",  # too complex
     "W191",  # indentation contains tabs
     "RUF012",  # mutable class attributes should be annotated with `typing.ClassVar`
+    "S101",  # use of assert detected
+    "TRY003",  # avoid specifying long messages outside the exception class
+    "PLR6301",  # method could be a function, class method, or static method
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/*" = ["INP001"]  # Implicit namespace packages are not allowed
+"tests/*" = ["ARG001"]  # Unused function argument
 
 [tool.mypy]
 strict = true
@@ -109,9 +135,6 @@ disallow_any_unimported = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-
-[tool.bandit]
-skips = ["B101"]
 
 [tool.codespell]
 skip = "./venv*,./docs/site/*,./htmlcov"

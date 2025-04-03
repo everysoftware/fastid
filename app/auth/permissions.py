@@ -28,11 +28,11 @@ class Requires:
     ) -> User:
         verify_token = verify_token_transport.get_token(request)
         if self.superuser is not None and user.is_superuser != self.superuser:
-            raise NoPermissionError()
+            raise NoPermissionError
         if self.email_verified is not None and user.is_verified != self.email_verified:
-            raise NoPermissionError()
+            raise NoPermissionError
         if self.active is not None and user.is_active != self.active:
-            raise NoPermissionError()
+            raise NoPermissionError
         if self.action_verified and (verify_token is None or not self.token_backend.validate("verify", verify_token)):
-            raise NoPermissionError()
+            raise NoPermissionError
         return user

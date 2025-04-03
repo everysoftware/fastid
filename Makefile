@@ -41,8 +41,6 @@ lint:
 static:
 	@echo "Running mypy..."
 	mypy .
-	@echo "Running bandit..."
-	bandit -c pyproject.toml -r app
 
 .PHONY: check
 check:

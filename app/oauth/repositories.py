@@ -1,7 +1,7 @@
 from typing import Any
 
+from app.base.datatypes import UUIDv7
 from app.base.specification import Specification
-from app.base.types import UUIDv7
 from app.db.repository import SQLAlchemyRepository
 from app.oauth.models import OAuthAccount
 

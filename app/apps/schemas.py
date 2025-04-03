@@ -15,7 +15,8 @@ class AppBase(BaseModel):
     is_active: bool = True
 
     @field_validator("redirect_uris", mode="before")
-    def validate_redirect_uris(self, v: Any) -> Any:
+    @classmethod
+    def validate_redirect_uris(cls, v: Any) -> Any:
         if isinstance(v, str):
             return v.split(";")
         return v

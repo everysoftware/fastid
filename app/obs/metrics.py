@@ -34,7 +34,7 @@ class MetricsPlugin(Plugin):
         app.add_route("/metrics", get_metrics)
 
 
-def get_metrics(request: Request) -> Response:
+def get_metrics(_request: Request) -> Response:
     return Response(
         generate_latest(REGISTRY),  # type: ignore[no-untyped-call]
         headers={"Content-Type": CONTENT_TYPE_LATEST},

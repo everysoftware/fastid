@@ -50,9 +50,9 @@ class NotificationUseCases(UseCase):
     async def validate_code(self, user: User, code: str) -> None:
         user_code = await self.cache.pop(f"otp:users:{user.id}", cast=str)
         if user_code is None:
-            raise WrongCodeError()
+            raise WrongCodeError
         if not secrets.compare_digest(user_code, code):
-            raise WrongCodeError()
+            raise WrongCodeError
 
     async def authorize_with_code(self, user: User, request: VerifyTokenRequest) -> str:
         await self.validate_code(user, request.code)

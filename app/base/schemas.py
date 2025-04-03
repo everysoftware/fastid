@@ -11,7 +11,7 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-from app.base.types import UUIDv7, naive_utc, uuid
+from app.base.datatypes import UUIDv7, naive_utc, uuid
 
 if TYPE_CHECKING:
     import datetime

@@ -26,6 +26,7 @@ router = APIRouter(prefix="/oauth", tags=["OAuth"])
 async def oauth_login(
     service: OAuthAccountsDep,
     oauth_name: str,
+    *,
     redirect: bool = True,
 ) -> Any:
     url = await service.get_authorization_url(oauth_name)

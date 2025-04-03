@@ -53,7 +53,7 @@ async def authorize(
         case OAuth2Grant.refresh_token:
             token = await refresh_token_grant.authorize(form.as_refresh_token_grant())
         case _:
-            raise NotSupportedGrantError()
+            raise NotSupportedGrantError
     return cookie_transport.get_login_response(token)
 
 

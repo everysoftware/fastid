@@ -2,8 +2,8 @@ from collections.abc import MutableMapping, Sequence
 
 from pydantic import Field
 
+from app.base.datatypes import UUIDv7
 from app.base.schemas import BaseModel, EntityDTO
-from app.base.types import UUIDv7
 
 
 class OAuthAccountBase(BaseModel):
