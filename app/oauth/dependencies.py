@@ -4,7 +4,7 @@ from auth365.schemas import OAuth2Callback, TelegramCallback
 from fastapi import Depends
 from starlette.requests import Request
 
-from app.base.types import UUIDv7
+from app.base.datatypes import UUIDv7
 from app.logging.dependencies import log
 from app.oauth.models import OAuthAccount
 from app.oauth.service import OAuthUseCases

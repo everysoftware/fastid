@@ -9,10 +9,10 @@ from app.auth.schemas import (
     UserChangePassword,
     UserUpdate,
 )
+from app.base.datatypes import UUIDv7
 from app.base.pagination import Page, Pagination
 from app.base.service import UseCase
 from app.base.sorting import Sorting
-from app.base.types import UUIDv7
 from app.db.dependencies import UOWDep
 
 
@@ -26,7 +26,7 @@ class ProfileUseCases(UseCase):
     async def get_one(self, user_id: UUIDv7) -> User:
         user = await self.get(user_id)
         if user is None:
-            raise UserIDNotFoundError()
+            raise UserIDNotFoundError
         return user
 
     async def update_profile(
@@ -41,7 +41,7 @@ class ProfileUseCases(UseCase):
     async def change_email(self, user: User, dto: UserChangeEmail) -> User:
         check_user = await self.uow.users.find(UserEmailSpecification(dto.new_email))
         if check_user is not None:
-            raise UserAlreadyExistsError()
+            raise UserAlreadyExistsError
         user.change_email(dto.new_email)
         await self.uow.commit()
         return user

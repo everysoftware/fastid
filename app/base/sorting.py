@@ -22,7 +22,7 @@ class SortingEntry:
                 field, order = values
             case _:
                 raise ValidationError(f"Invalid format: {value}")
-        if order not in ["asc", "desc"]:
+        if order not in {"asc", "desc"}:
             raise ValidationError(f"Invalid sorting order: {order}")
         if not hasattr(model_type, field):
             raise ValidationError(f"Invalid sorting field: {field}")

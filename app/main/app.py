@@ -21,13 +21,15 @@ api_plugins: list[Plugin] = [
 
 # Must be last plugin
 if obs_settings.enabled:
-    api_plugins.append(MetricsPlugin(app_name=main_settings.discovery_name))
-    api_plugins.append(
-        TracingPlugin(
-            app_name=main_settings.discovery_name,
-            export_url=obs_settings.tempo_url,
-            instrument=["logger", "httpx", "sqlalchemy"],
-            engine=engine,
+    api_plugins.extend(
+        (
+            MetricsPlugin(app_name=main_settings.discovery_name),
+            TracingPlugin(
+                app_name=main_settings.discovery_name,
+                export_url=obs_settings.tempo_url,
+                instrument=["logger", "httpx", "sqlalchemy"],
+                engine=engine,
+            ),
         )
     )
 

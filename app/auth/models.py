@@ -7,8 +7,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.auth.backend import hasher
 from app.auth.exceptions import WrongPasswordError
+from app.base.datatypes import uuid
 from app.base.models import Entity
-from app.base.types import uuid
 from app.oauth.config import telegram_settings
 
 if TYPE_CHECKING:
@@ -92,7 +92,7 @@ class User(Entity):
 
     def verify_password(self, password: str) -> None:
         if not hasher.verify(password, self.hashed_password):
-            raise WrongPasswordError()
+            raise WrongPasswordError
 
     def grant_superuser(self) -> None:
         self.is_superuser = True

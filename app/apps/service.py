@@ -22,5 +22,5 @@ class AppUseCases(UseCase):
     async def get_one(self, client_id: str) -> App:
         app = await self.get(client_id)
         if app is None:
-            raise AppNotFoundError()
+            raise AppNotFoundError
         return app

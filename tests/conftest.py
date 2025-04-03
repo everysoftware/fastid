@@ -16,21 +16,19 @@ db_settings.url = test_db_url
 alembic_config = alembic_config_from_url(test_db_url)
 logger.info("Test database URL: %s", test_db_url)
 
-_engine = create_async_engine(test_db_url, pool_pre_ping=True, poolclass=pool.NullPool)
-_session_factory = async_sessionmaker(_engine, expire_on_commit=False)
-
 
 @pytest.fixture(scope="session")
 async def engine() -> AsyncIterator[AsyncEngine]:
     logger.info("Creating temporary database for testing")
     async with get_temp_db(test_db_url):
         logger.info("Temporary database created")
+        _engine = create_async_engine(test_db_url, pool_pre_ping=True, poolclass=pool.NullPool)
         yield _engine
 
 
 @pytest.fixture(scope="session")
-async def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    return _session_factory
+def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(engine, expire_on_commit=False)
 
 
 @pytest.fixture(scope="session", autouse=True)

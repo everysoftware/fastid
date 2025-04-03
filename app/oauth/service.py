@@ -3,10 +3,10 @@ from auth365.schemas import JWTPayload, OAuth2Callback, OpenIDBearer, TelegramCa
 from app.auth.backend import token_backend
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
+from app.base.datatypes import UUIDv7
 from app.base.pagination import LimitOffset, Page
 from app.base.service import UseCase
 from app.base.sorting import Sorting
-from app.base.types import UUIDv7
 from app.db.dependencies import UOWDep
 from app.oauth.exceptions import (
     OAuthAccountInUseError,
@@ -49,7 +49,7 @@ class OAuthUseCases(UseCase):
         open_id = await self._callback(provider_name, callback)
         account = await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
         if account:
-            raise OAuthAccountInUseError()
+            raise OAuthAccountInUseError
         account = OAuthAccount.from_open_id(open_id, user)
         account = await self.uow.oauth_accounts.add(account)
         await self.uow.commit()
@@ -61,7 +61,7 @@ class OAuthUseCases(UseCase):
     async def get_one(self, account_id: UUIDv7) -> OAuthAccount:
         account = await self.get(account_id)
         if not account:
-            raise OAuthAccountNotFoundError()
+            raise OAuthAccountNotFoundError
         return account
 
     async def paginate(

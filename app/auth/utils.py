@@ -22,7 +22,7 @@ class AuthBus:
             if token:
                 return token
         if auto_error:
-            raise NoTokenProvidedError()
+            raise NoTokenProvidedError
         return None
 
     def __call__(self, request: Request) -> str | None:
