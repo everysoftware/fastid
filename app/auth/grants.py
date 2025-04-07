@@ -112,7 +112,7 @@ class AuthorizationCodeGrant(Grant):
 
     async def authorize(self, form: OAuth2AuthorizationCodeRequest) -> TokenResponse:
         await self.authenticate_client(form.client_id, form.client_secret)
-        data = await self.cache.pop(f"ac:{form.client_id}:{form.code}", cast=str)
+        data = await self.cache.pop(f"ac:{form.client_id}:{form.code}")
         if data is None:
             raise InvalidAuthorizationCodeError
         user_id, scope = data.split(":")

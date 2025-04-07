@@ -77,7 +77,7 @@ class OAuthUseCases(UseCase):
     async def revoke(self, user: User, provider_name: str) -> OAuthAccount:
         account = await self.uow.oauth_accounts.find_one(UserAccountSpecification(user.id, provider_name))
         user.disconnect_open_id(account.provider)
-        account = await self.uow.oauth_accounts.remove(account)
+        account = await self.uow.oauth_accounts.delete(account)
         await self.uow.commit()
         return account
 

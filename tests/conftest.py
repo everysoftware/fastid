@@ -2,9 +2,12 @@ from collections.abc import AsyncIterator
 
 import pytest
 from alembic.command import upgrade
+from redis.asyncio import Redis
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
+from app.cache.adapter import CacheStorage, RedisStorage
+from app.cache.config import cache_settings
 from app.db.config import db_settings
 from app.db.uow import IUnitOfWork, SQLAlchemyUOW
 from app.logging.dependencies import provider
@@ -68,3 +71,15 @@ async def uow(idle_uow: IUnitOfWork, engine: AsyncEngine) -> AsyncIterator[IUnit
         yield uow
 
     await delete_all(engine)
+
+
+@pytest.fixture
+def redis_client() -> Redis:
+    return Redis.from_url(cache_settings.redis_url)  # type: ignore[no-any-return]
+
+
+@pytest.fixture
+async def cache(redis_client: Redis) -> AsyncIterator[CacheStorage]:
+    storage = RedisStorage(redis_client, key=cache_settings.redis_key)
+    yield storage
+    await redis_client.flushdb()

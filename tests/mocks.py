@@ -8,6 +8,11 @@ USER_CREATE = {
     "email": faker.email(),
 }
 
+CACHE_RECORD = {
+    "key": faker.word(),
+    "value": faker.word(),
+}
+
 
 class MockError(Exception):
     pass

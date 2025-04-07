@@ -52,7 +52,7 @@ class ProfileUseCases(UseCase):
         return user
 
     async def delete_account(self, user: User) -> User:
-        await self.uow.users.remove(user)
+        await self.uow.users.delete(user)
         await self.uow.commit()
         return user
 

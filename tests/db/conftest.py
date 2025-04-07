@@ -6,7 +6,7 @@ from tests import mocks
 
 
 @pytest.fixture
-async def test_user(uow: IUnitOfWork) -> User:
+async def mock_user(uow: IUnitOfWork) -> User:
     user = User(**mocks.USER_CREATE)
     await uow.users.add(user)
     await uow.commit()

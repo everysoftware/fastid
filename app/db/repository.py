@@ -57,7 +57,7 @@ class SQLAlchemyRepository(IRepository[T], ABC):
             raise NoResultFoundError
         return model
 
-    async def remove(self, model: T) -> T:
+    async def delete(self, model: T) -> T:
         await self.session.delete(model)
         return model
 
