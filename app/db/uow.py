@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import asyncio
 from abc import ABC
 from typing import TYPE_CHECKING, Any, Self, cast
 
@@ -36,16 +37,20 @@ class IUnitOfWork(ABC):
     @abc.abstractmethod
     async def close(self) -> None: ...
 
+    @abc.abstractmethod
+    async def flush(self) -> None: ...
+
     async def __aenter__(self) -> Self:
         await self.begin()
         return self
 
-    async def __aexit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        if exc_type is not None:
-            await self.rollback()
-        else:
+    async def __aexit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> bool:
+        if exc_type is None:
             await self.commit()
+        else:
+            await self.rollback()
         await self.close()
+        return False
 
 
 class SQLAlchemyUOW(IUnitOfWork):
@@ -74,4 +79,8 @@ class SQLAlchemyUOW(IUnitOfWork):
         await self._session.rollback()
 
     async def close(self) -> None:
-        await self._session.close()
+        task = asyncio.create_task(self._session.close())
+        await asyncio.shield(task)
+
+    async def flush(self) -> None:
+        await self._session.flush()

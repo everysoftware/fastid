@@ -17,7 +17,7 @@ from app.base.schemas import BaseModel
 type_map = {
     int: BigInteger,
     Enum: SAEnum(Enum, native_enum=False),
-    UUID: Uuid(as_uuid=False),
+    UUID: Uuid(),
 }
 
 NAMING_CONVENTION = {

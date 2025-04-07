@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from app.db.config import db_settings
+from app.db.uow import IUnitOfWork, SQLAlchemyUOW
 from app.logging.dependencies import provider
 from tests.utils.alembic import alembic_config_from_url
 from tests.utils.db import delete_all, get_temp_db, get_test_db_url
@@ -52,5 +53,18 @@ async def session(
 ) -> AsyncIterator[AsyncSession]:
     async with session_factory() as session:
         yield session
+
+    await delete_all(engine)
+
+
+@pytest.fixture
+def idle_uow(session_factory: async_sessionmaker[AsyncSession]) -> IUnitOfWork:
+    return SQLAlchemyUOW(session_factory)
+
+
+@pytest.fixture
+async def uow(idle_uow: IUnitOfWork, engine: AsyncEngine) -> AsyncIterator[IUnitOfWork]:
+    async with idle_uow as uow:
+        yield uow
 
     await delete_all(engine)
