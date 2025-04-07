@@ -8,11 +8,10 @@ from app.auth.models import User
 from app.auth.utils import otp
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
-from app.notify.base import Notification
+from app.notify.clients.dependencies import MailDep, TelegramDep
+from app.notify.clients.schemas import Notification
 from app.notify.exceptions import WrongCodeError
-from app.notify.mail import MailDep
 from app.notify.schemas import VerifyTokenRequest
-from app.notify.telegram import TelegramDep
 
 
 class NotificationUseCases(UseCase):

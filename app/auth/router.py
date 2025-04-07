@@ -17,7 +17,7 @@ from app.auth.schemas import (
     UserDTO,
 )
 from app.notify.dependencies import NotifyDep
-from app.notify.notifications import WelcomeNotification
+from app.notify.schemas import WelcomeNotification
 
 router = APIRouter(tags=["Auth"])
 

@@ -8,12 +8,12 @@ from app.base.pagination import LimitOffset, Page
 from app.base.service import UseCase
 from app.base.sorting import Sorting
 from app.db.dependencies import UOWDep
+from app.oauth.clients.dependencies import RegistryDep
 from app.oauth.exceptions import (
     OAuthAccountInUseError,
     OAuthAccountNotFoundError,
 )
 from app.oauth.models import OAuthAccount
-from app.oauth.providers import RegistryDep
 from app.oauth.repositories import (
     ProviderAccountSpecification,
     UserAccountPageSpecification,

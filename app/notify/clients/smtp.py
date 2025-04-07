@@ -2,15 +2,13 @@ import asyncio
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Annotated, Any, Self
+from typing import Any, Self
 
-from fastapi import Depends
-
-from app.notify.base import Notification
-from app.notify.config import notify_settings
+from app.notify.clients.base import NotificationClient
+from app.notify.clients.schemas import Notification
 
 
-class MailAdapter:
+class SMTPMail(NotificationClient):
     def __init__(
         self,
         host: str,
@@ -46,16 +44,3 @@ class MailAdapter:
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self._client.__exit__(exc_type, exc_val, exc_tb)
-
-
-def get_mail() -> MailAdapter:
-    return MailAdapter(
-        notify_settings.smtp_host,
-        notify_settings.smtp_port,
-        notify_settings.smtp_username,
-        notify_settings.smtp_password,
-        notify_settings.from_name,
-    )
-
-
-MailDep = Annotated[MailAdapter, Depends(get_mail)]

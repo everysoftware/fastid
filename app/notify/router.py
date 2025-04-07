@@ -6,8 +6,7 @@ from starlette.responses import JSONResponse
 from app.auth.backend import verify_token_transport
 from app.auth.dependencies import UserDep
 from app.notify.dependencies import NotifyDep
-from app.notify.notifications import VerificationNotification
-from app.notify.schemas import OTPRequest, VerifyTokenRequest
+from app.notify.schemas import OTPRequest, VerificationNotification, VerifyTokenRequest
 
 router = APIRouter(prefix="/notify", tags=["Notify"])
 

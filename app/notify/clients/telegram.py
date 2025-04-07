@@ -1,14 +1,13 @@
-from typing import Annotated, Any, Self
+from typing import Any, Self
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
-from fastapi import Depends
 
-from app.notify.base import Notification
-from app.oauth.config import telegram_settings
+from app.notify.clients.base import NotificationClient
+from app.notify.clients.schemas import Notification
 
 
-class TelegramAdapter:
+class TelegramAdapter(NotificationClient):
     def __init__(self, bot_token: str) -> None:
         self._bot = Bot(bot_token, default=DefaultBotProperties(parse_mode="Markdown"))
 
@@ -21,12 +20,3 @@ class TelegramAdapter:
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         await self._bot.__aexit__(exc_type, exc_val, exc_tb)
-
-
-def get_telegram() -> TelegramAdapter:
-    return TelegramAdapter(
-        telegram_settings.bot_token,
-    )
-
-
-TelegramDep = Annotated[TelegramAdapter, Depends(get_telegram)]

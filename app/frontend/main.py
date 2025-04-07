@@ -9,7 +9,7 @@ from app.frontend.exceptions import add_exception_handlers
 from app.frontend.pages import router as auth_router
 from app.frontend.templating import templates
 from app.main.modules import Module
-from app.oauth.providers import registry
+from app.oauth.clients.dependencies import registry
 
 routers = [auth_router]
 
