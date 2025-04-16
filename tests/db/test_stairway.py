@@ -10,7 +10,7 @@ import pytest
 from alembic.command import downgrade, upgrade
 from alembic.script import Script, ScriptDirectory
 
-from tests.conftest import alembic_config
+from tests.dependencies import alembic_config
 from tests.utils.alembic import alembic_config_from_url
 
 

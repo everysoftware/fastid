@@ -8,11 +8,10 @@ from app.auth.models import User
 from app.auth.utils import otp
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
-from app.notify.base import Notification
+from app.notify.clients.dependencies import MailDep, TelegramDep
+from app.notify.clients.schemas import Notification
 from app.notify.exceptions import WrongCodeError
-from app.notify.mail import MailDep
 from app.notify.schemas import VerifyTokenRequest
-from app.notify.telegram import TelegramDep
 
 
 class NotificationUseCases(UseCase):
@@ -48,11 +47,11 @@ class NotificationUseCases(UseCase):
         await self.push(notification)
 
     async def validate_code(self, user: User, code: str) -> None:
-        user_code = await self.cache.pop(f"otp:users:{user.id}", cast=str)
+        user_code = await self.cache.pop(f"otp:users:{user.id}")
         if user_code is None:
-            raise WrongCodeError()
+            raise WrongCodeError
         if not secrets.compare_digest(user_code, code):
-            raise WrongCodeError()
+            raise WrongCodeError
 
     async def authorize_with_code(self, user: User, request: VerifyTokenRequest) -> str:
         await self.validate_code(user, request.code)

@@ -11,13 +11,13 @@ from sqlalchemy.orm import (
     mapped_column,
 )
 
+from app.base.datatypes import naive_utc, uuid
 from app.base.schemas import BaseModel
-from app.base.types import naive_utc, uuid
 
 type_map = {
     int: BigInteger,
     Enum: SAEnum(Enum, native_enum=False),
-    UUID: Uuid(as_uuid=False),
+    UUID: Uuid(),
 }
 
 NAMING_CONVENTION = {

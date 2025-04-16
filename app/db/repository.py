@@ -5,12 +5,12 @@ from typing import Any, ClassVar, TypeVar, cast
 from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.base.datatypes import UUIDv7
 from app.base.models import Entity
 from app.base.pagination import LimitOffset, Page, Pagination
 from app.base.repository import IRepository
 from app.base.sorting import Sorting
 from app.base.specification import Specification
-from app.base.types import UUIDv7
 from app.db.exceptions import NoResultFoundError
 
 T = TypeVar("T", bound=Entity)
@@ -30,16 +30,16 @@ class SQLAlchemyRepository(IRepository[T], ABC):
         self.session.add(model)
         return model
 
-    async def get(self, id: UUIDv7) -> T | None:
-        model = await self.session.get(self.model_type, id)
+    async def get(self, ident: UUIDv7) -> T | None:
+        model = await self.session.get(self.model_type, ident)
         if model is None:
             return None
         return cast(T, model)
 
-    async def get_one(self, id: UUIDv7) -> T:
-        model = await self.get(id)
+    async def get_one(self, ident: UUIDv7) -> T:
+        model = await self.get(ident)
         if model is None:
-            raise NoResultFoundError()
+            raise NoResultFoundError
         return model
 
     async def find(self, criteria: Specification) -> T | None:
@@ -54,10 +54,10 @@ class SQLAlchemyRepository(IRepository[T], ABC):
     async def find_one(self, criteria: Specification) -> T:
         model = await self.find(criteria)
         if model is None:
-            raise NoResultFoundError()
+            raise NoResultFoundError
         return model
 
-    async def remove(self, model: T) -> T:
+    async def delete(self, model: T) -> T:
         await self.session.delete(model)
         return model
 
@@ -77,7 +77,8 @@ class SQLAlchemyRepository(IRepository[T], ABC):
         )
         return self._to_page(result.all())
 
-    def _to_page(self, entities: Sequence[Any]) -> Page[T]:
+    @staticmethod
+    def _to_page(entities: Sequence[Any]) -> Page[T]:
         return Page(items=entities)
 
     def _select(self) -> Select[tuple[T]]:

@@ -27,11 +27,11 @@ class APIModule(Module):
         self.plugins = plugins
         self.fastapi_kwargs = fastapi_kwargs
 
-    async def on_startup(self, app: FastAPI) -> None:
+    async def on_startup(self, _app: FastAPI) -> None:
         async with LifespanTasks() as tasks:
             await tasks.on_startup()
 
-    async def on_shutdown(self, app: FastAPI) -> None:
+    async def on_shutdown(self, _app: FastAPI) -> None:
         async with LifespanTasks() as tasks:
             await tasks.on_shutdown()
 
@@ -48,3 +48,4 @@ class APIModule(Module):
         installed = [plugin.plugin_name for plugin in self.plugins]
         log.info("API plugins (%d): %s", len(installed), ", ".join(installed))
         app.mount(self.base_url, api_app)
+        app.extra["api_app"] = api_app

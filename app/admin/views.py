@@ -4,7 +4,7 @@ import humanize
 from sqladmin import ModelView
 
 from app.apps.models import App
-from app.base.types import naive_utc
+from app.base.datatypes import naive_utc
 from app.db.models import OAuthAccount, User
 
 

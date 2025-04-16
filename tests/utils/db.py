@@ -105,7 +105,7 @@ async def drop_database_async(_url: str | URL) -> None:
             FROM pg_stat_activity
             WHERE pg_stat_activity.datname = '{database}'
             AND {pid_column} <> pg_backend_pid();
-            """
+            """  # noqa: S608
             await conn.execute(sa.text(text))
 
             # Drop the database.

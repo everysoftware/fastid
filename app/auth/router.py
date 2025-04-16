@@ -17,7 +17,7 @@ from app.auth.schemas import (
     UserDTO,
 )
 from app.notify.dependencies import NotifyDep
-from app.notify.notifications import WelcomeNotification
+from app.notify.schemas import WelcomeNotification
 
 router = APIRouter(tags=["Auth"])
 
@@ -53,7 +53,7 @@ async def authorize(
         case OAuth2Grant.refresh_token:
             token = await refresh_token_grant.authorize(form.as_refresh_token_grant())
         case _:
-            raise NotSupportedGrantError()
+            raise NotSupportedGrantError
     return cookie_transport.get_login_response(token)
 
 

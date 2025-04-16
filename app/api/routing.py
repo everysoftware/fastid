@@ -3,6 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Depends
 from starlette import status
 
+from app.api.exceptions import TestError
 from app.auth.dependencies import auth_flows
 from app.auth.router import router as auth_router
 from app.base.schemas import ErrorResponse
@@ -38,4 +39,4 @@ def hc() -> dict[str, Any]:
 
 @api_router.get("/exc", include_in_schema=False)
 def exc() -> dict[str, Any]:
-    raise Exception("test exception")
+    raise TestError

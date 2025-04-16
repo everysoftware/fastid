@@ -35,11 +35,11 @@ async def get_user(
 ) -> User:
     token = cookie_transport.get_token(request)
     if token is None:
-        raise UnauthorizedError()
+        raise UnauthorizedError
     try:
         return await auth.get_userinfo(token)
     except ClientError as e:
-        raise UnauthorizedError() from e
+        raise UnauthorizedError from e
 
 
 def action_verified(
@@ -63,7 +63,6 @@ async def valid_consent(
     if not request.query_params:
         consent_data = request.session.get("consent")
         if consent_data is None:
-            raise UnauthorizedError()
-        else:
-            consent = OAuth2ConsentRequest.model_validate(consent_data)
+            raise UnauthorizedError
+        consent = OAuth2ConsentRequest.model_validate(consent_data)
     return await authorization_code_grant.validate_consent(consent)

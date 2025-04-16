@@ -42,7 +42,7 @@ DTO_T = TypeVar("DTO_T", bound=BaseModel)
 class PageDTO(BaseModel, Generic[DTO_T]):
     items: list[DTO_T]
 
-    @computed_field  # type: ignore
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def total(self) -> int:
         return len(self.items)

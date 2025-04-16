@@ -54,4 +54,4 @@ verify_token_transport = CookieTransport(
     max_age=auth_settings.jwt_verify_token_expires_in,
 )
 
-hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
+crypt_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")

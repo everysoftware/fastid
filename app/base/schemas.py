@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Literal, Self, overload
+import datetime  # noqa: TCH003
+from typing import Final, Literal, Self, overload
 
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import ConfigDict, Field
@@ -11,10 +12,7 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-from app.base.types import UUIDv7, naive_utc, uuid
-
-if TYPE_CHECKING:
-    import datetime
+from app.base.datatypes import UUIDv7, naive_utc, uuid
 
 
 class BaseModel(PydanticBaseModel):

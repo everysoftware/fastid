@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.auth.models import User
-from app.base.types import UUIDv7
+from app.base.datatypes import UUIDv7
 from app.profile.service import ProfileUseCases
 
 ProfilesDep = Annotated[ProfileUseCases, Depends()]
