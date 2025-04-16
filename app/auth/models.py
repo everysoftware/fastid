@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Literal, Self
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.auth.backend import hasher
+from app.auth.backend import crypt_ctx
 from app.auth.exceptions import WrongPasswordError
 from app.base.datatypes import uuid
 from app.base.models import Entity
@@ -85,13 +85,13 @@ class User(Entity):
             self.telegram_id = None
 
     def set_password(self, password: str) -> None:
-        self.hashed_password = hasher.hash(password)
+        self.hashed_password = crypt_ctx.hash(password)
 
     def change_email(self, new_email: str) -> None:
         self.email = new_email
 
     def verify_password(self, password: str) -> None:
-        if not hasher.verify(password, self.hashed_password):
+        if not crypt_ctx.verify(password, self.hashed_password):
             raise WrongPasswordError
 
     def grant_superuser(self) -> None:

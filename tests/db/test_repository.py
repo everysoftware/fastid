@@ -9,9 +9,9 @@ from tests import mocks
 
 def test_repository_add(mock_user: User) -> None:
     assert mock_user.id is not None
-    assert mock_user.first_name == mocks.USER_CREATE["first_name"]
-    assert mock_user.last_name == mocks.USER_CREATE["last_name"]
-    assert mock_user.email == mocks.USER_CREATE["email"]
+    assert mock_user.first_name == mocks.USER_RECORD["first_name"]
+    assert mock_user.last_name == mocks.USER_RECORD["last_name"]
+    assert mock_user.email == mocks.USER_RECORD["email"]
     assert mock_user.created_at is not None
     assert mock_user.updated_at is not None
 

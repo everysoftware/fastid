@@ -1,4 +1,4 @@
-from app.cache.adapter import CacheStorage
+from app.cache.storage import CacheStorage
 
 
 async def test_keys(cache: CacheStorage, mock_record: dict[str, str]) -> None:

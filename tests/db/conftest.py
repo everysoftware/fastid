@@ -7,7 +7,7 @@ from tests import mocks
 
 @pytest.fixture
 async def mock_user(uow: IUnitOfWork) -> User:
-    user = User(**mocks.USER_CREATE)
+    user = User(**mocks.USER_RECORD)
     await uow.users.add(user)
     await uow.commit()
 

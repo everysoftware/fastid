@@ -10,7 +10,7 @@ from tests.mocks import MockError
 
 async def test_uow_auto_commit(uow: IUnitOfWork, engine: AsyncEngine) -> None:
     async with uow:
-        test_user = User(**mocks.USER_CREATE)
+        test_user = User(**mocks.USER_RECORD)
         await uow.users.add(test_user)
 
     async with uow:
@@ -21,7 +21,7 @@ async def test_uow_auto_commit(uow: IUnitOfWork, engine: AsyncEngine) -> None:
 async def test_uow_auto_rollback(uow: IUnitOfWork, engine: AsyncEngine) -> None:
     with pytest.raises(MockError):  # noqa: PT012
         async with uow:
-            test_user = User(**mocks.USER_CREATE)
+            test_user = User(**mocks.USER_RECORD)
             await uow.users.add(test_user)
             await uow.flush()
             raise MockError

@@ -47,6 +47,12 @@ class ValidationError(LongValidationError):
         super().__init__([{"loc": "request", "msg": msg, "type": "invalid_request"}])
 
 
+class TestError(ClientError):
+    message = "Test error"
+    error_code = "test_error"
+    status_code = status.HTTP_400_BAD_REQUEST
+
+
 class UnauthorizedError(ClientError):
     message = "Unauthorized"
     error_code = "unauthorized"

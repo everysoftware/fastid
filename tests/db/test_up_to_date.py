@@ -10,7 +10,7 @@ from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.base.models import BaseOrm
-from tests.conftest import alembic_config
+from tests.dependencies import alembic_config
 
 
 async def test_migrations_up_to_date(conn: AsyncConnection) -> None:

@@ -1,6 +1,6 @@
 import pytest
 
-from app.cache.adapter import CacheStorage
+from app.cache.storage import CacheStorage
 from tests.mocks import CACHE_RECORD
 
 

@@ -48,3 +48,4 @@ class APIModule(Module):
         installed = [plugin.plugin_name for plugin in self.plugins]
         log.info("API plugins (%d): %s", len(installed), ", ".join(installed))
         app.mount(self.base_url, api_app)
+        app.extra["api_app"] = api_app
