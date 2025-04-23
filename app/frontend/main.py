@@ -55,3 +55,4 @@ class FrontendModule(Module):
             main_router.include_router(router)
         frontend_app.include_router(main_router)
         app.mount(self.base_url, frontend_app)
+        app.extra["frontend_app"] = frontend_app

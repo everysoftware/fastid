@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from starlette import status
 
 from app.api.exceptions import TestError
+from app.apps.router import router as app_router
 from app.auth.dependencies import auth_flows
 from app.auth.router import router as auth_router
 from app.base.schemas import ErrorResponse
@@ -28,6 +29,7 @@ secured_router.include_router(oauth_router)
 secured_router.include_router(notifier_router)
 secured_router.include_router(profile_router)
 secured_router.include_router(admin_auth_router)
+secured_router.include_router(app_router)
 
 api_router.include_router(secured_router)
 

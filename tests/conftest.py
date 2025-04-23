@@ -71,6 +71,23 @@ async def client() -> AsyncIterator[AsyncClient]:
 
 
 @pytest.fixture
+async def frontend_client() -> AsyncIterator[AsyncClient]:
+    frontend_app = app.extra["frontend_app"]
+    frontend_app.dependency_overrides[get_uow] = get_test_uow
+    frontend_app.dependency_overrides[get_cache] = get_test_cache
+
+    transport = ASGITransport(app=frontend_app)
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://testserver",
+        headers={"Content-Type": "application/json"},
+    ) as client:
+        yield client
+
+    frontend_app.dependency_overrides = {}
+
+
+@pytest.fixture
 async def conn(engine: AsyncEngine) -> AsyncIterator[AsyncConnection]:
     async with engine.begin() as conn:  # type: AsyncConnection
         yield conn

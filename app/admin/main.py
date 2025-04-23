@@ -36,3 +36,4 @@ class AdminModule(Module):
         admin.add_view(OAuthClientAdmin)
         admin.add_view(OAuthAccountAdmin)
         app.mount(self.base_url, admin_app)
+        app.extra["admin_app"] = admin_app

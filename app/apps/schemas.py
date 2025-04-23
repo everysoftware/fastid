@@ -1,30 +1,18 @@
-from collections.abc import Sequence
-from typing import Any
-
-from pydantic import AnyHttpUrl, field_validator
-
 from app.base.schemas import BaseModel, EntityDTO
 
 
 class AppBase(BaseModel):
     name: str
     slug: str
-    client_id: str
-    client_secret: str
-    redirect_uris: Sequence[AnyHttpUrl]
+    redirect_uris: str
     is_active: bool = True
-
-    @field_validator("redirect_uris", mode="before")
-    @classmethod
-    def validate_redirect_uris(cls, v: Any) -> Any:
-        if isinstance(v, str):
-            return v.split(";")
-        return v
 
 
 class AppDTO(EntityDTO, AppBase):
-    pass
+    client_id: str
+    client_secret: str
 
 
 class AppCreate(AppBase):
-    pass
+    client_id: str | None = None
+    client_secret: str | None = None
