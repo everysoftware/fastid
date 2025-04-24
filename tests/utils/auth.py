@@ -43,8 +43,8 @@ async def authorize_refresh_token_grant(client: AsyncClient, oauth_app: AppDTO, 
     return TokenResponse.model_validate_json(response.content)
 
 
-async def give_consent_for_authorization_code_flow(
-    frontend_client: AsyncClient, oauth_app: AppDTO, token: TokenResponse, scope: str = "id_token offline_access"
+async def give_oauth_consent(
+    frontend_client: AsyncClient, oauth_app: AppDTO, token: TokenResponse, scope: str = "openid offline_access"
 ) -> OAuth2Callback:
     redirect_uri = oauth_app.redirect_uris.split(";")[0]
     assert token.access_token is not None
