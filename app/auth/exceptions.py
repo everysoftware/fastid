@@ -27,16 +27,15 @@ class UserAlreadyExistsError(ClientError):
     status_code = status.HTTP_400_BAD_REQUEST
 
 
-class UserEmailNotFoundError(ClientError):
-    message = "User with this email not found"
-    error_code = "user_email_not_found"
-    status_code = status.HTTP_400_BAD_REQUEST
-
-
 class UserIDNotFoundError(ClientError):
     message = "User with this id not found"
     error_code = "user_not_found"
     status_code = status.HTTP_400_BAD_REQUEST
+
+
+class EmailNotFoundError(UnauthorizedError):
+    message = "User with this email not found"
+    error_code = "user_email_not_found"
 
 
 class WrongPasswordError(UnauthorizedError):

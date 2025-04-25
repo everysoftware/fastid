@@ -59,6 +59,7 @@ async def give_oauth_consent(
             "scope": scope,
         },
     )
+    frontend_client.cookies.delete(cookie_transport.name)
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
     loc = urllib.parse.urlparse(response.headers["Location"])

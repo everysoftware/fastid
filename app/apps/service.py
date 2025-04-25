@@ -1,11 +1,12 @@
 from app.apps.exceptions import AppNotFoundError
 from app.apps.models import App
 from app.apps.repositories import AppClientIDSpecification
-from app.apps.schemas import AppCreate
+from app.apps.schemas import AppCreate, AppUpdate
 from app.base.datatypes import UUIDv7
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
+from app.db.exceptions import NoResultFoundError
 
 
 class AppUseCases(UseCase):
@@ -19,20 +20,24 @@ class AppUseCases(UseCase):
         await self.uow.commit()
         return app
 
-    async def get(self, app_id: UUIDv7) -> App | None:
-        return await self.uow.apps.get(app_id)
+    async def get(self, app_id: UUIDv7) -> App:
+        try:
+            return await self.uow.apps.get(app_id)
+        except NoResultFoundError as e:
+            raise AppNotFoundError from e
 
-    async def get_one(self, app_id: UUIDv7) -> App:
-        app = await self.get(app_id)
-        if app is None:
-            raise AppNotFoundError
+    async def get_by_client_id(self, client_id: str) -> App:
+        try:
+            return await self.uow.apps.find(AppClientIDSpecification(client_id))
+        except NoResultFoundError as e:
+            raise AppNotFoundError from e
+
+    async def update(self, app: App, app_update: AppUpdate) -> App:
+        app.merge_model(app_update)
+        await self.uow.commit()
         return app
 
-    async def get_by_client_id(self, client_id: str) -> App | None:
-        return await self.uow.apps.find(AppClientIDSpecification(client_id))
-
-    async def get_one_by_client_id(self, client_id: str) -> App:
-        app = await self.get_by_client_id(client_id)
-        if app is None:
-            raise AppNotFoundError
+    async def delete(self, app: App) -> App:
+        app = await self.uow.apps.delete(app)
+        await self.uow.commit()
         return app

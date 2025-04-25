@@ -10,4 +10,4 @@ AppsDep = Annotated[AppUseCases, Depends()]
 
 
 async def get_app(service: AppsDep, app_id: UUIDv7) -> App:
-    return await service.get_one(app_id)
+    return await service.get(app_id)

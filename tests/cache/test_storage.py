@@ -1,3 +1,6 @@
+import pytest
+
+from app.cache.exceptions import KeyNotFoundError
 from app.cache.storage import CacheStorage
 
 
@@ -10,6 +13,11 @@ async def test_keys(cache: CacheStorage, mock_record: dict[str, str]) -> None:
 async def test_get(cache: CacheStorage, mock_record: dict[str, str]) -> None:
     value = await cache.get(mock_record["key"])
     assert value == mock_record["value"]
+
+
+async def test_get_non_existent(cache: CacheStorage) -> None:
+    with pytest.raises(KeyNotFoundError):
+        await cache.get("test")
 
 
 async def test_update(cache: CacheStorage, mock_record: dict[str, str]) -> None:
@@ -29,3 +37,8 @@ async def test_pop(cache: CacheStorage, mock_record: dict[str, str]) -> None:
     assert value == mock_record["value"]
     keys = await cache.keys()
     assert mock_record["key"] not in keys
+
+
+async def test_pop_non_existent(cache: CacheStorage) -> None:
+    with pytest.raises(KeyNotFoundError):
+        await cache.pop("test")

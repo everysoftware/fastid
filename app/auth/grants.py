@@ -20,10 +20,10 @@ from app.apps.repositories import AppClientIDSpecification
 from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.exceptions import (
+    EmailNotFoundError,
     InvalidTokenError,
     NoPermissionError,
     NotSupportedResponseTypeError,
-    UserEmailNotFoundError,
 )
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
@@ -33,6 +33,7 @@ from app.base.datatypes import UUIDv7
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
+from app.db.exceptions import NoResultFoundError
 
 
 class Grant(UseCase):
@@ -44,10 +45,10 @@ class Grant(UseCase):
     async def authorize(self, form: Any) -> TokenResponse: ...
 
     async def validate_client(self, client_id: str) -> App:
-        app = await self.uow.apps.find(AppClientIDSpecification(client_id))
-        if app is None:
-            raise InvalidClientCredentialsError
-        return app
+        try:
+            return await self.uow.apps.find(AppClientIDSpecification(client_id))
+        except NoResultFoundError as e:
+            raise InvalidClientCredentialsError from e
 
     async def authenticate_client(self, client_id: str, client_secret: str) -> App:
         app = await self.validate_client(client_id)
@@ -79,9 +80,10 @@ class Grant(UseCase):
 
 class PasswordGrant(Grant):
     async def authorize(self, form: OAuth2PasswordRequest) -> TokenResponse:
-        user = await self.uow.users.find(UserEmailSpecification(form.username))
-        if user is None:
-            raise UserEmailNotFoundError
+        try:
+            user = await self.uow.users.find(UserEmailSpecification(form.username))
+        except NoResultFoundError as e:
+            raise EmailNotFoundError from e
         user.verify_password(form.password)
         return self.grant(user, form.scope)
 
@@ -116,7 +118,7 @@ class AuthorizationCodeGrant(Grant):
         if data is None:
             raise InvalidAuthorizationCodeError
         user_id, scope = data.split(":")
-        user = await self.uow.users.get_one(UUIDv7(user_id))
+        user = await self.uow.users.get(UUIDv7(user_id))
         return self.grant(user, scope)
 
 
@@ -131,5 +133,5 @@ class RefreshTokenGrant(Grant):
         except Auth365Error as e:
             raise InvalidTokenError from e
         assert content.scope is not None
-        user = await self.uow.users.get_one(UUIDv7(content.sub))
+        user = await self.uow.users.get(UUIDv7(content.sub))
         return self.grant(user, content.scope)

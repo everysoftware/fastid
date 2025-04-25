@@ -6,5 +6,5 @@ class NoResultFoundError(RepositoryError):
     pass
 
 
-class MultipleResultsFoundError(RepositoryError):
+class NotSupportedPaginationError(RepositoryError):
     pass

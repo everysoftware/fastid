@@ -5,7 +5,7 @@ from starlette import status
 
 from app.apps.dependencies import AppsDep, get_app
 from app.apps.models import App
-from app.apps.schemas import AppCreate, AppDTO
+from app.apps.schemas import AppCreate, AppDTO, AppUpdate
 from app.auth.permissions import Requires
 
 router = APIRouter(tags=["Apps"])
@@ -27,5 +27,25 @@ async def create(service: AppsDep, app_in: AppCreate) -> Any:
     response_model=AppDTO,
     status_code=status.HTTP_200_OK,
 )
-async def get(app: Annotated[App, Depends(get_app)]) -> Any:
+def get(app: Annotated[App, Depends(get_app)]) -> Any:
     return app
+
+
+@router.patch(
+    "/apps/{app_id}",
+    dependencies=[Depends(Requires(superuser=True))],
+    response_model=AppDTO,
+    status_code=status.HTTP_200_OK,
+)
+async def patch(service: AppsDep, app: Annotated[App, Depends(get_app)], app_update: AppUpdate) -> Any:
+    return await service.update(app, app_update)
+
+
+@router.delete(
+    "/apps/{app_id}",
+    dependencies=[Depends(Requires(superuser=True))],
+    response_model=AppDTO,
+    status_code=status.HTTP_200_OK,
+)
+async def delete(service: AppsDep, app: Annotated[App, Depends(get_app)]) -> Any:
+    return await service.delete(app)

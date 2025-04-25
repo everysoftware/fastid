@@ -1,8 +1,8 @@
 from faker import Faker
 
-from app.apps.schemas import AppCreate
+from app.apps.schemas import AppCreate, AppUpdate
 from app.auth.backend import crypt_ctx
-from app.auth.schemas import UserCreate
+from app.auth.schemas import UserCreate, UserUpdate
 from tests.utils.auth import generate_random_state
 
 faker = Faker()
@@ -13,6 +13,7 @@ USER_CREATE = UserCreate(
     email=faker.email(),
     password=faker.password(),
 )
+USER_UPDATE = UserUpdate(first_name=faker.first_name(), last_name=faker.last_name())
 
 USER_SU_CREATE = UserCreate(
     first_name=faker.first_name(),
@@ -42,6 +43,7 @@ CACHE_RECORD = {
 }
 
 APP_CREATE = AppCreate(name="Test App", slug="test-app", redirect_uris="https://google.com")
+APP_UPDATE = AppUpdate(name="New Test App")
 STATE = generate_random_state()
 
 

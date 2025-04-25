@@ -68,7 +68,7 @@ class SQLAlchemyUOW(IUnitOfWork):
 
     @property
     def is_active(self) -> bool:
-        if not self._session:
+        if not hasattr(self, "_session") or not self._session:
             return False
         return cast(bool, self._session.is_active)
 

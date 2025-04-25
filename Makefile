@@ -20,6 +20,13 @@ up-prod:
 test: deps
 	pytest . -s -v
 
+.PHONY: coverage
+coverage: deps
+	coverage run -m pytest -x --ff
+	coverage combine
+	coverage report --show-missing --skip-covered --sort=cover --precision=2
+	rm .coverage*
+
 .PHONY: stop
 stop:
 	docker-compose stop

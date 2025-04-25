@@ -10,4 +10,4 @@ ProfilesDep = Annotated[ProfileUseCases, Depends()]
 
 
 async def get_user_by_id(service: ProfilesDep, user_id: UUIDv7) -> User:
-    return await service.get_one(user_id)
+    return await service.get(user_id)

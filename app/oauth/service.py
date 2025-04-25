@@ -1,3 +1,5 @@
+import contextlib
+
 from auth365.schemas import JWTPayload, OAuth2Callback, OpenIDBearer, TelegramCallback, TokenResponse
 
 from app.auth.backend import token_backend
@@ -8,6 +10,7 @@ from app.base.pagination import LimitOffset, Page
 from app.base.service import UseCase
 from app.base.sorting import Sorting
 from app.db.dependencies import UOWDep
+from app.db.exceptions import NoResultFoundError
 from app.oauth.clients.dependencies import RegistryDep
 from app.oauth.exceptions import (
     OAuthAccountInUseError,
@@ -32,10 +35,11 @@ class OAuthUseCases(UseCase):
 
     async def authorize(self, provider_name: str, callback: OAuth2Callback | TelegramCallback) -> TokenResponse:
         open_id = await self._callback(provider_name, callback)
-        account = await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
-        if not account:
+        try:
+            account = await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
+        except NoResultFoundError:
             account = await self._register(open_id)
-        user = await self.uow.users.get_one(account.user_id)
+        user = await self.uow.users.get(account.user_id)
         await self.uow.commit()
         at = token_backend.create("access", JWTPayload(sub=str(user.id)))
         return TokenResponse(access_token=at)
@@ -47,22 +51,22 @@ class OAuthUseCases(UseCase):
         callback: OAuth2Callback | TelegramCallback,
     ) -> OAuthAccount:
         open_id = await self._callback(provider_name, callback)
-        account = await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
-        if account:
+        try:
+            await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
+        except NoResultFoundError:
+            pass
+        else:
             raise OAuthAccountInUseError
         account = OAuthAccount.from_open_id(open_id, user)
         account = await self.uow.oauth_accounts.add(account)
         await self.uow.commit()
         return account
 
-    async def get(self, account_id: UUIDv7) -> OAuthAccount | None:
-        return await self.uow.oauth_accounts.get(account_id)
-
     async def get_one(self, account_id: UUIDv7) -> OAuthAccount:
-        account = await self.get(account_id)
-        if not account:
-            raise OAuthAccountNotFoundError
-        return account
+        try:
+            return await self.uow.oauth_accounts.get(account_id)
+        except NoResultFoundError as e:
+            raise OAuthAccountNotFoundError from e
 
     async def paginate(
         self,
@@ -75,7 +79,7 @@ class OAuthUseCases(UseCase):
         )
 
     async def revoke(self, user: User, provider_name: str) -> OAuthAccount:
-        account = await self.uow.oauth_accounts.find_one(UserAccountSpecification(user.id, provider_name))
+        account = await self.uow.oauth_accounts.find(UserAccountSpecification(user.id, provider_name))
         user.disconnect_open_id(account.provider)
         account = await self.uow.oauth_accounts.delete(account)
         await self.uow.commit()
@@ -91,12 +95,15 @@ class OAuthUseCases(UseCase):
             )
 
     async def _register(self, open_id: OpenIDBearer) -> OAuthAccount:
-        user = await self.uow.users.find(UserEmailSpecification(open_id.email)) if open_id.email else None
-        if user:
-            user.connect_open_id(open_id)
-        else:
+        user = None
+        if open_id.email:
+            with contextlib.suppress(NoResultFoundError):
+                user = await self.uow.users.find(UserEmailSpecification(open_id.email))
+        if user is None:
             user = User.from_open_id(open_id)
             user = await self.uow.users.add(user)
+        else:
+            user.connect_open_id(open_id)
         account = OAuthAccount.from_open_id(open_id, user)
         await self.uow.oauth_accounts.add(account)
         return account

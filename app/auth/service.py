@@ -8,6 +8,7 @@ from app.auth.schemas import UserCreate
 from app.base.datatypes import UUIDv7
 from app.base.service import UseCase
 from app.db.dependencies import UOWDep
+from app.db.exceptions import NoResultFoundError
 
 
 class AuthUseCases(UseCase):
@@ -15,8 +16,11 @@ class AuthUseCases(UseCase):
         self.uow = uow
 
     async def register(self, dto: UserCreate) -> User:
-        user = await self.uow.users.find(UserEmailSpecification(dto.email))
-        if user is not None:
+        try:
+            await self.uow.users.find(UserEmailSpecification(dto.email))
+        except NoResultFoundError:
+            pass
+        else:
             raise UserAlreadyExistsError
         user = User.from_create(dto)
         user = await self.uow.users.add(user)
@@ -28,7 +32,7 @@ class AuthUseCases(UseCase):
             payload = token_backend.validate("access", token)
         except Auth365Error as e:
             raise InvalidTokenError from e
-        user = await self.uow.users.get(UUIDv7(payload.sub))
-        if user is None:
-            raise UserIDNotFoundError
-        return user
+        try:
+            return await self.uow.users.get(UUIDv7(payload.sub))
+        except NoResultFoundError as e:
+            raise UserIDNotFoundError from e

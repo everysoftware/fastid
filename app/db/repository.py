@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from typing import Any, ClassVar, TypeVar, cast
 
 from sqlalchemy import Select, select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.base.datatypes import UUIDv7
@@ -11,7 +12,7 @@ from app.base.pagination import LimitOffset, Page, Pagination
 from app.base.repository import IRepository
 from app.base.sorting import Sorting
 from app.base.specification import Specification
-from app.db.exceptions import NoResultFoundError
+from app.db.exceptions import NoResultFoundError, NotSupportedPaginationError
 
 T = TypeVar("T", bound=Entity)
 S = TypeVar("S", bound=Select[Any])
@@ -30,31 +31,24 @@ class SQLAlchemyRepository(IRepository[T], ABC):
         self.session.add(model)
         return model
 
-    async def get(self, ident: UUIDv7) -> T | None:
-        model = await self.session.get(self.model_type, ident)
-        if model is None:
-            return None
+    async def get(self, ident: UUIDv7) -> T:
+        try:
+            model = await self.session.get_one(self.model_type, ident)
+        except NoResultFound as e:
+            raise NoResultFoundError from e
         return cast(T, model)
 
-    async def get_one(self, ident: UUIDv7) -> T:
-        model = await self.get(ident)
-        if model is None:
-            raise NoResultFoundError
-        return model
-
-    async def find(self, criteria: Specification) -> T | None:
+    async def find(self, criteria: Specification) -> T:
         stmt = self._apply_params(
             self._select(),
             criteria=criteria,
             pagination=LimitOffset(limit=1),
         )
         result = await self.session.scalars(stmt)
-        return result.first()
-
-    async def find_one(self, criteria: Specification) -> T:
-        model = await self.find(criteria)
-        if model is None:
-            raise NoResultFoundError
+        try:
+            model = result.one()
+        except NoResultFound as e:
+            raise NoResultFoundError from e
         return model
 
     async def delete(self, model: T) -> T:
@@ -92,6 +86,8 @@ class SQLAlchemyRepository(IRepository[T], ABC):
     def _apply_pagination(stmt: S, pagination: Pagination) -> S:
         if isinstance(pagination, LimitOffset):
             stmt = stmt.limit(pagination.limit).offset(pagination.offset)
+        else:
+            raise NotSupportedPaginationError
         return stmt
 
     def _apply_sorting(self, stmt: S, sorting: Sorting) -> S:

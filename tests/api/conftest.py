@@ -39,7 +39,9 @@ async def user_su(uow: IUnitOfWork) -> UserDTO:
     record = User(**USER_SU_RECORD)
     await uow.users.add(record)
     await uow.commit()
-    return UserDTO.model_validate(record)
+    user = UserDTO.model_validate(record)
+    user.hashed_password = None
+    return user
 
 
 @pytest.fixture
