@@ -1,8 +1,8 @@
 from faker import Faker
 
 from app.apps.schemas import AppCreate, AppUpdate
-from app.auth.backend import crypt_ctx
 from app.auth.schemas import UserCreate, UserUpdate
+from app.security.crypto import crypt_ctx
 from tests.utils.auth import generate_random_state
 
 faker = Faker()

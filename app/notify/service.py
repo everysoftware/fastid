@@ -2,16 +2,16 @@ import secrets
 
 from auth365.schemas import JWTPayload
 
-from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.models import User
-from app.auth.utils import generate_otp
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
 from app.notify.clients.dependencies import MailDep, TelegramDep
 from app.notify.clients.schemas import Notification
 from app.notify.exceptions import WrongCodeError
 from app.notify.schemas import VerifyTokenRequest
+from app.security.crypto import generate_otp
+from app.security.jwt import jwt_backend
 
 
 class NotificationUseCases(UseCase):
@@ -55,4 +55,4 @@ class NotificationUseCases(UseCase):
 
     async def authorize_with_code(self, user: User, request: VerifyTokenRequest) -> str:
         await self.validate_code(user, request.code)
-        return token_backend.create("verify", JWTPayload(sub=str(user.id)))
+        return jwt_backend.create("verify", JWTPayload(sub=str(user.id)))

@@ -2,7 +2,6 @@ import contextlib
 
 from auth365.schemas import JWTPayload, OAuth2Callback, OpenIDBearer, TelegramCallback, TokenResponse
 
-from app.auth.backend import token_backend
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
 from app.base.datatypes import UUIDv7
@@ -22,6 +21,7 @@ from app.oauth.repositories import (
     UserAccountPageSpecification,
     UserAccountSpecification,
 )
+from app.security.jwt import jwt_backend
 
 
 class OAuthUseCases(UseCase):
@@ -41,7 +41,7 @@ class OAuthUseCases(UseCase):
             account = await self._register(open_id)
         user = await self.uow.users.get(account.user_id)
         await self.uow.commit()
-        at = token_backend.create("access", JWTPayload(sub=str(user.id)))
+        at = jwt_backend.create("access", JWTPayload(sub=str(user.id)))
         return TokenResponse(access_token=at)
 
     async def connect(

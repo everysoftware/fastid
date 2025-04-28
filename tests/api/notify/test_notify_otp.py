@@ -3,8 +3,8 @@ from httpx import AsyncClient
 from starlette import status
 
 from app.auth.schemas import UserDTO
-from app.auth.utils import generate_otp
 from app.cache.storage import CacheStorage
+from app.security.crypto import generate_otp
 
 
 async def test_notify_otp(client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse) -> None:

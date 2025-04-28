@@ -4,7 +4,7 @@ from auth365.schemas import JWKS, DiscoveryDocument
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
 
-from app.auth.backend import cookie_transport
+from app.auth.dependencies import cookie_transport
 from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest

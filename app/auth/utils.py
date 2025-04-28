@@ -1,4 +1,3 @@
-import secrets
 from collections.abc import Mapping
 
 from auth365.fastapi.transport import Transport
@@ -27,7 +26,3 @@ class AuthBus:
 
     def __call__(self, request: Request) -> str | None:
         return self.parse_request(request)
-
-
-def generate_otp() -> str:
-    return str(secrets.choice(range(100_000, 1_000_000)))

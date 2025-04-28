@@ -2,7 +2,7 @@ from auth365.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from app.auth.backend import cookie_transport
+from app.auth.dependencies import cookie_transport
 
 
 async def test_logout(client: AsyncClient, user_token: TokenResponse) -> None:

@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 from auth365.schemas import TokenResponse
 from httpx import AsyncClient
@@ -8,8 +10,10 @@ from starlette import status
 from app.apps.schemas import AppDTO
 from app.auth.models import User
 from app.auth.schemas import UserDTO
+from app.cache.storage import CacheStorage
 from app.db.uow import IUnitOfWork
 from app.logging.dependencies import provider
+from app.security.crypto import generate_otp
 from tests.mocks import APP_CREATE, USER_CREATE, USER_SU_CREATE, USER_SU_RECORD
 from tests.utils.auth import authorize_password_grant
 from tests.utils.db import delete_all
@@ -48,6 +52,23 @@ async def user_su(uow: IUnitOfWork) -> UserDTO:
 async def user_token(user: UserDTO, client: AsyncClient) -> TokenResponse:
     assert user.email is not None
     return await authorize_password_grant(client, user.email, USER_CREATE.password)
+
+
+@pytest.fixture
+async def verify_token(client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse) -> str:
+    code = generate_otp()
+    await cache.set(f"otp:users:{user.id}", code)
+
+    response = await client.post(
+        "/notify/verify-token",
+        json={
+            "code": code,
+        },
+        headers={"Authorization": f"Bearer {user_token.access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    content = response.json()
+    return cast(str, content["verify_token"])
 
 
 @pytest.fixture

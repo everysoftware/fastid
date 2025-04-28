@@ -1,9 +1,9 @@
 from fastapi import Request
 
-from app.auth.backend import token_backend, verify_token_transport
-from app.auth.dependencies import UserDep
+from app.auth.dependencies import UserDep, verify_token_transport
 from app.auth.exceptions import NoPermissionError
 from app.auth.models import User
+from app.security.jwt import jwt_backend
 
 
 class Requires:
@@ -19,7 +19,7 @@ class Requires:
         self.email_verified = email_verified
         self.active = active
         self.action_verified = action_verified
-        self.token_backend = token_backend
+        self.token_backend = jwt_backend
 
     async def __call__(
         self,

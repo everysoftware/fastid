@@ -17,7 +17,6 @@ from app.apps.exceptions import (
 )
 from app.apps.models import App
 from app.apps.repositories import AppClientIDSpecification
-from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.exceptions import (
     EmailNotFoundError,
@@ -28,18 +27,19 @@ from app.auth.exceptions import (
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
 from app.auth.schemas import OAuth2ConsentRequest
-from app.auth.utils import generate_otp
 from app.base.datatypes import UUIDv7
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
 from app.db.dependencies import UOWDep
 from app.db.exceptions import NoResultFoundError
+from app.security.crypto import generate_otp
+from app.security.jwt import jwt_backend
 
 
 class Grant(UseCase):
     def __init__(self, uow: UOWDep) -> None:
         self.uow = uow
-        self.token_backend = token_backend
+        self.token_backend = jwt_backend
 
     @abstractmethod
     async def authorize(self, form: Any) -> TokenResponse: ...

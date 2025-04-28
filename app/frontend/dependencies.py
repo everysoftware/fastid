@@ -5,15 +5,13 @@ from fastapi import Depends
 from starlette.requests import Request
 
 from app.api.exceptions import ClientError, UnauthorizedError
-from app.auth.backend import (
-    cookie_transport,
-    token_backend,
-    verify_token_transport,
-)
-from app.auth.dependencies import AuthDep
+from app.auth.dependencies import AuthDep, cookie_transport, verify_token_transport
 from app.auth.grants import AuthorizationCodeGrant
 from app.auth.models import User
 from app.auth.schemas import OAuth2ConsentRequest
+from app.security.jwt import (
+    jwt_backend,
+)
 
 
 async def get_optional_user(
@@ -49,7 +47,7 @@ def action_verified(
     if token is None:
         return False
     try:
-        token_backend.validate("verify", token)
+        jwt_backend.validate("verify", token)
     except Auth365Error:
         return False
     return True

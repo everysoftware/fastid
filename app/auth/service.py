@@ -1,6 +1,5 @@
 from auth365.exceptions import Auth365Error
 
-from app.auth.backend import token_backend
 from app.auth.exceptions import InvalidTokenError, UserAlreadyExistsError, UserIDNotFoundError
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
@@ -9,6 +8,7 @@ from app.base.datatypes import UUIDv7
 from app.base.service import UseCase
 from app.db.dependencies import UOWDep
 from app.db.exceptions import NoResultFoundError
+from app.security.jwt import jwt_backend
 
 
 class AuthUseCases(UseCase):
@@ -29,7 +29,7 @@ class AuthUseCases(UseCase):
 
     async def get_userinfo(self, token: str) -> User:
         try:
-            payload = token_backend.validate("access", token)
+            payload = jwt_backend.validate("access", token)
         except Auth365Error as e:
             raise InvalidTokenError from e
         try:

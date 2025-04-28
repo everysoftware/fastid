@@ -3,8 +3,7 @@ from typing import Annotated, Any
 from auth365.schemas import OAuth2Grant, TokenResponse
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, status
 
-from app.auth.backend import cookie_transport
-from app.auth.dependencies import AuthDep, UserDep
+from app.auth.dependencies import AuthDep, UserDep, cookie_transport
 from app.auth.exceptions import NotSupportedGrantError
 from app.auth.grants import (
     AuthorizationCodeGrant,

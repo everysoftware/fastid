@@ -5,9 +5,8 @@ from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from starlette import status
 
-from app.auth.backend import cookie_transport
 from app.auth.config import auth_settings
-from app.auth.dependencies import UserDep, get_optional_user
+from app.auth.dependencies import UserDep, cookie_transport, get_optional_user
 from app.auth.models import User
 from app.base.pagination import PageDTO
 from app.frontend.templating import templates

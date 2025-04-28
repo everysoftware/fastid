@@ -3,6 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Depends
 from starlette import status
 
+from app.admin.router import router as admin_auth_router
 from app.api.exceptions import TestError
 from app.apps.router import router as app_router
 from app.auth.dependencies import auth_flows
@@ -10,7 +11,6 @@ from app.auth.router import router as auth_router
 from app.base.schemas import ErrorResponse
 from app.notify.router import router as notifier_router
 from app.oauth.router import router as oauth_router
-from app.profile.admin_router import router as admin_auth_router
 from app.profile.router import router as profile_router
 
 api_router = APIRouter(

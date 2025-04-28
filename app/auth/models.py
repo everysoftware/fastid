@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING, Literal, Self
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.auth.backend import crypt_ctx
 from app.auth.exceptions import WrongPasswordError
 from app.base.datatypes import uuid
 from app.base.models import Entity
 from app.oauth.config import telegram_settings
+from app.security.crypto import crypt_ctx
 
 if TYPE_CHECKING:
     from auth365.schemas import OpenIDBearer
