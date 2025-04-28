@@ -28,7 +28,7 @@ from app.auth.exceptions import (
 from app.auth.models import User
 from app.auth.repositories import UserEmailSpecification
 from app.auth.schemas import OAuth2ConsentRequest
-from app.auth.utils import otp
+from app.auth.utils import generate_otp
 from app.base.datatypes import UUIDv7
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
@@ -103,7 +103,7 @@ class AuthorizationCodeGrant(Grant):
         return consent
 
     async def approve_consent(self, consent: OAuth2ConsentRequest, user: User) -> str:
-        code = otp()
+        code = generate_otp()
         await self.cache.set(
             f"ac:{consent.client_id}:{code}",
             f"{user.id}:{consent.scope}",

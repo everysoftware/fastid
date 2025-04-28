@@ -5,7 +5,7 @@ from auth365.schemas import JWTPayload
 from app.auth.backend import token_backend
 from app.auth.config import auth_settings
 from app.auth.models import User
-from app.auth.utils import otp
+from app.auth.utils import generate_otp
 from app.base.service import UseCase
 from app.cache.dependencies import CacheDep
 from app.notify.clients.dependencies import MailDep, TelegramDep
@@ -37,7 +37,7 @@ class NotificationUseCases(UseCase):
                 raise ValueError(f"Unknown method: {method}")
 
     async def push_code(self, notification: Notification) -> None:
-        code = otp()
+        code = generate_otp()
         notification.extra["code"] = code
         await self.cache.set(
             f"otp:users:{notification.user.id}",

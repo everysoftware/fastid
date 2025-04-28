@@ -29,5 +29,5 @@ class AuthBus:
         return self.parse_request(request)
 
 
-def otp() -> str:
+def generate_otp() -> str:
     return str(secrets.choice(range(100_000, 1_000_000)))
