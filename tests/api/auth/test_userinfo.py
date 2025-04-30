@@ -2,7 +2,7 @@ from auth365.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from app.auth.schemas import UserDTO
+from fastid.auth.schemas import UserDTO
 
 
 async def test_userinfo(client: AsyncClient, user: UserDTO, user_token: TokenResponse) -> None:

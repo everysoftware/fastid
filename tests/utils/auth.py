@@ -6,8 +6,8 @@ from auth365.schemas import OAuth2Callback, TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from app.apps.schemas import AppDTO
-from app.auth.dependencies import cookie_transport
+from fastid.apps.schemas import AppDTO
+from fastid.auth.dependencies import cookie_transport
 from tests import mocks
 
 

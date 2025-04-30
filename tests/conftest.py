@@ -7,14 +7,14 @@ from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, async_sessionmaker
 
-from app.cache.config import cache_settings
-from app.cache.dependencies import get_cache
-from app.cache.storage import CacheStorage, RedisStorage
-from app.db.dependencies import get_uow
-from app.db.uow import IUnitOfWork, SQLAlchemyUOW
-from app.logging.dependencies import provider
-from app.main.app import app
-from app.notify.clients.dependencies import get_mail, get_telegram
+from fastid.cache.config import cache_settings
+from fastid.cache.dependencies import get_cache
+from fastid.cache.storage import CacheStorage, RedisStorage
+from fastid.core.app import app
+from fastid.core.dependencies import log_provider
+from fastid.database.dependencies import get_uow
+from fastid.database.uow import SQLAlchemyUOW
+from fastid.notify.clients.dependencies import get_mail, get_telegram
 from tests.dependencies import (
     alembic_config,
     get_test_cache,
@@ -26,7 +26,7 @@ from tests.dependencies import (
 )
 from tests.utils.db import delete_all, get_temp_db
 
-logger = provider.logger(__name__)
+logger = log_provider.logger(__name__)
 
 
 @pytest.fixture(scope="session")
@@ -104,7 +104,7 @@ async def session(
 
 
 @pytest.fixture
-async def uow(session_factory: async_sessionmaker[AsyncSession], engine: AsyncEngine) -> AsyncIterator[IUnitOfWork]:
+async def uow(session_factory: async_sessionmaker[AsyncSession], engine: AsyncEngine) -> AsyncIterator[SQLAlchemyUOW]:
     async with SQLAlchemyUOW(session_factory) as uow:
         yield uow
 

@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "app"
+name = "fastid"
 version = "0.1.0"
-description = ""
+description = "Effortless authentication solution for your services"
 authors = ["Ivan Stasevich <pravitel2015ify@gmail.com>"]
 readme = "README.md"
 
@@ -166,7 +166,11 @@ omit = [
     '*/__about__.py',
     '*/__main__.py',
     '*/__init__.py',
-    '*/dependencies.py'
+    '*/dependencies.py',
+    "app/plugins/*",
+    "app/pages/*",
+    "app/dashboard/*",
+    "app/core/*",
 ]
 
 

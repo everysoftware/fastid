@@ -1,12 +1,6 @@
-APP_PATH = app
-LOGS_SINCE = 10m
-
 .PHONY: deps
 deps:
 	docker-compose up db redis -d
-
-.PHONY: deps
-	uvicorn $(APP_PATH):app --host 0.0.0.0 --port 8000
 
 .PHONY: up
 up:

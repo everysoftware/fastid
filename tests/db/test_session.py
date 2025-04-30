@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.models import User
+from fastid.auth.models import User
 
 
 async def test_session_execute(session: AsyncSession) -> None:

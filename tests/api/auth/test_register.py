@@ -1,7 +1,7 @@
 from httpx import AsyncClient
 from starlette import status
 
-from app.auth.schemas import UserDTO
+from fastid.auth.schemas import UserDTO
 from tests.mocks import USER_CREATE
 
 

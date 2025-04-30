@@ -2,8 +2,8 @@ from auth365.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from app.auth.schemas import UserDTO
-from app.base.pagination import PageDTO
+from fastid.auth.schemas import UserDTO
+from fastid.database.schemas import PageDTO
 
 
 async def test_get_users(client: AsyncClient, user_su: UserDTO, user_su_token: TokenResponse) -> None:

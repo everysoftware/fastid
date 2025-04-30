@@ -7,18 +7,18 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine
 from starlette import status
 
-from app.apps.schemas import AppDTO
-from app.auth.models import User
-from app.auth.schemas import UserDTO
-from app.cache.storage import CacheStorage
-from app.db.uow import IUnitOfWork
-from app.logging.dependencies import provider
-from app.security.crypto import generate_otp
+from fastid.apps.schemas import AppDTO
+from fastid.auth.models import User
+from fastid.auth.schemas import UserDTO
+from fastid.cache.storage import CacheStorage
+from fastid.core.dependencies import log_provider
+from fastid.database.uow import SQLAlchemyUOW
+from fastid.security.crypto import generate_otp
 from tests.mocks import APP_CREATE, USER_CREATE, USER_SU_CREATE, USER_SU_RECORD
 from tests.utils.auth import authorize_password_grant
 from tests.utils.db import delete_all
 
-logger = provider.logger(__name__)
+logger = log_provider.logger(__name__)
 
 
 @pytest.fixture(autouse=True)
@@ -39,7 +39,7 @@ async def user(client: AsyncClient) -> UserDTO:
 
 
 @pytest.fixture
-async def user_su(uow: IUnitOfWork) -> UserDTO:
+async def user_su(uow: SQLAlchemyUOW) -> UserDTO:
     record = User(**USER_SU_RECORD)
     await uow.users.add(record)
     await uow.commit()

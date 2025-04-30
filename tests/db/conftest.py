@@ -1,12 +1,12 @@
 import pytest
 
-from app.auth.models import User
-from app.db.uow import IUnitOfWork
+from fastid.auth.models import User
+from fastid.database.uow import SQLAlchemyUOW
 from tests import mocks
 
 
 @pytest.fixture
-async def mock_user(uow: IUnitOfWork) -> User:
+async def mock_user(uow: SQLAlchemyUOW) -> User:
     user = User(**mocks.USER_RECORD)
     await uow.users.add(user)
     await uow.commit()

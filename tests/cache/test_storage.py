@@ -1,7 +1,7 @@
 import pytest
 
-from app.cache.exceptions import KeyNotFoundError
-from app.cache.storage import CacheStorage
+from fastid.cache.exceptions import KeyNotFoundError
+from fastid.cache.storage import CacheStorage
 
 
 async def test_keys(cache: CacheStorage, mock_record: dict[str, str]) -> None:

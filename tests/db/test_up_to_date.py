@@ -9,7 +9,7 @@ from alembic.runtime.migration import MigrationContext
 from sqlalchemy import Connection
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.base.models import BaseOrm
+from fastid.database.base import BaseOrm
 from tests.dependencies import alembic_config
 
 

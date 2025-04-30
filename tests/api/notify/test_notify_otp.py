@@ -2,9 +2,9 @@ from auth365.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from app.auth.schemas import UserDTO
-from app.cache.storage import CacheStorage
-from app.security.crypto import generate_otp
+from fastid.auth.schemas import UserDTO
+from fastid.cache.storage import CacheStorage
+from fastid.security.crypto import generate_otp
 
 
 async def test_notify_otp(client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse) -> None:

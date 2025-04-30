@@ -1,7 +1,7 @@
 from auth365.schemas import TokenResponse
 from httpx import AsyncClient
 
-from app.apps.schemas import AppDTO
+from fastid.apps.schemas import AppDTO
 from tests import mocks
 from tests.utils.auth import authorize_authorization_code_grant, give_oauth_consent
 

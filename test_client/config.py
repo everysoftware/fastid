@@ -1,4 +1,4 @@
-from app.base.schemas import BaseSettings
+from fastid.core.schemas import BaseSettings
 
 
 class Settings(BaseSettings):

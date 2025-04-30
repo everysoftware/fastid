@@ -2,8 +2,8 @@ from auth365.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from app.auth.dependencies import verify_token_transport
-from app.auth.schemas import UserDTO
+from fastid.auth.dependencies import verify_token_transport
+from fastid.auth.schemas import UserDTO
 from tests.mocks import faker
 
 

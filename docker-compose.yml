@@ -58,9 +58,9 @@ services:
       - redis
     logging: *default-logging
     volumes:
-      - "./app:/opt/app/app"
-      - "./templates:/opt/app/templates"
-      - "./static:/opt/app/static"
+      - "./fastid:/opt/fastid/fastid"
+      - "./templates:/opt/fastid/templates"
+      - "./static:/opt/fastid/static"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

@@ -1,11 +1,11 @@
 import pytest
 
-from app.auth.models import User
-from app.auth.repositories import UserEmailSpecification
-from app.base.datatypes import uuid
-from app.base.pagination import Pagination
-from app.db.exceptions import NoResultFoundError, NotSupportedPaginationError
-from app.db.uow import IUnitOfWork
+from fastid.auth.models import User
+from fastid.auth.repositories import UserEmailSpecification
+from fastid.database.exceptions import NoResultFoundError, NotSupportedPaginationError
+from fastid.database.schemas import Pagination
+from fastid.database.uow import SQLAlchemyUOW
+from fastid.database.utils import uuid
 from tests import mocks
 
 
@@ -18,17 +18,17 @@ def test_repository_add(mock_user: User) -> None:
     assert mock_user.updated_at is not None
 
 
-async def test_repository_get(uow: IUnitOfWork, mock_user: User) -> None:
+async def test_repository_get(uow: SQLAlchemyUOW, mock_user: User) -> None:
     user = await uow.users.get(mock_user.id)
     assert user == mock_user
 
 
-async def test_repository_get_non_existent(uow: IUnitOfWork) -> None:
+async def test_repository_get_non_existent(uow: SQLAlchemyUOW) -> None:
     with pytest.raises(NoResultFoundError):
         await uow.users.get(uuid())
 
 
-async def test_repository_update(uow: IUnitOfWork, mock_user: User) -> None:
+async def test_repository_update(uow: SQLAlchemyUOW, mock_user: User) -> None:
     mock_user.first_name = "Jane"
     await uow.commit()
 
@@ -36,7 +36,7 @@ async def test_repository_update(uow: IUnitOfWork, mock_user: User) -> None:
     assert user.first_name == "Jane"
 
 
-async def test_repository_delete(uow: IUnitOfWork, mock_user: User) -> None:
+async def test_repository_delete(uow: SQLAlchemyUOW, mock_user: User) -> None:
     await uow.users.delete(mock_user)
     await uow.commit()
 
@@ -44,23 +44,23 @@ async def test_repository_delete(uow: IUnitOfWork, mock_user: User) -> None:
         await uow.users.get(mock_user.id)
 
 
-async def test_repository_find(uow: IUnitOfWork, mock_user: User) -> None:
+async def test_repository_find(uow: SQLAlchemyUOW, mock_user: User) -> None:
     assert mock_user.email is not None
     user = await uow.users.find(UserEmailSpecification(mock_user.email))
     assert user == mock_user
 
 
-async def test_repository_find_non_existent(uow: IUnitOfWork) -> None:
+async def test_repository_find_non_existent(uow: SQLAlchemyUOW) -> None:
     with pytest.raises(NoResultFoundError):
         await uow.users.find(UserEmailSpecification("user@example.com"))
 
 
-async def test_repository_get_many(uow: IUnitOfWork, mock_user: User) -> None:
+async def test_repository_get_many(uow: SQLAlchemyUOW, mock_user: User) -> None:
     page = await uow.users.get_many()
     assert page.total == 1
     assert page.items[0] == mock_user
 
 
-async def test_repository_get_many_unsupported_pagination(uow: IUnitOfWork, mock_user: User) -> None:
+async def test_repository_get_many_unsupported_pagination(uow: SQLAlchemyUOW, mock_user: User) -> None:
     with pytest.raises(NotSupportedPaginationError):
         await uow.users.get_many(pagination=Pagination())
