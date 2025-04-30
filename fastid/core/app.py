@@ -1,7 +1,7 @@
 from fastid.api.mini_app import APIMiniApp
+from fastid.core.base import MiniApp, Plugin, app_factory
 from fastid.core.config import cors_settings, main_settings
 from fastid.core.middlewares.cors import CORSPlugin
-from fastid.core.mini_apps import MiniApp, Plugin, app_factory
 from fastid.dashboard.config import admin_settings
 from fastid.dashboard.mini_app import AdminMiniApp
 from fastid.database.dependencies import engine

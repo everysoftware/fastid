@@ -50,3 +50,7 @@ def app_factory(
     installed = [mini_app.module_name for mini_app in mini_apps]
     log.info("Installed mini apps (%d): %s", len(installed), ", ".join(installed))
     return app
+
+
+class UseCase:
+    pass

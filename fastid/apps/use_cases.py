@@ -3,7 +3,7 @@ from fastid.apps.models import App
 from fastid.apps.repositories import AppClientIDSpecification
 from fastid.apps.schemas import AppCreate, AppUpdate
 from fastid.cache.dependencies import CacheDep
-from fastid.core.use_cases import UseCase
+from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.utils import UUIDv7

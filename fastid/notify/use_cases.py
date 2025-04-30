@@ -5,7 +5,7 @@ from auth365.schemas import JWTPayload
 from fastid.auth.config import auth_settings
 from fastid.auth.models import User
 from fastid.cache.dependencies import CacheDep
-from fastid.core.use_cases import UseCase
+from fastid.core.base import UseCase
 from fastid.notify.clients.dependencies import MailDep, TelegramDep
 from fastid.notify.clients.schemas import Notification
 from fastid.notify.exceptions import WrongCodeError

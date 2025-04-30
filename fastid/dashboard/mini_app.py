@@ -5,7 +5,7 @@ from sqladmin import Admin
 from sqlalchemy import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from fastid.core.mini_apps import MiniApp
+from fastid.core.base import MiniApp
 from fastid.dashboard.auth import admin_auth
 from fastid.dashboard.views import OAuthAccountAdmin, OAuthClientAdmin, UserAdmin
 

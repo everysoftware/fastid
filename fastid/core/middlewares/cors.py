@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from fastid.core.mini_apps import Plugin
+from fastid.core.base import Plugin
 
 
 class CORSPlugin(Plugin):

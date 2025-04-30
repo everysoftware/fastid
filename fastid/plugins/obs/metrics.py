@@ -9,7 +9,7 @@ from prometheus_client.openmetrics.exposition import (
 from starlette.requests import Request
 from starlette.responses import Response
 
-from fastid.core.mini_apps import Plugin
+from fastid.core.base import Plugin
 from fastid.plugins.obs.prometheus import PrometheusMiddleware
 
 

@@ -16,8 +16,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from fastid.core.base import Plugin
 from fastid.core.dependencies import log_provider
-from fastid.core.mini_apps import Plugin
 
 default_formatter = uvicorn.logging.DefaultFormatter(
     fmt="%(asctime)s %(levelprefix)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=0 span_id=0 resource.service.name=0] - %(message)s",

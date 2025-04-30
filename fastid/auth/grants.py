@@ -28,7 +28,7 @@ from fastid.auth.models import User
 from fastid.auth.repositories import UserEmailSpecification
 from fastid.auth.schemas import OAuth2ConsentRequest
 from fastid.cache.dependencies import CacheDep
-from fastid.core.use_cases import UseCase
+from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.utils import UUIDv7

@@ -9,7 +9,7 @@ from fastid.auth.schemas import (
     UserChangePassword,
     UserUpdate,
 )
-from fastid.core.use_cases import UseCase
+from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.schemas import Page, Pagination, Sorting

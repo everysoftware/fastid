@@ -5,7 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
 from fastid.auth.config import auth_settings
-from fastid.core.mini_apps import MiniApp
+from fastid.core.base import MiniApp
 from fastid.oauth.clients.dependencies import registry
 from fastid.pages.exceptions import add_exception_handlers
 from fastid.pages.router import router as auth_router

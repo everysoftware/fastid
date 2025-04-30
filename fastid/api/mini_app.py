@@ -6,8 +6,8 @@ from fastapi import FastAPI
 from fastid.api.exceptions import add_exception_handlers
 from fastid.api.lifespan import LifespanTasks
 from fastid.api.routing import api_router
+from fastid.core.base import MiniApp, Plugin
 from fastid.core.dependencies import log
-from fastid.core.mini_apps import MiniApp, Plugin
 
 
 class APIMiniApp(MiniApp):
