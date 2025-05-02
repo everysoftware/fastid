@@ -8,23 +8,16 @@ from fastid.notify.clients.base import NotificationClient
 from fastid.notify.clients.schemas import Notification
 
 
-class SMTPMail(NotificationClient):
+class MailClient(NotificationClient):
     def __init__(
         self,
-        host: str,
-        port: int,
-        username: str,
-        password: str,
+        client: smtplib.SMTP,
+        *,
         from_name: str,
     ) -> None:
-        self.host = host
-        self.port = port
-        self.username = username
-        self.password = password
+        self._client = client
+        self.username = self._client.user
         self.from_name = from_name
-
-        self._client = smtplib.SMTP_SSL(host, port)
-        self._client.login(username, password)
 
     async def send(self, notification: Notification) -> None:
         await asyncio.to_thread(self._send, notification)

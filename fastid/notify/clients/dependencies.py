@@ -1,28 +1,39 @@
+import smtplib
+from collections.abc import AsyncIterator
 from typing import Annotated
 
+from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
 from fastapi import Depends
 
-from fastid.notify.clients.smtp import SMTPMail
-from fastid.notify.clients.telegram import TelegramAdapter
+from fastid.notify.clients.smtp import MailClient
+from fastid.notify.clients.telegram import TelegramClient
 from fastid.notify.config import notify_settings
 from fastid.oauth.config import telegram_settings
 
 
-def get_mail() -> SMTPMail:
-    return SMTPMail(
-        notify_settings.smtp_host,
-        notify_settings.smtp_port,
-        notify_settings.smtp_username,
-        notify_settings.smtp_password,
-        notify_settings.from_name,
-    )
+def get_smtp() -> smtplib.SMTP:
+    server = smtplib.SMTP_SSL(notify_settings.smtp_host, notify_settings.smtp_port)
+    server.login(notify_settings.smtp_username, notify_settings.smtp_password)
+    return server
 
 
-def get_telegram() -> TelegramAdapter:
-    return TelegramAdapter(
-        telegram_settings.bot_token,
-    )
+async def get_mail(server: Annotated[smtplib.SMTP, Depends(get_smtp)]) -> AsyncIterator[MailClient]:
+    async with MailClient(
+        server,
+        from_name=notify_settings.from_name,
+    ) as mail:
+        yield mail
 
 
-MailDep = Annotated[SMTPMail, Depends(get_mail)]
-TelegramDep = Annotated[TelegramAdapter, Depends(get_telegram)]
+def get_bot() -> Bot:
+    return Bot(telegram_settings.bot_token, default=DefaultBotProperties(parse_mode="Markdown"))
+
+
+async def get_telegram(bot: Annotated[Bot, Depends(get_bot)]) -> AsyncIterator[TelegramClient]:
+    async with TelegramClient(bot) as telegram:
+        yield telegram
+
+
+MailDep = Annotated[MailClient, Depends(get_mail)]
+TelegramDep = Annotated[TelegramClient, Depends(get_telegram)]

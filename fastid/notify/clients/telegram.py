@@ -1,15 +1,14 @@
 from typing import Any, Self
 
 from aiogram import Bot
-from aiogram.client.default import DefaultBotProperties
 
 from fastid.notify.clients.base import NotificationClient
 from fastid.notify.clients.schemas import Notification
 
 
-class TelegramAdapter(NotificationClient):
-    def __init__(self, bot_token: str) -> None:
-        self._bot = Bot(bot_token, default=DefaultBotProperties(parse_mode="Markdown"))
+class TelegramClient(NotificationClient):
+    def __init__(self, bot: Bot) -> None:
+        self._bot = bot
 
     async def send(self, notification: Notification) -> None:
         await self._bot.send_message(notification.user_telegram_id, notification.as_markdown())

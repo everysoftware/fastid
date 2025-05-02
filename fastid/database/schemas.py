@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime  # noqa: TCH003
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Literal, Self, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Generic, Literal, Self, TypeVar, cast
 
 from pydantic import ConfigDict, Field, computed_field
 
@@ -24,20 +24,6 @@ class EntityDTO(BaseModel):
     updated_at: datetime.datetime = Field(default_factory=naive_utc)
 
     model_config = ConfigDict(from_attributes=True)
-
-    @classmethod
-    @overload
-    def from_model[T](cls, model: T) -> Self: ...
-
-    @classmethod
-    @overload
-    def from_model[T](cls, model: Literal[None] = None) -> Self | None: ...
-
-    @classmethod
-    def from_model[T](cls, model: T | None = None) -> Self | None:
-        if model is None:
-            return None
-        return cls.model_validate(model)
 
 
 @dataclass
@@ -86,9 +72,6 @@ class Page(Generic[T]):
     @property
     def total(self) -> int:
         return len(self.items)
-
-    def __bool__(self) -> bool:
-        return bool(self.items)
 
 
 class PageDTO(BaseModel, Generic[DTO_T]):

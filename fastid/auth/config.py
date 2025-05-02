@@ -25,10 +25,6 @@ class AuthSettings(BaseSettings):
         return f"{main_settings.base_url}/authorize"
 
     @property
-    def registration_endpoint(self) -> str:
-        return f"{main_settings.base_url}/register"
-
-    @property
     def token_endpoint(self) -> str:
         return f"{main_settings.api_url}/token"
 

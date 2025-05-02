@@ -1,6 +1,7 @@
 import base64
 import os
 import urllib.parse
+from typing import Any
 
 from auth365.schemas import OAuth2Callback, TokenResponse
 from httpx import AsyncClient
@@ -8,7 +9,19 @@ from starlette import status
 
 from fastid.apps.schemas import AppDTO
 from fastid.auth.dependencies import cookie_transport
+from fastid.auth.models import User
+from fastid.auth.schemas import UserDTO
+from fastid.database.uow import SQLAlchemyUOW
 from tests import mocks
+
+
+async def register_user(uow: SQLAlchemyUOW, data: dict[str, Any]) -> UserDTO:
+    record = User(**data)
+    await uow.users.add(record)
+    await uow.commit()
+    user = UserDTO.model_validate(record)
+    user.hashed_password = None
+    return user
 
 
 async def authorize_password_grant(

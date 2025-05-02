@@ -33,7 +33,7 @@ class NotificationUseCases(UseCase):
                 await self.mail.send(notification)
             case "telegram":
                 await self.telegram.send(notification)
-            case _:
+            case _:  # pragma: nocover
                 raise ValueError(f"Unknown method: {method}")
 
     async def push_code(self, notification: Notification) -> None:

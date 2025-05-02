@@ -38,9 +38,6 @@ class BaseOrm(DeclarativeBase):
     def from_dto(cls, model: BaseModel) -> Self:
         return cls(**model.model_dump())
 
-    def dump(self) -> dict[str, Any]:
-        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
-
     def merge_model(self, model: BaseModel) -> Self:
         for key, value in model.model_dump(exclude_unset=True).items():
             setattr(self, key, value)
@@ -51,7 +48,10 @@ class BaseOrm(DeclarativeBase):
             setattr(self, key, value)
         return self
 
-    def __repr__(self) -> str:
+    def dump(self) -> dict[str, Any]:  # pragma: nocover
+        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+
+    def __repr__(self) -> str:  # pragma: nocover
         return repr(self.dump())
 
 

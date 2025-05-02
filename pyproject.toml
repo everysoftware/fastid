@@ -141,7 +141,7 @@ asyncio_mode = "auto"
 parallel = true
 branch = true
 concurrency = ["multiprocessing", "thread"]
-source = ["app"]
+source = ["fastid"]
 context = '${CONTEXT}'
 omit = ["**/__init__.py"]
 
@@ -167,10 +167,11 @@ omit = [
     '*/__main__.py',
     '*/__init__.py',
     '*/dependencies.py',
-    "app/plugins/*",
-    "app/pages/*",
-    "app/dashboard/*",
-    "app/core/*",
+    "fastid/plugins/*",
+    "fastid/pages/*",
+    "fastid/dashboard/*",
+    "fastid/core/*",
+    "fastid/api/*",
 ]
 
 

@@ -1,9 +1,10 @@
 import pytest
 
+from fastid.api.exceptions import ValidationError
 from fastid.auth.models import User
 from fastid.auth.repositories import UserEmailSpecification
 from fastid.database.exceptions import NoResultFoundError, NotSupportedPaginationError
-from fastid.database.schemas import Pagination
+from fastid.database.schemas import LimitOffset, Pagination, Sorting
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.database.utils import uuid
 from tests import mocks
@@ -55,10 +56,36 @@ async def test_repository_find_non_existent(uow: SQLAlchemyUOW) -> None:
         await uow.users.find(UserEmailSpecification("user@example.com"))
 
 
-async def test_repository_get_many(uow: SQLAlchemyUOW, mock_user: User) -> None:
-    page = await uow.users.get_many()
+@pytest.mark.parametrize(
+    "sorting",
+    [
+        Sorting(),
+        Sorting(sort="created_at"),
+        Sorting(sort="created_at:desc"),
+        Sorting(sort="created_at:asc"),
+        Sorting(sort="created_at:asc,updated_at:asc"),
+        Sorting(sort="created_at:desc,updated_at:asc"),
+        Sorting(sort="created_at:asc,updated_at:desc"),
+        Sorting(sort="created_at:desc,updated_at:desc"),
+    ],
+)
+async def test_repository_get_many(uow: SQLAlchemyUOW, mock_user: User, sorting: Sorting) -> None:
+    page = await uow.users.get_many(pagination=LimitOffset(), sorting=sorting)
     assert page.total == 1
     assert page.items[0] == mock_user
+
+
+@pytest.mark.parametrize(
+    "sorting",
+    [
+        Sorting(sort="incorrect:format:bla:bla:bla"),
+        Sorting(sort="created_at:i_am_not_existing_order"),
+        Sorting(sort="i_am_not_existing_field"),
+    ],
+)
+def test_invalid_sorting(sorting: Sorting) -> None:
+    with pytest.raises(ValidationError):
+        sorting.render(User)
 
 
 async def test_repository_get_many_unsupported_pagination(uow: SQLAlchemyUOW, mock_user: User) -> None:

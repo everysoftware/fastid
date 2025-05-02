@@ -1,5 +1,5 @@
 from collections.abc import AsyncIterator
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from alembic.command import upgrade
@@ -14,7 +14,7 @@ from fastid.core.app import app
 from fastid.core.dependencies import log_provider
 from fastid.database.dependencies import get_uow
 from fastid.database.uow import SQLAlchemyUOW
-from fastid.notify.clients.dependencies import get_mail, get_telegram
+from fastid.notify.clients.dependencies import get_bot, get_smtp
 from tests.dependencies import (
     alembic_config,
     get_test_cache,
@@ -56,8 +56,8 @@ async def client() -> AsyncIterator[AsyncClient]:
     api_app = app.extra["api_app"]
     api_app.dependency_overrides[get_uow] = get_test_uow
     api_app.dependency_overrides[get_cache] = get_test_cache
-    api_app.dependency_overrides[get_mail] = lambda: AsyncMock()
-    api_app.dependency_overrides[get_telegram] = lambda: AsyncMock()
+    api_app.dependency_overrides[get_smtp] = lambda: MagicMock()
+    api_app.dependency_overrides[get_bot] = lambda: AsyncMock()
 
     transport = ASGITransport(app=api_app)
     async with AsyncClient(
