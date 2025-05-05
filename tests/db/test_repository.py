@@ -24,7 +24,7 @@ async def test_repository_get(uow: SQLAlchemyUOW, mock_user: User) -> None:
     assert user == mock_user
 
 
-async def test_repository_get_non_existent(uow: SQLAlchemyUOW) -> None:
+async def test_repository_get_not_exists(uow: SQLAlchemyUOW) -> None:
     with pytest.raises(NoResultFoundError):
         await uow.users.get(uuid())
 

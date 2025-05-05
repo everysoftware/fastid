@@ -5,6 +5,7 @@ from auth365.schemas import JWTPayload
 from fastid.auth.config import auth_settings
 from fastid.auth.models import User
 from fastid.cache.dependencies import CacheDep
+from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
 from fastid.notify.clients.dependencies import MailDep, TelegramDep
 from fastid.notify.clients.schemas import Notification
@@ -47,9 +48,10 @@ class NotificationUseCases(UseCase):
         await self.push(notification)
 
     async def validate_code(self, user: User, code: str) -> None:
-        user_code = await self.cache.pop(f"otp:users:{user.id}")
-        if user_code is None:
-            raise WrongCodeError
+        try:
+            user_code = await self.cache.pop(f"otp:users:{user.id}")
+        except KeyNotFoundError as e:
+            raise WrongCodeError from e
         if not secrets.compare_digest(user_code, code):
             raise WrongCodeError
 

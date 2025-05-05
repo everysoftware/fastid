@@ -15,7 +15,7 @@ async def test_get(cache: CacheStorage, mock_record: dict[str, str]) -> None:
     assert value == mock_record["value"]
 
 
-async def test_get_non_existent(cache: CacheStorage) -> None:
+async def test_get_not_exists(cache: CacheStorage) -> None:
     with pytest.raises(KeyNotFoundError):
         await cache.get("test")
 
@@ -39,6 +39,6 @@ async def test_pop(cache: CacheStorage, mock_record: dict[str, str]) -> None:
     assert mock_record["key"] not in keys
 
 
-async def test_pop_non_existent(cache: CacheStorage) -> None:
+async def test_pop_not_exists(cache: CacheStorage) -> None:
     with pytest.raises(KeyNotFoundError):
         await cache.pop("test")

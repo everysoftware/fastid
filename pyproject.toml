@@ -140,7 +140,7 @@ asyncio_mode = "auto"
 [tool.coverage.run]
 parallel = true
 branch = true
-concurrency = ["multiprocessing", "thread"]
+concurrency = ["greenlet", "thread"]
 source = ["fastid"]
 context = '${CONTEXT}'
 omit = ["**/__init__.py"]

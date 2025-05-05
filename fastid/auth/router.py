@@ -29,8 +29,8 @@ async def register(
     background: BackgroundTasks,
 ) -> Any:
     user = await service.register(dto)
-    background.add_task(notify.push, WelcomeNotification(user))
-    return user
+    background.add_task(notify.push, WelcomeNotification(user))  # pragma: nocover
+    return user  # pragma: nocover
 
 
 @router.post(

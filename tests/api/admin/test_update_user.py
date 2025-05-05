@@ -3,6 +3,7 @@ from httpx import AsyncClient
 from starlette import status
 
 from fastid.auth.schemas import UserDTO
+from fastid.database.utils import uuid
 from tests import mocks
 
 
@@ -25,3 +26,12 @@ async def test_update_user_not_su(client: AsyncClient, user: UserDTO, user_token
         json=mocks.USER_UPDATE.model_dump(mode="json", exclude_unset=True),
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+async def test_update_user_not_exists(client: AsyncClient, user_su_token: TokenResponse) -> None:
+    response = await client.patch(
+        f"/users/{uuid()}",
+        headers={"Authorization": f"Bearer {user_su_token.access_token}"},
+        json=mocks.USER_UPDATE.model_dump(mode="json", exclude_unset=True),
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND

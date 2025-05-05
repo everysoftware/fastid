@@ -4,29 +4,22 @@ from starlette import status
 
 from fastid.auth.dependencies import verify_token_transport
 from fastid.auth.schemas import UserDTO
-from tests.mocks import faker
 
 
-async def test_update_user_password(
-    client: AsyncClient, user: UserDTO, user_token: TokenResponse, verify_token: str
-) -> None:
-    new_password = faker.password()
+async def test_delete_user(client: AsyncClient, user: UserDTO, user_token: TokenResponse, verify_token: str) -> None:
     client.cookies.set(verify_token_transport.name, verify_token)
-    response = await client.patch(
-        "/users/me/password",
+    response = await client.delete(
+        "/users/me",
         headers={"Authorization": f"Bearer {user_token.access_token}"},
-        json={"password": new_password},
     )
     client.cookies.delete(verify_token_transport.name)
     assert response.status_code == status.HTTP_200_OK
     UserDTO.model_validate_json(response.content)
 
 
-async def test_update_user_password_not_verified(client: AsyncClient, user: UserDTO, user_token: TokenResponse) -> None:
-    new_password = faker.password()
-    response = await client.patch(
-        "/users/me/password",
+async def test_delete_user_not_verified(client: AsyncClient, user: UserDTO, user_token: TokenResponse) -> None:
+    response = await client.delete(
+        "/users/me",
         headers={"Authorization": f"Bearer {user_token.access_token}"},
-        json={"password": new_password},
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN

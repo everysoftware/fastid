@@ -30,7 +30,7 @@ class UserAlreadyExistsError(ClientError):
 class UserIDNotFoundError(ClientError):
     message = "User with this id not found"
     error_code = "user_not_found"
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 class EmailNotFoundError(UnauthorizedError):
