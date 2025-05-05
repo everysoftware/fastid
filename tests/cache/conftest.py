@@ -1,6 +1,6 @@
 import pytest
 
-from app.cache.storage import CacheStorage
+from fastid.cache.storage import CacheStorage
 from tests.mocks import CACHE_RECORD
 
 

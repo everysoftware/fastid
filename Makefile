@@ -1,12 +1,6 @@
-APP_PATH = app
-LOGS_SINCE = 10m
-
 .PHONY: deps
 deps:
 	docker-compose up db redis -d
-
-.PHONY: deps
-	uvicorn $(APP_PATH):app --host 0.0.0.0 --port 8000
 
 .PHONY: up
 up:
@@ -19,6 +13,13 @@ up-prod:
 .PHONY: test
 test: deps
 	pytest . -s -v
+
+.PHONY: coverage
+coverage: deps
+	coverage run -m pytest -x --ff
+	coverage combine
+	coverage report --show-missing --skip-covered --sort=cover --precision=2
+	rm .coverage*
 
 .PHONY: stop
 stop:

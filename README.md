@@ -1,11 +1,14 @@
 # FastID
 
+<img src="/assets/logo_transparent.png" alt="FastID" width="256">
+
 **Effortless authentication solution for your services**
 
 ---
 
 [![Test](https://github.com/everysoftware/fastid/actions/workflows/test.yml/badge.svg)](https://github.com/everysoftware/fastid/actions/workflows/test.yml)
 [![CodeQL Advanced](https://github.com/everysoftware/fastid/actions/workflows/codeql.yml/badge.svg)](https://github.com/everysoftware/fastid/actions/workflows/codeql.yml)
+[![License](https://img.shields.io/github/license/everysoftware/fastid.png)](https://img.shields.io/github/license/everysoftware/fastid.png)
 
 ---
 
@@ -123,7 +126,7 @@ def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
 Run the server:
 
 ```bash
-  fastapi dev test_client/app.py
+  fastapi dev test_client/fastid.py
 ```
 
 Go to [http://localhost:8000/login](http://localhost:8000/login) to login in FastID. You will be redirected to

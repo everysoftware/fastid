@@ -1,4 +1,4 @@
-ARG APP_DIR=app
+ARG APP_DIR=fastid
 ARG APP_PATH=/opt/$APP_DIR
 ARG PYTHON_VERSION=3.12-bullseye
 ARG POETRY_VERSION=1.8.2
@@ -53,7 +53,7 @@ COPY ./certs ./certs
 COPY ./docker/entrypoint-dev.sh /entrypoint-dev.sh
 RUN chmod +x /entrypoint-dev.sh
 ENTRYPOINT ["/entrypoint-dev.sh"]
-CMD ["uvicorn \"$APP_DIR.main.app:app\" --host 0.0.0.0 --port 8000 --reload"]
+CMD ["uvicorn \"$APP_DIR.core.app:app\" --host 0.0.0.0 --port 8000 --reload"]
 
 #
 # Stage: prod
@@ -86,4 +86,4 @@ COPY ./certs ./certs
 COPY ./docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["gunicorn -w 1 -k app.main.workers.MyUvicornWorker \"$APP_DIR.main.app:app\" -b 0.0.0.0:8000"]
+CMD ["gunicorn -w 1 -k fastid.core.workers.MyUvicornWorker \"$APP_DIR.core.app:app\" -b 0.0.0.0:8000"]
