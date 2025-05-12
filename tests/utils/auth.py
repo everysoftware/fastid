@@ -3,7 +3,7 @@ import os
 import urllib.parse
 from typing import Any
 
-from auth365.schemas import OAuth2Callback, TokenResponse
+from fastlink.schemas import OAuth2Callback, TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
@@ -41,22 +41,7 @@ async def authorize_password_grant(
     return TokenResponse.model_validate_json(response.content)
 
 
-async def authorize_refresh_token_grant(client: AsyncClient, oauth_app: AppDTO, token: TokenResponse) -> TokenResponse:
-    response = await client.post(
-        "/token",
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        data={
-            "grant_type": "refresh_token",
-            "client_id": oauth_app.client_id,
-            "client_secret": oauth_app.client_secret,
-            "refresh_token": token.refresh_token,
-        },
-    )
-    assert response.status_code == status.HTTP_200_OK
-    return TokenResponse.model_validate_json(response.content)
-
-
-async def give_oauth_consent(
+async def get_ac_grant_callback(
     frontend_client: AsyncClient, oauth_app: AppDTO, token: TokenResponse, scope: str = "openid offline_access"
 ) -> OAuth2Callback:
     redirect_uri = oauth_app.redirect_uris.split(";")[0]
@@ -68,7 +53,7 @@ async def give_oauth_consent(
             "response_type": "code",
             "client_id": oauth_app.client_id,
             "redirect_uri": redirect_uri,
-            "state": mocks.STATE,
+            "state": mocks.OAUTH_STATE,
             "scope": scope,
         },
     )

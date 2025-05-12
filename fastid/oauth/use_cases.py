@@ -1,6 +1,8 @@
 import contextlib
 
-from auth365.schemas import JWTPayload, OAuth2Callback, OpenIDBearer, TelegramCallback, TokenResponse
+from fastlink.jwt.schemas import JWTPayload
+from fastlink.schemas import OAuth2Callback, OpenIDBearer, TokenResponse
+from fastlink.telegram.schemas import TelegramCallback
 
 from fastid.auth.models import User
 from fastid.auth.repositories import UserEmailSpecification
@@ -28,12 +30,12 @@ class OAuthUseCases(UseCase):
         self.uow = uow
         self.registry = registry
 
-    async def get_authorization_url(self, provider_name: str) -> str:
-        async with self.registry.get(provider_name) as oauth:
-            return await oauth.get_authorization_url()
+    async def get_authorization_url(self, provider: str) -> str:
+        async with self.registry.get(provider) as session:
+            return await session.get_authorization_url()
 
-    async def authorize(self, provider_name: str, callback: OAuth2Callback | TelegramCallback) -> TokenResponse:
-        open_id = await self._callback(provider_name, callback)
+    async def authorize(self, provider: str, callback: OAuth2Callback | TelegramCallback) -> TokenResponse:
+        open_id = await self._callback(provider, callback)
         try:
             account = await self.uow.oauth_accounts.find(ProviderAccountSpecification(open_id.provider, open_id.id))
         except NoResultFoundError:
@@ -85,9 +87,9 @@ class OAuthUseCases(UseCase):
         return account
 
     async def _callback(self, provider_name: str, callback: OAuth2Callback | TelegramCallback) -> OpenIDBearer:
-        async with self.registry.get(provider_name) as oauth:
-            token = await oauth.authorize(callback)
-            open_id = await oauth.userinfo()
+        async with self.registry.get(provider_name) as session:
+            token = await session.authorize(callback)
+            open_id = await session.userinfo()
             return OpenIDBearer(
                 **token.model_dump(),
                 **open_id.model_dump(),

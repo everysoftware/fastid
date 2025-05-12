@@ -1,11 +1,15 @@
 from typing import Any
 
 from faker import Faker
+from fastlink.schemas import OAuth2Callback, OpenID, TokenResponse
+from fastlink.telegram.schemas import TelegramCallback
 
 from fastid.apps.schemas import AppCreate, AppUpdate
 from fastid.auth.schemas import UserCreate, UserUpdate
+from fastid.oauth.config import telegram_settings
 from fastid.security.crypto import crypt_ctx
 from tests.utils.auth import generate_random_state
+from tests.utils.telegram import create_telegram_hash
 
 faker = Faker()
 
@@ -46,7 +50,42 @@ CACHE_RECORD = {
 
 APP_CREATE = AppCreate(name="Test App", slug="test-app", redirect_uris="https://google.com")
 APP_UPDATE = AppUpdate(name="New Test App")
-STATE = generate_random_state()
+
+OAUTH_STATE = generate_random_state()
+OAUTH_CALLBACK = OAuth2Callback(code=faker.pystr(min_chars=8, max_chars=256), state=OAUTH_STATE)
+TELEGRAM_CALLBACK_PAYLOAD = {
+    "id": faker.random_number(),
+    "first_name": faker.first_name(),
+    "last_name": faker.last_name(),
+    "username": faker.user_name(),
+    "picture": faker.image_url(),
+    "auth_date": faker.date_time().timestamp(),
+}
+TELEGRAM_CALLBACK_PAYLOAD["hash"] = create_telegram_hash(telegram_settings.bot_token, TELEGRAM_CALLBACK_PAYLOAD)
+TELEGRAM_CALLBACK = TelegramCallback(**TELEGRAM_CALLBACK_PAYLOAD)
+OAUTH_TOKEN_RESPONSE = TokenResponse(
+    access_token=faker.pystr(min_chars=8, max_chars=256),
+    expires_in=3600,
+    refresh_token=faker.pystr(min_chars=8, max_chars=256),
+    scope="openid email profile",
+)
+
+
+def openid_factory(provider: str, **kwargs: Any) -> OpenID:
+    return OpenID(
+        id=str(faker.random_number(digits=10)),
+        provider=provider,
+        first_name=faker.first_name(),
+        last_name=faker.last_name(),
+        email=faker.email(),
+        picture=faker.image_url(),
+        **kwargs,
+    )
+
+
+GOOGLE_OPENID = openid_factory("google")
+YANDEX_OPENID = openid_factory("yandex")
+TELEGRAM_OPENID = openid_factory("telegram")
 
 
 class MockError(Exception):

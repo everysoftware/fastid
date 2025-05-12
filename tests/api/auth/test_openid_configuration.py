@@ -1,4 +1,4 @@
-from auth365.schemas import JWKS, DiscoveryDocument
+from fastlink.schemas import JWKS, DiscoveryDocument
 from httpx import AsyncClient
 from starlette import status
 

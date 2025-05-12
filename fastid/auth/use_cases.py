@@ -1,4 +1,4 @@
-from auth365.exceptions import Auth365Error
+from fastlink.exceptions import FastLinkError
 
 from fastid.auth.exceptions import InvalidTokenError, UserAlreadyExistsError, UserIDNotFoundError
 from fastid.auth.models import User
@@ -30,7 +30,7 @@ class AuthUseCases(UseCase):
     async def get_userinfo(self, token: str) -> User:
         try:
             payload = jwt_backend.validate("access", token)
-        except Auth365Error as e:
+        except FastLinkError as e:
             raise InvalidTokenError from e
         try:
             return await self.uow.users.get(UUIDv7(payload.sub))

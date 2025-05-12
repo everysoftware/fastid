@@ -16,7 +16,7 @@ async def test_authorize_password_grant(client: AsyncClient, user: UserDTO) -> N
     assert token.refresh_token is not None
 
 
-async def test_authorize_password_grant_non_existent(client: AsyncClient) -> None:
+async def test_authorize_password_grant_not_exists(client: AsyncClient) -> None:
     response = await client.post(
         "/token",
         headers={"Content-Type": "application/x-www-form-urlencoded"},

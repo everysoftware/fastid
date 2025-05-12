@@ -1,4 +1,4 @@
-from auth365.schemas import TokenResponse
+from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 

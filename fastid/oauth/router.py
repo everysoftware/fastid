@@ -1,8 +1,9 @@
 from typing import Annotated, Any
 
-from auth365.schemas import OAuth2Callback, TelegramCallback
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
+from fastlink.schemas import OAuth2Callback
+from fastlink.telegram.schemas import TelegramCallback
 from starlette import status
 
 from fastid.auth.config import auth_settings
@@ -11,59 +12,69 @@ from fastid.auth.models import User
 from fastid.database.schemas import PageDTO
 from fastid.oauth.config import oauth_settings
 from fastid.oauth.dependencies import OAuthAccountsDep, valid_callback
-from fastid.oauth.schemas import OAuthAccountDTO
+from fastid.oauth.schemas import InspectProviderResponse, OAuthAccountDTO
 from fastid.pages.templating import templates
 
 router = APIRouter(prefix="/oauth", tags=["OAuth"])
 
 
 @router.get(
-    "/login/{oauth_name}",
+    "/inspect/{provider}",
+    description="Inspect the provider",
+    response_model=InspectProviderResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def oauth_inspect(
+    service: OAuthAccountsDep,
+    provider: str,
+) -> Any:
+    login_url = await service.get_authorization_url(provider)
+    return InspectProviderResponse(login_url=login_url)
+
+
+@router.get(
+    "/login/{provider}",
     description="Redirects user to the provider's login page.",
     status_code=status.HTTP_307_TEMPORARY_REDIRECT,
 )
 async def oauth_login(
     service: OAuthAccountsDep,
-    oauth_name: str,
-    *,
-    redirect: bool = True,
+    provider: str,
 ) -> Any:
-    url = await service.get_authorization_url(oauth_name)
-    if not redirect:
-        return url
+    url = await service.get_authorization_url(provider)
     return RedirectResponse(status_code=status.HTTP_307_TEMPORARY_REDIRECT, url=url)
 
 
 @router.get(
-    "/callback/{oauth_name}",
+    "/callback/{provider}",
     status_code=status.HTTP_200_OK,
 )
 async def oauth_callback(
-    oauth: OAuthAccountsDep,
+    service: OAuthAccountsDep,
     user: Annotated[User | None, Depends(get_optional_user)],
-    oauth_name: str,
+    provider: str,
     callback: Annotated[OAuth2Callback | TelegramCallback, Depends(valid_callback)],
 ) -> Any:
     response: Response = RedirectResponse(url=auth_settings.authorization_endpoint)
     if user is not None:
-        await oauth.connect(user, oauth_name, callback)
+        await service.connect(user, provider, callback)
         return response
-    token_response = await oauth.authorize(oauth_name, callback)
+    token_response = await service.authorize(provider, callback)
     at = token_response.access_token
     assert at is not None
     return cookie_transport.set_token(response, at)
 
 
 @router.get(
-    "/revoke/{oauth_name}",
+    "/revoke/{provider}",
     status_code=status.HTTP_200_OK,
 )
 async def oauth_revoke(
-    oauth: OAuthAccountsDep,
+    service: OAuthAccountsDep,
     user: UserDep,
-    oauth_name: str,
+    provider: str,
 ) -> Any:
-    await oauth.revoke(user, oauth_name)
+    await service.revoke(user, provider)
     return RedirectResponse(url=auth_settings.authorization_endpoint)
 
 
@@ -85,7 +96,7 @@ async def telegram_redirect(
 
 
 @router.get(
-    "/",
+    "/accounts",
     response_model=PageDTO[OAuthAccountDTO],
     status_code=status.HTTP_200_OK,
 )

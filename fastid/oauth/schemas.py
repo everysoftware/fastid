@@ -29,6 +29,10 @@ class OAuthAccountDTO(EntityDTO, OAuthAccountBase):
     user_id: UUIDv7
 
 
+class InspectProviderResponse(BaseModel):
+    login_url: str
+
+
 class ProviderMeta(BaseModel):
     name: str
     title: str

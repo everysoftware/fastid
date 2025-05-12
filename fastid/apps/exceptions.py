@@ -15,13 +15,11 @@ class InvalidRedirectURIError(ClientError):
     status_code = status.HTTP_400_BAD_REQUEST
 
 
-class InvalidClientCredentialsError(ClientError):
+class InvalidClientCredentialsError(UnauthorizedError):
     message = "Invalid client credentials"
     error_code = "invalid_client_credentials"
-    status_code = status.HTTP_400_BAD_REQUEST
 
 
 class InvalidAuthorizationCodeError(UnauthorizedError):
     message = "Invalid code"
     error_code = "invalid_code"
-    status_code = status.HTTP_400_BAD_REQUEST

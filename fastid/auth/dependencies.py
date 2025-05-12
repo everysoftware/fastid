@@ -1,8 +1,8 @@
 from typing import Annotated
 
-from auth365.fastapi.transport import CookieTransport, HeaderTransport
 from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
+from fastlink.integrations.fastapi.transport import CookieTransport, HeaderTransport
 
 from fastid.api.exceptions import ClientError
 from fastid.auth.config import auth_settings

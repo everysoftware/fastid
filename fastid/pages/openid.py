@@ -1,8 +1,9 @@
 import base64
 
-from auth365.schemas import JWK, JWKS, DiscoveryDocument, JWTPayload
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from fastlink.jwt.schemas import JWTPayload
+from fastlink.schemas import JWK, JWKS, DiscoveryDocument
 
 from fastid.auth.config import auth_settings
 

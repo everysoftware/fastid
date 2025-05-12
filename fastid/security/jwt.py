@@ -1,7 +1,7 @@
 import datetime
 
-from auth365.jwt import JWTBackend
-from auth365.schemas import JWTConfig
+from fastlink.jwt.manager import JWTManager
+from fastlink.jwt.schemas import JWTConfig
 
 from fastid.auth.config import auth_settings
 from fastid.core.config import main_settings
@@ -40,4 +40,4 @@ conf = [
     ),
 ]
 
-jwt_backend = JWTBackend(*conf)
+jwt_backend = JWTManager(*conf)

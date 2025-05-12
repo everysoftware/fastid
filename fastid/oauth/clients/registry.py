@@ -1,7 +1,7 @@
 from collections.abc import Callable, MutableMapping
 from typing import Any, Protocol, Self
 
-from auth365.schemas import OpenID, TokenResponse
+from fastlink.schemas import OpenID, TokenResponse
 
 from fastid.oauth.exceptions import OAuthProviderDisabledError, OAuthProviderNotFoundError
 from fastid.oauth.schemas import ProviderMeta, RegistryMeta

@@ -48,7 +48,7 @@ def app_factory(
     for mini_app in mini_apps:
         mini_app.install(app)
     installed = [mini_app.module_name for mini_app in mini_apps]
-    log.info("Installed mini apps (%d): %s", len(installed), ", ".join(installed))
+    log.info("Mini apps (%d): %s", len(installed), ", ".join(installed))
     return app
 
 

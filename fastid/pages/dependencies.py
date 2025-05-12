@@ -1,7 +1,7 @@
 from typing import Annotated
 
-from auth365.exceptions import Auth365Error
 from fastapi import Depends
+from fastlink.exceptions import FastLinkError
 from starlette.requests import Request
 
 from fastid.api.exceptions import ClientError, UnauthorizedError
@@ -48,7 +48,7 @@ def action_verified(
         return False
     try:
         jwt_backend.validate("verify", token)
-    except Auth365Error:
+    except FastLinkError:
         return False
     return True
 

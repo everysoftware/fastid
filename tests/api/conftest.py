@@ -1,7 +1,7 @@
 from typing import cast
 
 import pytest
-from auth365.schemas import TokenResponse
+from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine

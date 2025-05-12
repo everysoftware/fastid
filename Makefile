@@ -12,13 +12,14 @@ up-prod:
 
 .PHONY: test
 test: deps
-	pytest . -s -v
+	pytest . -x -s -v --ff
 
 .PHONY: coverage
 coverage: deps
 	coverage run -m pytest -x --ff
 	coverage combine
 	coverage report --show-missing --skip-covered --sort=cover --precision=2
+	coverage html
 	rm .coverage*
 
 .PHONY: stop

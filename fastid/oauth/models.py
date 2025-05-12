@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from fastid.database.base import Entity
 
 if TYPE_CHECKING:
-    from auth365.schemas import OpenIDBearer
+    from fastlink.schemas import OpenIDBearer
 
     from fastid.auth.models import User
 

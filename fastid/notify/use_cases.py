@@ -1,6 +1,6 @@
 import secrets
 
-from auth365.schemas import JWTPayload
+from fastlink.jwt.schemas import JWTPayload
 
 from fastid.auth.config import auth_settings
 from fastid.auth.models import User

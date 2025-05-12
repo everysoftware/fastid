@@ -1,9 +1,7 @@
 from typing import Annotated
 
-from auth365.providers.google import GoogleOAuth
-from auth365.providers.telegram import TelegramImplicitOAuth
-from auth365.providers.yandex import YandexOAuth
 from fastapi import Depends
+from fastlink import GoogleOAuth, TelegramAuth, YandexOAuth
 
 from fastid.core.config import main_settings
 from fastid.oauth.clients.registry import ProviderRegistry
@@ -42,8 +40,8 @@ def get_google() -> GoogleOAuth:
     color="#03A9F4",
     enabled=telegram_settings.enabled,
 )
-def get_telegram() -> TelegramImplicitOAuth:
-    return TelegramImplicitOAuth(
+def get_telegram() -> TelegramAuth:
+    return TelegramAuth(
         telegram_settings.bot_token,
         redirect_uri=f"{main_settings.api_url}/oauth/redirect/telegram",
     )

@@ -1,7 +1,7 @@
-from auth365.schemas import (
+from fastlink.schemas import (
     OAuth2ConsentRequest as BaseOAuth2ConsentRequest,
 )
-from auth365.schemas import (
+from fastlink.schemas import (
     OAuth2TokenRequest as BaseOAuth2TokenRequest,
 )
 from pydantic import (

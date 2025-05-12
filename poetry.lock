@@ -307,23 +307,6 @@ tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4
 tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
 
 [[package]]
-name = "auth365"
-version = "0.1.2"
-description = "Asynchronous OAuth 2.0 client for such platforms as Google, GitHub, Yandex, etc."
-optional = false
-python-versions = "<4.0,>=3.12"
-files = [
-    {file = "auth365-0.1.2-py3-none-any.whl", hash = "sha256:56271940db0add8519d22ec0d7ee909fa2f5118e478192b8ba479fab5ab11dc3"},
-    {file = "auth365-0.1.2.tar.gz", hash = "sha256:2b14890468d151bc36fe9019efecfef12fce354debf96103940912fd6b750892"},
-]
-
-[package.dependencies]
-fastapi = {version = ">=0.115.7,<0.116.0", extras = ["standart"]}
-httpx = ">=0.28.1,<0.29.0"
-pydantic = ">=2.10.6,<3.0.0"
-pyjwt = ">=2.10.1,<3.0.0"
-
-[[package]]
 name = "bcrypt"
 version = "4.3.0"
 description = "Modern password hashing for your software and your servers"
@@ -924,6 +907,23 @@ uvicorn = {version = ">=0.15.0", extras = ["standard"]}
 
 [package.extras]
 standard = ["uvicorn[standard] (>=0.15.0)"]
+
+[[package]]
+name = "fastlink"
+version = "0.1.2"
+description = "Asynchronous OAuth 2.0 client for such platforms as Google, GitHub, Yandex, etc."
+optional = false
+python-versions = "<4.0,>=3.12"
+files = [
+    {file = "fastlink-0.1.2-py3-none-any.whl", hash = "sha256:f93a8f3d9314d82abd7aa6e5f922ed390f2e9778fd24b397bd4cc4f9018af0a7"},
+    {file = "fastlink-0.1.2.tar.gz", hash = "sha256:32e0a554b04026331e1de981536d8590f5038a2bd6b551e238cf0146e9f67bcf"},
+]
+
+[package.dependencies]
+fastapi = {version = ">=0.115.7,<0.116.0", extras = ["standart"]}
+httpx = ">=0.28.1,<0.29.0"
+pydantic = ">=2.10.6,<3.0.0"
+pyjwt = ">=2.10.1,<3.0.0"
 
 [[package]]
 name = "filelock"
@@ -3676,4 +3676,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "ca93b70691e55d96fcf97cb51433f59c616ed0d878c9ef2bc4c45d42bee84fd4"
+content-hash = "307dfb4821e9b95beded3b879b034557cd10514f9aa68a6be475f21c64b689d5"

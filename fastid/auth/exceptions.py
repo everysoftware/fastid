@@ -3,24 +3,6 @@ from starlette import status
 from fastid.api.exceptions import ClientError, UnauthorizedError
 
 
-class NotSupportedGrantError(UnauthorizedError):
-    message = "Grant type must be 'password', 'authorization_code' or 'refresh_token'"
-    error_code = "not_supported_grant"
-    status_code = status.HTTP_400_BAD_REQUEST
-
-
-class NotSupportedResponseTypeError(UnauthorizedError):
-    message = "Response type must be 'code'"
-    error_code = "not_supported_response_type"
-    status_code = status.HTTP_400_BAD_REQUEST
-
-
-class NoPermissionError(ClientError):
-    message = "You don't have permission to do this"
-    error_code = "no_permission"
-    status_code = status.HTTP_403_FORBIDDEN
-
-
 class UserAlreadyExistsError(ClientError):
     message = "User with this email already exists"
     error_code = "user_already_exists"
@@ -31,6 +13,23 @@ class UserIDNotFoundError(ClientError):
     message = "User with this id not found"
     error_code = "user_not_found"
     status_code = status.HTTP_404_NOT_FOUND
+
+
+class NoPermissionError(ClientError):
+    message = "You don't have permission to do this"
+    error_code = "no_permission"
+    status_code = status.HTTP_403_FORBIDDEN
+
+
+class NotSupportedResponseTypeError(ClientError):
+    message = "Response type must be 'code'"
+    error_code = "not_supported_response_type"
+    status_code = status.HTTP_400_BAD_REQUEST
+
+
+class NotSupportedGrantError(UnauthorizedError):
+    message = "Grant type must be 'password', 'authorization_code' or 'refresh_token'"
+    error_code = "not_supported_grant"
 
 
 class EmailNotFoundError(UnauthorizedError):

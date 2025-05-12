@@ -1,6 +1,5 @@
 from fastid.apps.exceptions import AppNotFoundError
 from fastid.apps.models import App
-from fastid.apps.repositories import AppClientIDSpecification
 from fastid.apps.schemas import AppCreate, AppUpdate
 from fastid.cache.dependencies import CacheDep
 from fastid.core.base import UseCase
@@ -23,12 +22,6 @@ class AppUseCases(UseCase):
     async def get(self, app_id: UUIDv7) -> App:
         try:
             return await self.uow.apps.get(app_id)
-        except NoResultFoundError as e:
-            raise AppNotFoundError from e
-
-    async def get_by_client_id(self, client_id: str) -> App:
-        try:
-            return await self.uow.apps.find(AppClientIDSpecification(client_id))
         except NoResultFoundError as e:
             raise AppNotFoundError from e
 

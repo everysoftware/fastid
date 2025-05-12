@@ -1,9 +1,9 @@
 from abc import abstractmethod
 from typing import Any
 
-from auth365.exceptions import Auth365Error
-from auth365.schemas import (
-    JWTPayload,
+from fastlink.exceptions import FastLinkError
+from fastlink.jwt.schemas import JWTPayload
+from fastlink.schemas import (
     OAuth2AuthorizationCodeRequest,
     OAuth2Callback,
     OAuth2PasswordRequest,
@@ -28,6 +28,7 @@ from fastid.auth.models import User
 from fastid.auth.repositories import UserEmailSpecification
 from fastid.auth.schemas import OAuth2ConsentRequest
 from fastid.cache.dependencies import CacheDep
+from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
@@ -114,9 +115,10 @@ class AuthorizationCodeGrant(Grant):
 
     async def authorize(self, form: OAuth2AuthorizationCodeRequest) -> TokenResponse:
         await self.authenticate_client(form.client_id, form.client_secret)
-        data = await self.cache.pop(f"ac:{form.client_id}:{form.code}")
-        if data is None:
-            raise InvalidAuthorizationCodeError
+        try:
+            data = await self.cache.pop(f"ac:{form.client_id}:{form.code}")
+        except KeyNotFoundError as e:
+            raise InvalidAuthorizationCodeError from e
         user_id, scope = data.split(":")
         user = await self.uow.users.get(UUIDv7(user_id))
         return self.grant(user, scope)
@@ -130,7 +132,7 @@ class RefreshTokenGrant(Grant):
         await self.authenticate_client(form.client_id, form.client_secret)
         try:
             content = self.token_backend.validate("refresh", form.refresh_token)
-        except Auth365Error as e:
+        except FastLinkError as e:
             raise InvalidTokenError from e
         assert content.scope is not None
         user = await self.uow.users.get(UUIDv7(content.sub))

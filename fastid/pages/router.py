@@ -1,8 +1,8 @@
 from typing import Annotated, Any, Literal
 
-from auth365.schemas import JWKS, DiscoveryDocument
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
+from fastlink.schemas import JWKS, DiscoveryDocument
 
 from fastid.auth.dependencies import cookie_transport
 from fastid.auth.grants import AuthorizationCodeGrant

@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 
-from auth365.fastapi.transport import Transport
 from fastapi import Request
+from fastlink.integrations.fastapi.transport import Transport
 
 from fastid.auth.exceptions import NoTokenProvidedError
 

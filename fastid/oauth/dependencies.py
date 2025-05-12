@@ -1,7 +1,8 @@
 from typing import Annotated
 
-from auth365.schemas import OAuth2Callback, TelegramCallback
 from fastapi import Depends
+from fastlink.schemas import OAuth2Callback
+from fastlink.telegram.schemas import TelegramCallback
 from starlette.requests import Request
 
 from fastid.core.dependencies import log
@@ -16,10 +17,10 @@ async def get_account(service: OAuthAccountsDep, account_id: UUIDv7) -> OAuthAcc
     return await service.get_one(account_id)
 
 
-def valid_callback(oauth_name: str, request: Request) -> OAuth2Callback | TelegramCallback:
+def valid_callback(provider: str, request: Request) -> OAuth2Callback | TelegramCallback:
     log.info("OAuth callback received: request_url=%s", str(request.url))
     callback: OAuth2Callback | TelegramCallback
-    if oauth_name != "telegram":
+    if provider != "telegram":
         callback = OAuth2Callback.model_validate(request.query_params)
     else:
         callback = TelegramCallback.model_validate(request.query_params)

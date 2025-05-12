@@ -1,7 +1,7 @@
 from typing import Annotated, Any
 
-from auth365.schemas import OAuth2Grant, TokenResponse
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, status
+from fastlink.schemas import OAuth2Grant, TokenResponse
 
 from fastid.auth.dependencies import AuthDep, UserDep, cookie_transport
 from fastid.auth.exceptions import NotSupportedGrantError
