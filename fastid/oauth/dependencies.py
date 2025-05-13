@@ -6,15 +6,9 @@ from fastlink.telegram.schemas import TelegramCallback
 from starlette.requests import Request
 
 from fastid.core.dependencies import log
-from fastid.database.utils import UUIDv7
-from fastid.oauth.models import OAuthAccount
 from fastid.oauth.use_cases import OAuthUseCases
 
 OAuthAccountsDep = Annotated[OAuthUseCases, Depends()]
-
-
-async def get_account(service: OAuthAccountsDep, account_id: UUIDv7) -> OAuthAccount:
-    return await service.get_one(account_id)
 
 
 def valid_callback(provider: str, request: Request) -> OAuth2Callback | TelegramCallback:

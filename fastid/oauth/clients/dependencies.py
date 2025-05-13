@@ -33,7 +33,7 @@ def get_google() -> GoogleOAuth:
     )
 
 
-@registry.provider(
+@registry.provider(  # type: ignore[arg-type]
     "telegram",
     title="Telegram",
     icon="fa-telegram",

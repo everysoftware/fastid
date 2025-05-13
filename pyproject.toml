@@ -167,6 +167,7 @@ omit = [
     '*/__main__.py',
     '*/__init__.py',
     '*/dependencies.py',
+    '*/schemas.py',
     "fastid/plugins/*",
     "fastid/pages/*",
     "fastid/dashboard/*",

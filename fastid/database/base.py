@@ -43,11 +43,6 @@ class BaseOrm(DeclarativeBase):
             setattr(self, key, value)
         return self
 
-    def merge_attrs(self, **attrs: Any) -> Self:
-        for key, value in attrs.items():
-            setattr(self, key, value)
-        return self
-
     def dump(self) -> dict[str, Any]:  # pragma: nocover
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
 

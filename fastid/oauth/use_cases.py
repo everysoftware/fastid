@@ -10,11 +10,9 @@ from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.schemas import LimitOffset, Page, Sorting
-from fastid.database.utils import UUIDv7
 from fastid.oauth.clients.dependencies import RegistryDep
 from fastid.oauth.exceptions import (
     OAuthAccountInUseError,
-    OAuthAccountNotFoundError,
 )
 from fastid.oauth.models import OAuthAccount
 from fastid.oauth.repositories import (
@@ -58,16 +56,10 @@ class OAuthUseCases(UseCase):
             pass
         else:
             raise OAuthAccountInUseError
-        account = OAuthAccount.from_open_id(open_id, user)
+        account = OAuthAccount.from_open_id(open_id, user.id)
         account = await self.uow.oauth_accounts.add(account)
         await self.uow.commit()
         return account
-
-    async def get_one(self, account_id: UUIDv7) -> OAuthAccount:
-        try:
-            return await self.uow.oauth_accounts.get(account_id)
-        except NoResultFoundError as e:
-            raise OAuthAccountNotFoundError from e
 
     async def paginate(
         self,
@@ -88,7 +80,7 @@ class OAuthUseCases(UseCase):
 
     async def _callback(self, provider_name: str, callback: OAuth2Callback | TelegramCallback) -> OpenIDBearer:
         async with self.registry.get(provider_name) as session:
-            token = await session.authorize(callback)
+            token = await session.authorize(callback)  # type: ignore[arg-type]
             open_id = await session.userinfo()
             return OpenIDBearer(
                 **token.model_dump(),
@@ -105,6 +97,6 @@ class OAuthUseCases(UseCase):
             user = await self.uow.users.add(user)
         else:
             user.connect_open_id(open_id)
-        account = OAuthAccount.from_open_id(open_id, user)
+        account = OAuthAccount.from_open_id(open_id, user.id)
         await self.uow.oauth_accounts.add(account)
         return account

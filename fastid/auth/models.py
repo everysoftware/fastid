@@ -44,7 +44,7 @@ class User(Entity):
             return f"{self.first_name} {self.last_name}"
         if self.first_name:
             return self.first_name
-        return ""
+        raise ValueError(f"User id={self.id} has no available names")
 
     @hybrid_property
     def notification_method(self) -> NotificationMethod:

@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from fastlink.schemas import OpenIDBearer
 
     from fastid.auth.models import User
+    from fastid.database.utils import UUIDv7
 
 
 class OAuthAccount(Entity):
@@ -36,15 +37,9 @@ class OAuthAccount(Entity):
     user: Mapped[User] = relationship(back_populates="oauth_accounts")
 
     @classmethod
-    def from_open_id(cls, open_id: OpenIDBearer, user: User) -> Self:
+    def from_open_id(cls, open_id: OpenIDBearer, user_id: UUIDv7) -> Self:
         return cls(
             **open_id.model_dump(exclude={"id", "id_token", "token_type", "token_id"}),
             account_id=open_id.id,
-            user_id=user.id,
-        )
-
-    def update(self, open_id: OpenIDBearer) -> Self:
-        return self.merge_attrs(
-            **open_id.model_dump(exclude={"id", "id_token", "token_type", "token_id"}),
-            account_id=open_id.id,
+            user_id=user_id,
         )
