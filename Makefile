@@ -17,11 +17,11 @@ up-prod:
 	docker-compose -f docker-compose.yml -f docker-compose-prod.yml up --build -d
 
 .PHONY: test
-test: deps
+test:
 	pytest . -x -s -v --ff
 
-.PHONY: coverage
-coverage: deps
+.PHONY: testcov
+testcov:
 	coverage run -m pytest -x --ff
 	coverage combine
 	coverage report --show-missing --skip-covered --sort=cover --precision=2

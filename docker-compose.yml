@@ -18,16 +18,28 @@ services:
     image: postgres:16-alpine
     env_file:
       - .env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
       - "5412:5432"
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
 
   redis:
     image: redis:latest
     env_file:
       - .env
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD?Variable not set}
     restart: unless-stopped
     # Set credentials & logging
     command: >
@@ -61,8 +73,6 @@ services:
       - "./fastid:/opt/fastid/fastid"
       - "./templates:/opt/fastid/templates"
       - "./static:/opt/fastid/static"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
 volumes:
   pg_data:

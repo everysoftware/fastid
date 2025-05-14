@@ -17,46 +17,26 @@ jobs:
         database-name:
           - ci
         database-user:
-          - username
-        database-password:
-          - password
-        database-host:
           - postgres
+        database-password:
+          - postgres
+        database-host:
+          - localhost
         database-port:
-          - 5432
+          - 5412
+        redis-username:
+          - default
+        redis-password:
+          - password
         redis-host:
-          - redis
+          - localhost
         redis-port:
-          - 6379
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: ${{ matrix.database-name }}
-          POSTGRES_USER: ${{ matrix.database-user }}
-          POSTGRES_PASSWORD: ${{ matrix.database-password }}
-        ports:
-          - ${{ matrix.database-port }}:${{ matrix.database-port }}
-        # Set health checks to wait until postgres has started
-        options: --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis
-        # Set health checks to wait until redis has started
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          - 6312
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.12
       - name: Install dependencies
@@ -67,12 +47,28 @@ jobs:
       - name: Run checks
         run: |
           poetry run make check
+      - name: Setup environment for tests
+        run: |
+          docker compose down -v --remove-orphans
+          docker compose up -d db redis
+          poetry run make certs
       - name: Run tests
         run: |
-          printenv DB_URL
-          printenv REDIS_URL
-          poetry run make certs
-          poetry run pytest . -x -s -v --ff
+          poetry run make testcov
         env:
+          POSTGRES_USER: ${{ matrix.database-user }}
+          POSTGRES_PASSWORD: ${{ matrix.database-password }}
+          POSTGRES_DB: ${{ matrix.database-name }}
+          REDIS_PASSWORD: ${{ matrix.redis-password }}
+
           DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
-          REDIS_URL: redis://${{ matrix.redis-host }}:${{ matrix.redis-port }}
+          REDIS_URL: redis://${{ matrix.redis-user }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
+      - name: Teardown environment for tests
+        run: |
+          docker compose down -v --remove-orphans
+      - name: Store coverage files
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov
+          include-hidden-files: true
