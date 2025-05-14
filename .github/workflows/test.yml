@@ -33,6 +33,12 @@ jobs:
         redis-port:
           - 6312
 
+    env:
+      POSTGRES_USER: ${{ matrix.database-user }}
+      POSTGRES_PASSWORD: ${{ matrix.database-password }}
+      POSTGRES_DB: ${{ matrix.database-name }}
+      REDIS_PASSWORD: ${{ matrix.redis-password }}
+
     steps:
       - uses: actions/checkout@v4
       - name: Install Python
@@ -50,17 +56,12 @@ jobs:
         run: |
           poetry run make check
 
-      - name: Setup environment for tests
+      - name: Setup test environment
         run: |
           touch .env
           docker compose down -v --remove-orphans
           docker compose up -d db redis
           poetry run make certs
-        env:
-          POSTGRES_USER: ${{ matrix.database-user }}
-          POSTGRES_PASSWORD: ${{ matrix.database-password }}
-          POSTGRES_DB: ${{ matrix.database-name }}
-          REDIS_PASSWORD: ${{ matrix.redis-password }}
 
       - name: Run tests
         run: |
@@ -73,7 +74,7 @@ jobs:
           DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
           REDIS_URL: redis://${{ matrix.redis-user }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
 
-      - name: Teardown environment for tests
+      - name: Teardown test environment
         run: |
           docker compose down -v --remove-orphans
 

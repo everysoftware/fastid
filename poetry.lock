@@ -2793,6 +2793,21 @@ files = [
 ]
 
 [[package]]
+name = "smokeshow"
+version = "0.5.0"
+description = "Deploy ephemeral websites."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "smokeshow-0.5.0-py3-none-any.whl", hash = "sha256:da12a960fc7cb525efc4035a0c3c9363b6217ea7e66bc39b9ed3cd8bed6eeedc"},
+    {file = "smokeshow-0.5.0.tar.gz", hash = "sha256:91dcabc29ac3116bff59b4d8a7bda4ae3ccc4c70742a38cec7127b8162e4a0f6"},
+]
+
+[package.dependencies]
+httpx = ">=0.24"
+typer = ">=0.8.0"
+
+[[package]]
 name = "sniffio"
 version = "1.3.1"
 description = "Sniff out which async library your code is running under"
@@ -3676,4 +3691,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "307dfb4821e9b95beded3b879b034557cd10514f9aa68a6be475f21c64b689d5"
+content-hash = "873ad3f31e49b7a841bb87a05727ab32c4b66ad23d0cda423775e4a08c5b9ce4"
