@@ -1,3 +1,9 @@
+.PHONY: certs
+certs:
+	mkdir certs
+	openssl genrsa -out certs/jwt-private.pem 2048
+	openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
+
 .PHONY: deps
 deps:
 	docker-compose up db redis -d

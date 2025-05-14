@@ -10,8 +10,48 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        database-name:
+          - test-ci
+        database-user:
+          - username
+        database-password:
+          - password
+        database-host:
+          - postgres
+        database-port:
+          - 5432
+        redis-host:
+          - redis
+        redis-port:
+          - 6379
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: ${{ matrix.database-name }}
+          POSTGRES_USER: ${{ matrix.database-user }}
+          POSTGRES_PASSWORD: ${{ matrix.database-password }}
+        ports:
+          - ${{ matrix.database-port }}:${{ matrix.database-port }}
+        # Set health checks to wait until postgres has started
+        options: --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v3
@@ -24,6 +64,13 @@ jobs:
           pip install poetry
           poetry config virtualenvs.create false
           poetry install
-      - name: Run checkers
+      - name: Run checks
         run: |
           poetry run make check
+      - name: Run tests
+        run: |
+          poetry run make certs
+          poetry run pytest . -x -s -v --ff
+        env:
+          DB_URL: postgres://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
+          REDIS_URL: redis://${{ matrix.redis-host }}:${{ matrix.redis-port }}

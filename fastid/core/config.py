@@ -7,8 +7,8 @@ from fastid.core.schemas import BaseSettings
 
 
 class MainSettings(BaseSettings):
-    discovery_name: str = "fastapi"
-    title: str = "FastAPI App"
+    discovery_name: str = "fastid"
+    title: str = "FastID"
     version: str = "0.1.0"
     env: Literal["dev", "prod"] = "dev"
     debug: bool = False
