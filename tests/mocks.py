@@ -59,7 +59,7 @@ TELEGRAM_CALLBACK_PAYLOAD = {
     "last_name": faker.last_name(),
     "username": faker.user_name(),
     "picture": faker.image_url(),
-    "auth_date": faker.date_time().timestamp(),
+    "auth_date": int(faker.date_time().timestamp()),
 }
 TELEGRAM_CALLBACK_PAYLOAD["hash"] = compute_hmac_sha256(TELEGRAM_CALLBACK_PAYLOAD, telegram_settings.bot_token)
 TELEGRAM_CALLBACK = TelegramCallback(**TELEGRAM_CALLBACK_PAYLOAD)
