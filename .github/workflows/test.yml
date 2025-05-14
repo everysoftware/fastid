@@ -52,6 +52,7 @@ jobs:
 
       - name: Setup environment for tests
         run: |
+          touch .env
           docker compose down -v --remove-orphans
           docker compose up -d db redis
           poetry run make certs
