@@ -66,6 +66,9 @@ jobs:
         run: |
           poetry run make testcov
         env:
+          GOOGLE_ENABLED: 1
+          YANDEX_ENABLED: 1
+          TELEGRAM_ENABLED: 1
           DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
           REDIS_URL: redis://${{ matrix.redis-user }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
 
