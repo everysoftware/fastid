@@ -1,12 +1,12 @@
-APP_PATH = app
-LOGS_SINCE = 10m
+.PHONY: certs
+certs:
+	mkdir certs
+	openssl genrsa -out certs/jwt-private.pem 2048
+	openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
 
 .PHONY: deps
 deps:
 	docker-compose up db redis -d
-
-.PHONY: deps
-	uvicorn $(APP_PATH):app --host 0.0.0.0 --port 8000
 
 .PHONY: up
 up:
@@ -17,8 +17,16 @@ up-prod:
 	docker-compose -f docker-compose.yml -f docker-compose-prod.yml up --build -d
 
 .PHONY: test
-test: deps
-	pytest . -s -v
+test:
+	pytest . -x -s -v --ff
+
+.PHONY: testcov
+testcov:
+	coverage run -m pytest -x --ff
+	coverage combine
+	coverage report --show-missing --skip-covered --sort=cover --precision=2
+	coverage html
+	rm .coverage*
 
 .PHONY: stop
 stop:

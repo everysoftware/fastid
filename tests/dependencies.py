@@ -4,15 +4,15 @@ from redis.asyncio import ConnectionPool, Redis
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from app.cache.config import cache_settings
-from app.cache.storage import CacheStorage, RedisStorage
-from app.db.config import db_settings
-from app.db.uow import IUnitOfWork, SQLAlchemyUOW
-from app.logging.dependencies import provider
+from fastid.cache.config import cache_settings
+from fastid.cache.storage import CacheStorage, RedisStorage
+from fastid.core.dependencies import log_provider
+from fastid.database.config import db_settings
+from fastid.database.uow import SQLAlchemyUOW
 from tests.utils.alembic import alembic_config_from_url
 from tests.utils.db import get_test_db_url
 
-logger = provider.logger(__name__)
+logger = log_provider.logger(__name__)
 
 test_db_url = get_test_db_url(db_settings.url)
 db_settings.url = test_db_url
@@ -25,7 +25,7 @@ test_engine = create_async_engine(test_db_url, pool_pre_ping=True, poolclass=poo
 test_session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
 
-async def get_test_uow() -> AsyncIterator[IUnitOfWork]:
+async def get_test_uow() -> AsyncIterator[SQLAlchemyUOW]:
     logger.info("Use get_uow dependency")
     async with SQLAlchemyUOW(test_session_factory) as uow:
         yield uow

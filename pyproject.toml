@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "app"
+name = "fastid"
 version = "0.1.0"
-description = ""
+description = "Effortless authentication solution for your services"
 authors = ["Ivan Stasevich <pravitel2015ify@gmail.com>"]
 readme = "README.md"
 
@@ -30,7 +30,7 @@ opentelemetry-instrumentation-httpx = "^0.52b1"
 fast-depends = "^2.4.12"
 uuid-utils = "^0.9.0"
 typer = "^0.14.0"
-auth365 = "^0.1.2"
+fastlink = "^0.1.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -43,6 +43,8 @@ sqlalchemy-utils = "^0.41.2"
 faker = "^28.4.1"
 codespell = "^2.4.1"
 detect-secrets = "^1.5.0"
+coverage = {extras = ["html"], version = "^7.8.0"}
+smokeshow = "^0.5.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -51,7 +53,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 120
 indent-width = 4
-target-version = "py310"
+target-version = "py312"
 output-format = "concise"
 
 [tool.ruff.lint]
@@ -135,6 +137,45 @@ disallow_any_unimported = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+parallel = true
+branch = true
+concurrency = ["greenlet", "thread"]
+source = ["fastid"]
+context = '${CONTEXT}'
+omit = ["**/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+exclude_also = [
+    "if __name__ == .__main__.:",
+#    "self.logger",
+    "def __repr__",
+    "lambda: None",
+    "from .*",
+    "import .*",
+    '@(abc\.)?abstractmethod',
+    "raise NotImplementedError",
+    'raise AssertionError',
+#    'logger\..*',
+    "pass",
+    '\.\.\.',
+]
+omit = [
+    '*/__about__.py',
+    '*/__main__.py',
+    '*/__init__.py',
+    '*/dependencies.py',
+    '*/schemas.py',
+    "fastid/plugins/*",
+    "fastid/pages/*",
+    "fastid/dashboard/*",
+    "fastid/core/*",
+    "fastid/api/*",
+]
+
 
 [tool.codespell]
 skip = "./venv*,./docs/site/*,./htmlcov"

@@ -1,29 +1,87 @@
-name: Test
+name: Run all tests
 
 on:
   push:
     branches:
       - master
   pull_request:
-    branches:
-      - master
+    types:
+      - opened
+      - synchronize
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        database-name:
+          - ci
+        database-user:
+          - postgres
+        database-password:
+          - postgres
+        database-host:
+          - localhost
+        database-port:
+          - 5412
+        redis-username:
+          - default
+        redis-password:
+          - password
+        redis-host:
+          - localhost
+        redis-port:
+          - 6312
+
+    env:
+      POSTGRES_USER: ${{ matrix.database-user }}
+      POSTGRES_PASSWORD: ${{ matrix.database-password }}
+      POSTGRES_DB: ${{ matrix.database-name }}
+      REDIS_PASSWORD: ${{ matrix.redis-password }}
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.12
+
       - name: Install dependencies
         run: |
           pip install poetry
           poetry config virtualenvs.create false
           poetry install
-      - name: Run checkers
+
+      - name: Run checks
         run: |
           poetry run make check
+
+      - name: Setup test environment
+        run: |
+          touch .env
+          docker compose down -v --remove-orphans
+          docker compose up -d db redis
+          poetry run make certs
+
+      - name: Run tests
+        run: |
+          poetry run make testcov
+        env:
+          GOOGLE_ENABLED: 1
+          YANDEX_ENABLED: 1
+          TELEGRAM_ENABLED: 1
+          TELEGRAM_BOT_TOKEN: 123456:BOT_SECRET
+          DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
+          REDIS_URL: redis://${{ matrix.redis-user }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
+
+      - name: Teardown test environment
+        run: |
+          docker compose down -v --remove-orphans
+
+      - name: Store coverage files
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov
+          include-hidden-files: true
