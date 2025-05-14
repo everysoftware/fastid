@@ -69,6 +69,7 @@ jobs:
           GOOGLE_ENABLED: 1
           YANDEX_ENABLED: 1
           TELEGRAM_ENABLED: 1
+          TELEGRAM_BOT_TOKEN: 123456:BOT_SECRET
           DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
           REDIS_URL: redis://${{ matrix.redis-user }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
 
