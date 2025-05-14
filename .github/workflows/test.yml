@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         database-name:
-          - test-ci
+          - ci
         database-user:
           - username
         database-password:
@@ -31,7 +31,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:16-alpine
         env:
           POSTGRES_DB: ${{ matrix.database-name }}
           POSTGRES_USER: ${{ matrix.database-user }}
@@ -72,5 +72,5 @@ jobs:
           poetry run make certs
           poetry run pytest . -x -s -v --ff
         env:
-          DB_URL: postgres://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
+          DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
           REDIS_URL: redis://${{ matrix.redis-host }}:${{ matrix.redis-port }}
