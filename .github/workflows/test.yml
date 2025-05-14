@@ -69,6 +69,8 @@ jobs:
           poetry run make check
       - name: Run tests
         run: |
+          printenv DB_URL
+          printenv REDIS_URL
           poetry run make certs
           poetry run pytest . -x -s -v --ff
         env:

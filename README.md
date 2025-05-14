@@ -28,21 +28,19 @@
 Clone the repository:
 
 ```bash
-  git clone https://github.com/everysoftware/fastid
+git clone https://github.com/everysoftware/fastid
 ```
 
 Generate RSA keys:
 
 ```bash
-  mkdir certs
-  openssl genrsa -out certs/jwt-private.pem 2048
-  openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
+make certs
 ```
 
 Create a `.env` file based on `.env.example` and run the server:
 
 ```bash
-  make up
+make up
 ```
 
 FastID is available at [http://localhost:8012](http://localhost:8012):
@@ -128,7 +126,7 @@ def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
 Run the server:
 
 ```bash
-  fastapi dev test_client/fastid.py
+fastapi dev test_client/fastid.py
 ```
 
 Go to [http://localhost:8000/login](http://localhost:8000/login) to login in FastID. You will be redirected to
