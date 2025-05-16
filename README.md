@@ -1,27 +1,49 @@
-# FastID
+<p align="center">
+    <a href="https://github.com/everysoftware/fastid"><img src="/assets/logo_text.png" alt="FastID"></a>
+</p>
+<p align="center">
+    <em>FastID authentication platform, high security, lightning fast, easy-to-use, customizable.</em>
+</p>
 
-<img src="/assets/logo_transparent.png" alt="FastID" width="256">
-
-**Effortless authentication solution for your services**
+<p align="center">
+    <a href="https://github.com/everysoftware/fastid/actions/workflows/test.yml" target="_blank">
+        <img src="https://github.com/everysoftware/fastid/actions/workflows/test.yml/badge.svg" alt="Test">
+    </a>
+    <a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/everysoftware/fastid" target="_blank">
+        <img src="https://coverage-badge.samuelcolvin.workers.dev/everysoftware/fastid.svg" alt="Coverage">
+    </a>
+    <a href="https://github.com/everysoftware/fastid/actions/workflows/codeql.yml" target="_blank">
+        <img src="https://github.com/everysoftware/fastid/actions/workflows/codeql.yml/badge.svg" alt="CodeQL">
+    </a>
+    <a href="https://github.com/everysoftware/fastid/actions/workflows/test.yml" target="_blank">
+        <img src="https://img.shields.io/github/actions/workflow/status/everysoftware/fastid/test.yml?label=Bandit+Scan" alt="Bandit">
+    </a>
+    <a href="https://img.shields.io/github/license/everysoftware/fastid.png" target="_blank">
+        <img src="https://img.shields.io/github/license/everysoftware/fastid.png" alt="License">
+    </a>
+</p>
 
 ---
 
-[![Test](https://github.com/everysoftware/fastid/actions/workflows/test.yml/badge.svg)](https://github.com/everysoftware/fastid/actions/workflows/test.yml)
-![Coverage](https://coverage-badge.samuelcolvin.workers.dev/everysoftware/fastid.svg)
-[![CodeQL Advanced](https://github.com/everysoftware/fastid/actions/workflows/codeql.yml/badge.svg)](https://github.com/everysoftware/fastid/actions/workflows/codeql.yml)
-![Bandit Workflow Status](https://img.shields.io/github/actions/workflow/status/everysoftware/fastid/test.yml?label=Bandit+Scan)
-[![License](https://img.shields.io/github/license/everysoftware/fastid.png)](https://img.shields.io/github/license/everysoftware/fastid.png)
+**Source Code:** https://github.com/everysoftware/fastid
 
 ---
 
 ## Features
 
-* **Security**. Built with security in mind. It uses JWT tokens, OAuth 2.0 and OpenID Connect.
-* **Admin Panel**. Comes with an admin interface to manage users and applications.
-* **Notifications**. Sends welcome messages and verification codes via email and Telegram.
-* **Observability**. Metrics and tracing complied with OpenTelemetry.
-* **Social Login**. Supports social login with Google, Telegram, Yandex, and others.
-* **Plugins**. Offers a plugin system to extend the functionality.
+* **Secure**: Reliable authentication without exposing user credentials to the clients (thanks
+  to [OAuth 2.0](https://oauth.net/) and [OpenID Connect](https://openid.net/)).
+* **Fast**: Powered by [FastAPI](https://fastapi.tiangolo.com/) (one of the fastest Python web frameworks
+  available)
+  and [SQLAlchemy](https://www.sqlalchemy.org/).
+* **Easy-to-use**: Comes with an admin dashboard to manage users and applications. Built-in user profile pages for
+  account management.
+* **Quickly start**: Supports sign up with Google, Yandex, etc. Advanced integration with Telegram.
+* **In touch with users**: Greets users after registration and verifies their actions via OTP.
+* **Customizable**: Changes the appearance with custom templates for pages and email messages. Functionality can be
+  extended with plugins.
+* **Observable**: Monitor the platform's performance with 3 pills of observability: logging, metrics and tracing
+  complied. Fully compatible with [OpenTelemetry](https://opentelemetry.io/).
 
 ## Installation
 

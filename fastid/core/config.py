@@ -13,7 +13,7 @@ class MainSettings(BaseSettings):
     env: Literal["dev", "prod"] = "dev"
     debug: bool = False
 
-    base_url: str = "http://localhost:8000"
+    base_url: str = "http://localhost:8012"
     api_path: str = "/api/v1"
 
     @property
