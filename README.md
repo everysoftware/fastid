@@ -1,8 +1,8 @@
 <p align="center">
-    <a href="https://github.com/everysoftware/fastid"><img src="/assets/logo_text_new.png" alt="FastID"></a>
+    <a href="https://github.com/everysoftware/fastid"><img src="/assets/logo_text.png" alt="FastID"></a>
 </p>
 <p align="center">
-    <em>Scalable and easy-to-use identity management platform supporting OAuth 2.0 and OpenID Connect.</em>
+    <em>FastID authentication platform, high security, lightning fast, easy-to-use, customizable.</em>
 </p>
 
 <p align="center">
@@ -31,15 +31,19 @@
 
 ## Features
 
-* **Secure**: Reliable authentication without exposing user credentials to the clients (thanks
+* **High security**: Reliable authentication without exposing user credentials to the clients (thanks
   to [OAuth 2.0](https://oauth.net/) and [OpenID Connect](https://openid.net/)).
-* **Faster onboarding**: Supports sign up with popular platforms: Google, Yandex, VK, etc. Even closer integration with
-  Telegram.
+* **Lightning fast**: Powered by [FastAPI](https://fastapi.tiangolo.com/) (one of the fastest Python web frameworks
+  available)
+  and [SQLAlchemy](https://www.sqlalchemy.org/).
+* **Easy-to-use**: Comes with an admin dashboard to manage users and applications. Built-in user profile pages for
+  account management.
+* **Quickly start**: Supports sign up with Google, Yandex, etc. Advanced integration with Telegram.
 * **In touch with users**: Greets users after registration and verifies their actions via OTP.
-* **Easy-to-manage**: Comes with an admin dashboard to manage users and applications.
-* **Customizable**: Change the appearance with templates for pages and email messages. Extend the functionality with
-  plugins.
-* **Observable**: Comprehensive logging, metrics and tracing complied with [OpenTelemetry](https://opentelemetry.io/).
+* **Customizable**: Changes the appearance with custom templates for pages and email messages. Functionality can be
+  extended with plugins.
+* **Observable**: Monitor the platform's performance with 3 pills of observability: logging, metrics and tracing
+  complied. Fully compatible with [OpenTelemetry](https://opentelemetry.io/).
 
 ## Installation
 

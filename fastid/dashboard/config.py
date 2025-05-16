@@ -15,5 +15,5 @@ class AdminSettings(BaseSettings):
 
 
 favicon_url = f"{main_settings.base_url}/static/assets/favicon.png"
-logo_url = f"{main_settings.base_url}/static/assets/logo_text_new.png"
+logo_url = f"{main_settings.base_url}/static/assets/logo_text.png"
 admin_settings = AdminSettings(favicon_url=favicon_url, logo_url=logo_url)
