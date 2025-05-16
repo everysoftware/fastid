@@ -31,9 +31,9 @@
 
 ## Features
 
-* **High security**: Reliable authentication without exposing user credentials to the clients (thanks
+* **Secure**: Reliable authentication without exposing user credentials to the clients (thanks
   to [OAuth 2.0](https://oauth.net/) and [OpenID Connect](https://openid.net/)).
-* **Lightning fast**: Powered by [FastAPI](https://fastapi.tiangolo.com/) (one of the fastest Python web frameworks
+* **Fast**: Powered by [FastAPI](https://fastapi.tiangolo.com/) (one of the fastest Python web frameworks
   available)
   and [SQLAlchemy](https://www.sqlalchemy.org/).
 * **Easy-to-use**: Comes with an admin dashboard to manage users and applications. Built-in user profile pages for
