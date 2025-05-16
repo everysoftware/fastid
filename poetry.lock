@@ -910,13 +910,13 @@ standard = ["uvicorn[standard] (>=0.15.0)"]
 
 [[package]]
 name = "fastlink"
-version = "0.1.2"
+version = "0.1.3"
 description = "Asynchronous OAuth 2.0 client for such platforms as Google, GitHub, Yandex, etc."
 optional = false
 python-versions = "<4.0,>=3.12"
 files = [
-    {file = "fastlink-0.1.2-py3-none-any.whl", hash = "sha256:f93a8f3d9314d82abd7aa6e5f922ed390f2e9778fd24b397bd4cc4f9018af0a7"},
-    {file = "fastlink-0.1.2.tar.gz", hash = "sha256:32e0a554b04026331e1de981536d8590f5038a2bd6b551e238cf0146e9f67bcf"},
+    {file = "fastlink-0.1.3-py3-none-any.whl", hash = "sha256:ad22ee9775b048f099d0e8341d0291fd624fee2fe463495455008d957b9a18a0"},
+    {file = "fastlink-0.1.3.tar.gz", hash = "sha256:4853441f55b9b5c865d7564e6fe4abf144c9d34a48c22fbdc482f1302ff08296"},
 ]
 
 [package.dependencies]
@@ -3691,4 +3691,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "873ad3f31e49b7a841bb87a05727ab32c4b66ad23d0cda423775e4a08c5b9ce4"
+content-hash = "54d52cd214840a6bc834b9cddcfff5ead209516c97ac5a128658056cb60b72cc"
