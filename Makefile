@@ -32,6 +32,10 @@ testcov:
 stop:
 	docker-compose stop
 
+.PHONY: down
+down:
+	docker-compose down
+
 .PHONY: restart
 restart:
 	docker-compose restart
