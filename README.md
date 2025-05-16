@@ -25,6 +25,8 @@
 
 ---
 
+**Live Demo:** https://fastid.croce.ru
+
 **Source Code:** https://github.com/everysoftware/fastid
 
 ---
