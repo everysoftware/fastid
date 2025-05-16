@@ -1,16 +1,19 @@
-# FastID
-
-<img src="/assets/logo_transparent.png" alt="FastID" width="256">
-
-**Effortless authentication solution for your services**
-
----
+<p align="center">
+  <a href="https://github.com/everysoftware/fastid"><img src="/assets/logo_text_new.png" alt="FastID"></a>
+</p>
+<p align="center">
+    <em>Scalable and easy-to-use identity management SaaS supporting such protocols as OAuth and OpenID Connect.</em>
+</p>
 
 [![Test](https://github.com/everysoftware/fastid/actions/workflows/test.yml/badge.svg)](https://github.com/everysoftware/fastid/actions/workflows/test.yml)
 ![Coverage](https://coverage-badge.samuelcolvin.workers.dev/everysoftware/fastid.svg)
 [![CodeQL Advanced](https://github.com/everysoftware/fastid/actions/workflows/codeql.yml/badge.svg)](https://github.com/everysoftware/fastid/actions/workflows/codeql.yml)
 ![Bandit Workflow Status](https://img.shields.io/github/actions/workflow/status/everysoftware/fastid/test.yml?label=Bandit+Scan)
 [![License](https://img.shields.io/github/license/everysoftware/fastid.png)](https://img.shields.io/github/license/everysoftware/fastid.png)
+
+---
+
+**Source Code:** https://github.com/everysoftware/fastid
 
 ---
 
