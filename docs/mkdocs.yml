@@ -1,0 +1,92 @@
+site_name: FastID
+site_description: FastID authentication platform, high security, lightning fast, easy-to-use, customizable
+site_url: https://everysoftware.github.io/fastid/
+
+repo_name: everysoftware/fastid
+repo_url: https://github.com/everysoftware/fastid
+edit_uri: https://github.com/everysoftware/fastid
+
+copyright: Copyright &copy; 2024 - 2025 Stasevich Ivan
+
+docs_dir: docs
+
+extra_css:
+  - assets/stylesheets/termynal.css
+  - assets/stylesheets/custom.css
+
+extra_javascript:
+  - assets/javascripts/termynal.js
+  - assets/javascripts/custom.js
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  features:
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+    - navigation.top
+    - navigation.footer
+  i18n:
+    prev: 'Previous'
+    next: 'Next'
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - markdownextradata:
+      data: data
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+      htmlmin_opts:
+        remove_comments: true
+      cache_safe: true
+
+markdown_extensions:  # do not reorder
+  - toc:
+      permalink: true
+  - markdown.extensions.codehilite:
+      guess_lang: false
+  - mdx_include:
+      base_path: .
+  - admonition
+  - codehilite
+  - extra
+  - pymdownx.details
+  - footnotes
+  - pymdownx.superfences:
+      custom_fences:
+      - name: mermaid
+        class: mermaid
+        format: !!python/name:pymdownx.superfences.fence_code_format ''
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Welcome: index.md
+  - Get Started: start.md
+  - API Reference: api.md
