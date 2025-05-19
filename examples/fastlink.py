@@ -2,12 +2,12 @@
 #
 # from fastapi import Depends, FastAPI
 # from fastapi.responses import RedirectResponse
+# from fastlink import CustomOAuth
 # from fastlink.schemas import OAuth2Callback
 # from starlette.responses import JSONResponse
 #
 # app = FastAPI()
-# # TODO: fastid = CustomOAuth(settings.client_id, settings.client_secret, settings.redirect_uri, server_url="http://localhost:8012")
-# fastid = ...
+# fastid = CustomOAuth(settings.client_id, settings.client_secret, settings.redirect_uri, server_url="http://localhost:8012")
 #
 #
 # @app.get("/login")

@@ -1,8 +1,12 @@
-# API Reference
+# API Docs
+
+## Swagger UI
 
 API docs are available at [http://localhost:8012/api/v1/docs](http://localhost:8012/api/v1/docs)
 
-![API Docs](assets/api_docs.png)
+![API Docs](../assets/api_docs.png)
+
+## OpenID Connect
 
 OpenID metadata is available
 at [http://localhost:8012/.well-known/openid-configuration](http://localhost:8012/.well-known/openid-configuration).

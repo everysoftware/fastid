@@ -185,5 +185,5 @@ omit = [
 
 
 [tool.codespell]
-skip = "./venv*,./docs/site/*,./htmlcov"
+skip = "./venv*,./docs,./htmlcov"
 ignore-words = ".codespell-whitelist.txt"

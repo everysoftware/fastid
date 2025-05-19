@@ -1,23 +1,11 @@
-# Get Started
-
-Congratulations! You have successfully installed FastID. Now you can start using it.
-
-Login to admin panel: [http://localhost:8012/admin](http://localhost:8012/admin) and create new app to obtain
-`client_id` and `client_secret`.
-
-![Sign In](assets/create_app.png)
-
-Here is an example of client app that uses FastID for authentication:
-
-```python
-from typing import Any, Annotated
+from typing import Annotated, Any
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import FastAPI, Response, Request, Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 
-from test_client.config import settings
+from examples.config import settings
 
 app = FastAPI()
 
@@ -54,31 +42,14 @@ def callback(code: str) -> Any:
 def current_user(request: Request) -> dict[str, Any]:
     token = request.cookies.get("access_token")
     if not token:
-        raise HTTPException(401, "No access token")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "No access token")
     response = httpx.get(
         f"{settings.fastid_url}/api/v1/userinfo",
         headers={"Authorization": f"Bearer {token}"},
     )
-    return response.json()
+    return response.json()  # type: ignore[no-any-return]
 
 
 @app.get("/test")
 def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
     return user
-```
-
-Run the server:
-
-```bash
-fastapi dev test_client/fastid.py
-```
-
-Go to [http://localhost:8000/login](http://localhost:8000/login) to login in FastID. You will be redirected to
-FastID to enter your credentials. After successful login you will be redirected back to the client app
-and receive an access token.
-
-Now you can access the protected route [http://localhost:8000/test](http://localhost:8000/test):
-
-![Sign In](assets/test_response.png)
-
-See the full example in the `test_client` directory.

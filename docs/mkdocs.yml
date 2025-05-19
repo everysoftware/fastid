@@ -87,6 +87,9 @@ markdown_extensions:  # do not reorder
   - md_in_html
 
 nav:
-  - Welcome: index.md
-  - Get Started: start.md
-  - API Reference: api.md
+  - FastID: index.md
+  - Learn:
+      - Basic Usage: tutorial/basic.md
+      - Notifications: tutorial/notifications.md
+      - Social Login: tutorial/social.md
+      - API Docs: tutorial/api.md
