@@ -25,11 +25,11 @@
 
 ---
 
-**Live Demo:** https://fastid.croce.ru
+**Live Demo:** [https://fastid.croce.ru](https://fastid.croce.ru)
 
-**Documentation:** https://everysoftware.github.io/fastid
+**Documentation:** [https://everysoftware.github.io/fastid](https://everysoftware.github.io/fastid)
 
-**Source Code:** https://github.com/everysoftware/fastid
+**Source Code:** [https://github.com/everysoftware/fastid](https://github.com/everysoftware/fastid)
 
 ---
 
@@ -72,10 +72,13 @@ make up
 FastID is available at [http://localhost:8012](http://localhost:8012):
 
 ![Sign In](assets/signin.png)
+![Profile](assets/profile.png)
+![Connections](assets/connections.png)
 
 Admin panel is available at: [http://localhost:8012/admin](http://localhost:8012/admin):
 
 ![Admin Login](assets/admin_login.png)
+![Admin Users](assets/admin_users.png)
 
 > To set up observability, you can use [this](https://github.com/everysoftware/fastapi-obs) preset.
 
@@ -173,19 +176,6 @@ Visit [http://localhost:8000/login](http://localhost:8000/login) to start the au
 you will be redirected to the `/callback` route, where the access token will be set as a cookie. You can then
 access the `/test` route to retrieve the user's information.
 
-![Sign In](assets/test_response.png)
-
-## Screenshots
-
-![Sign In](assets/signin.png)
-![Sign Up](assets/signup.png)
-![Profile](assets/profile.png)
-![Connections](assets/connections.png)
-![Action Confirmation](assets/action_confirmation.png)
-![Change Password](assets/change_password.png)
-![Delete Account](assets/delete_account.png)
-![Admin Login](assets/admin_login.png)
-![Admin Apps](assets/admin_apps.png)
-![Admin Users](assets/admin_users.png)
+![Test Response](assets/test_response.png)
 
 **Made with ❤️**

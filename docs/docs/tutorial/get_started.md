@@ -1,4 +1,4 @@
-# Basic Usage
+# Get Started
 
 To start using FastID, you need to [create](http://localhost:8012/admin/app/create) an application in the admin panel.
 This will allow you to use FastID for

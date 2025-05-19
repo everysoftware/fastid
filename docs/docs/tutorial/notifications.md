@@ -1,7 +1,7 @@
 # Notifications
 
-FastID supports sending notifications to users via **E-mail** and **Telegram**. This is useful for sending welcome message, OTPs,
-and other important information.
+FastID supports sending notifications to users via **E-mail** and **Telegram**. This is useful for sending welcome
+messages, OTPs, and other important information.
 
 ## E-mail
 
@@ -17,9 +17,11 @@ NOTIFY_SMTP_USERNAME=...
 NOTIFY_SMTP_PASSWORD=...
 ```
 
+![img.png](../assets/email_code.png)
+
 ## Telegram
 
-Visit https://t.me/BotFather to create a new bot and obtain the token.
+Visit [https://t.me/BotFather](https://t.me/BotFather) to create a new bot and obtain the token.
 
 Add the following to your `.env` file:
 
@@ -27,3 +29,5 @@ Add the following to your `.env` file:
 TELEGRAM_ENABLED=1
 TELEGRAM_BOT_TOKEN=...
 ```
+
+![img_3.png](../assets/telegram_code.png)

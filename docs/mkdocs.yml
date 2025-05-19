@@ -61,7 +61,7 @@ plugins:
         remove_comments: true
       cache_safe: true
 
-markdown_extensions:  # do not reorder
+markdown_extensions: # do not reorder
   - toc:
       permalink: true
   - markdown.extensions.codehilite:
@@ -75,9 +75,9 @@ markdown_extensions:  # do not reorder
   - footnotes
   - pymdownx.superfences:
       custom_fences:
-      - name: mermaid
-        class: mermaid
-        format: !!python/name:pymdownx.superfences.fence_code_format ''
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format ''
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -88,8 +88,10 @@ markdown_extensions:  # do not reorder
 
 nav:
   - FastID: index.md
-  - Learn:
-      - Basic Usage: tutorial/basic.md
+  - Overview: overview.md
+  - User Guide:
+      - tutorial/index.md
+      - Get Started: tutorial/get_started.md
       - Notifications: tutorial/notifications.md
       - Social Login: tutorial/social.md
       - API Docs: tutorial/api.md
