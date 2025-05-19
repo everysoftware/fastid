@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://github.com/everysoftware/fastid"><img src="/assets/logo_text.png" alt="FastID"></a>
+    <a href="https://github.com/everysoftware/fastid"><img src="https://raw.githubusercontent.com/everysoftware/fastid/master/assets/logo_text.png" alt="FastID"></a>
 </p>
 <p align="center">
     <em>FastID authentication platform, high security, lightning fast, easy-to-use, customizable.</em>
