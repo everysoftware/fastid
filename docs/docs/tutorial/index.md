@@ -1,4 +1,4 @@
-# User Guide
+# Introduction
 
 Here are the introductory sections and the tutorials to learn FastID.
 
