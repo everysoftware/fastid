@@ -1,0 +1,25 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: FastID
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Ivan
+    family-names: Stasevich
+    email: pravitel2015ify@gmail.com
+repository-code: 'https://github.com/everysoftware/fastid'
+url: 'https://everysoftware.github.io/fastid/'
+abstract: >-
+  FastID authentication platform, high security, lightning
+  fast, easy-to-use, customizable
+keywords:
+  - fastid
+  - oauth2
+  - sso
+  - keycloak
+  - fastapi
+license: MIT
