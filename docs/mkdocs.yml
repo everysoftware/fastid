@@ -124,10 +124,10 @@ nav:
   - Overview: overview.md
   - User Guide:
       - tutorial/index.md
-      - Get Started: tutorial/get_started.md
-      - Notifications: tutorial/notifications.md
-      - Social Login: tutorial/social.md
-      - API Docs: tutorial/api.md
+      - tutorial/get_started.md
+      - tutorial/notifications.md
+      - tutorial/social.md
+      - tutorial/api.md
 
 extra:
   social:
