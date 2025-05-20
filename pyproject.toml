@@ -52,6 +52,7 @@ mkdocs-material = "^9.6.14"
 mkdocs-minify-plugin = "^0.8.0"
 mdx-include = "^1.4.2"
 mkdocs-markdownextradata-plugin = "^0.2.6"
+markdown-include-variants = "^0.0.4"
 
 [build-system]
 requires = ["poetry-core"]
@@ -185,5 +186,5 @@ omit = [
 
 
 [tool.codespell]
-skip = "./venv*,./docs,./htmlcov"
+skip = "./venv*,./docs,./htmlcov,./poetry.lock"
 ignore-words = ".codespell-whitelist.txt"

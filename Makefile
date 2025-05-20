@@ -47,7 +47,7 @@ lint:
 	@echo "Running ruff formatter (black replacement)..."
 	ruff format .
 	@echo "Running codespell to find typos..."
-	codespell . --skip docs
+	codespell .
 
 .PHONY: static
 static:

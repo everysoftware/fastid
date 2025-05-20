@@ -1640,6 +1640,21 @@ docs = ["mdx_gh_links (>=0.2)", "mkdocs (>=1.6)", "mkdocs-gen-files", "mkdocs-li
 testing = ["coverage", "pyyaml"]
 
 [[package]]
+name = "markdown-include-variants"
+version = "0.0.4"
+description = "Markdown extension to expand directives to include source example files to also include their variants. Only useful to tiangolo's projets. Don't use it. 😅"
+optional = false
+python-versions = ">=3.9"
+groups = ["docs"]
+files = [
+    {file = "markdown_include_variants-0.0.4-py3-none-any.whl", hash = "sha256:f940b3978ca63d05118a261ff653d54d1d325120de41da9b901ccf4a85f1da1c"},
+    {file = "markdown_include_variants-0.0.4.tar.gz", hash = "sha256:8207c8a451eb79f10973d10ef5745b619bc51e245e4c4e5f0556a7a05243bea7"},
+]
+
+[package.dependencies]
+markdown = ">=3.7"
+
+[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
@@ -4253,4 +4268,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "727a1cc45c35be8f67946d3e1ad83de01731729a9c116a26fab6deb53bd119bf"
+content-hash = "51059f57905e1e9f44b55cc265867699c0f1f973206f4eeae55e7f225a022164"
