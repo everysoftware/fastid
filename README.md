@@ -71,14 +71,14 @@ make up
 
 FastID is available at [http://localhost:8012](http://localhost:8012):
 
-![Sign In](assets/signin.png)
-![Profile](assets/profile.png)
-![Connections](assets/connections.png)
+![Sign In](img/signin.png)
+![Profile](img/profile.png)
+![Connections](img/connections.png)
 
 Admin panel is available at: [http://localhost:8012/admin](http://localhost:8012/admin):
 
-![Admin Login](assets/admin_login.png)
-![Admin Users](assets/admin_users.png)
+![Admin Login](img/admin_login.png)
+![Admin Users](img/admin_users.png)
 
 > To set up observability, you can use [this](https://github.com/everysoftware/fastapi-obs) preset.
 
@@ -90,7 +90,7 @@ To start using FastID, you need to [create](http://localhost:8012/admin/app/crea
 This will allow you to use FastID for
 authentication in your application.
 
-![Sign In](assets/create_app.png)
+![Sign In](img/create_app.png)
 
 Once you have created an application, you can use the standard OAuth 2.0 flow to authenticate users. FastID supports the
 authorization code flow, which is the most secure and recommended way to authenticate users.
@@ -176,6 +176,6 @@ Visit [http://localhost:8000/login](http://localhost:8000/login) to start the au
 you will be redirected to the `/callback` route, where the access token will be set as a cookie. You can then
 access the `/test` route to retrieve the user's information.
 
-![Test Response](assets/test_response.png)
+![Test Response](img/test_response.png)
 
 **Made with ❤️**

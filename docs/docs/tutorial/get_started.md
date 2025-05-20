@@ -4,7 +4,7 @@ To start using FastID, you need to [create](http://localhost:8012/admin/app/crea
 This will allow you to use FastID for
 authentication in your application.
 
-![Sign In](../assets/create_app.png)
+![Sign In](../img/create_app.png)
 
 Once you have created an application, you can use the standard OAuth 2.0 flow to authenticate users. FastID supports the
 authorization code flow, which is the most secure and recommended way to authenticate users.
@@ -90,4 +90,4 @@ Visit [http://localhost:8000/login](http://localhost:8000/login) to start the au
 you will be redirected to the `/callback` route, where the access token will be set as a cookie. You can then
 access the `/test` route to retrieve the user's information.
 
-![Sign In](../assets/test_response.png)
+![Sign In](../img/test_response.png)

@@ -17,7 +17,7 @@ NOTIFY_SMTP_USERNAME=...
 NOTIFY_SMTP_PASSWORD=...
 ```
 
-![img.png](../assets/email_code.png)
+![img.png](../img/email_code.png)
 
 ## Telegram
 
@@ -30,4 +30,4 @@ TELEGRAM_ENABLED=1
 TELEGRAM_BOT_TOKEN=...
 ```
 
-![img_3.png](../assets/telegram_code.png)
+![img_3.png](../img/telegram_code.png)

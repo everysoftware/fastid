@@ -20,7 +20,7 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 ```
 
-![google_consent.png](../assets/google_consent.png)
+![google_consent.png](../img/google_consent.png)
 
 ## Yandex
 
@@ -34,7 +34,7 @@ YANDEX_CLIENT_ID=...
 YANDEX_CLIENT_SECRET=...
 ```
 
-![yandex_consent.png](../assets/yandex_consent.png)
+![yandex_consent.png](../img/yandex_consent.png)
 
 ## Telegram
 
@@ -49,7 +49,7 @@ TELEGRAM_ENABLED=1
 TELEGRAM_BOT_TOKEN=...
 ```
 
-![telegram_consent.png](../assets/telegram_consent.png)
+![telegram_consent.png](../img/telegram_consent.png)
 
 ## Other Providers
 
