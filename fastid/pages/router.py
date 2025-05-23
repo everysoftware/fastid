@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
@@ -8,11 +8,12 @@ from fastid.auth.dependencies import cookie_transport
 from fastid.auth.grants import AuthorizationCodeGrant
 from fastid.auth.models import User
 from fastid.auth.schemas import OAuth2ConsentRequest
+from fastid.notify.schemas import UnsafeAction
 from fastid.oauth.dependencies import OAuthAccountsDep
 from fastid.pages.dependencies import (
-    action_verified,
-    get_optional_user,
     get_user,
+    get_user_or_none,
+    is_action_verified,
     valid_consent,
 )
 from fastid.pages.openid import discovery_document, jwks
@@ -29,7 +30,7 @@ def index() -> Response:
 @router.get("/register")
 def register(
     request: Request,
-    user: Annotated[User | None, Depends(get_optional_user)],
+    user: Annotated[User | None, Depends(get_user_or_none)],
 ) -> Response:
     if user:
         return RedirectResponse(url="/profile")
@@ -39,7 +40,7 @@ def register(
 @router.get("/login")
 def login(
     request: Request,
-    user: Annotated[User | None, Depends(get_optional_user)],
+    user: Annotated[User | None, Depends(get_user_or_none)],
 ) -> Response:
     if user:
         return RedirectResponse(url="/profile")
@@ -49,13 +50,15 @@ def login(
 @router.get("/authorize")
 async def authorize(
     request: Request,
-    user: Annotated[User | None, Depends(get_optional_user)],
+    user: Annotated[User | None, Depends(get_user_or_none)],
     consent: Annotated[OAuth2ConsentRequest, Depends(valid_consent)],
     authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
 ) -> Response:
     if user is None:
+        assert consent.client_id is not None
+        app = await authorization_code_grant.validate_client(consent.client_id)
         request.session["consent"] = consent.model_dump(mode="json")
-        return templates.TemplateResponse("authorize.html", {"request": request})
+        return templates.TemplateResponse("authorize.html", {"request": request, "app": app})
     # User is authenticated, redirect to specified redirect URI with code
     request.session.clear()
     redirect_uri = await authorization_code_grant.approve_consent(consent, user)
@@ -76,18 +79,40 @@ async def profile(
     )
 
 
+@router.get("/restore")
+def restore_account(
+    request: Request,
+) -> Response:
+    return templates.TemplateResponse(
+        "restore-account.html",
+        {"request": request},
+    )
+
+
 @router.get("/verify-action")
 def verify_action(
     request: Request,
-    user: Annotated[User, Depends(get_user)],
-    verified: Annotated[bool, Depends(action_verified)],
-    action: Literal["change-email", "change-password", "delete-account"],
+    verified: Annotated[bool, Depends(is_action_verified)],
+    action: UnsafeAction,
 ) -> Response:
     if verified:
         return RedirectResponse(f"/{action}")
     return templates.TemplateResponse(
         "verify-action.html",
-        {"request": request, "user": user},
+        {"request": request},
+    )
+
+
+@router.get("/change-password")
+def change_password(
+    request: Request,
+    verified: Annotated[bool, Depends(is_action_verified)],
+) -> Response:
+    if not verified:
+        return RedirectResponse(f"/verify-action?action={UnsafeAction.change_password}")
+    return templates.TemplateResponse(
+        "change-password.html",
+        {"request": request},
     )
 
 
@@ -95,26 +120,12 @@ def verify_action(
 def change_email(
     request: Request,
     user: Annotated[User, Depends(get_user)],
-    verified: Annotated[bool, Depends(action_verified)],
+    verified: Annotated[bool, Depends(is_action_verified)],
 ) -> Any:
     if not verified:
-        return RedirectResponse("/verify-action?action=change-email")
+        return RedirectResponse(f"/verify-action?action={UnsafeAction.change_email}")
     return templates.TemplateResponse(
         "change-email.html",
-        {"request": request, "user": user},
-    )
-
-
-@router.get("/change-password")
-def change_password(
-    request: Request,
-    user: Annotated[User, Depends(get_user)],
-    verified: Annotated[bool, Depends(action_verified)],
-) -> Response:
-    if not verified:
-        return RedirectResponse("/verify-action?action=change-password")
-    return templates.TemplateResponse(
-        "change-password.html",
         {"request": request, "user": user},
     )
 
@@ -123,10 +134,10 @@ def change_password(
 def delete_account(
     request: Request,
     user: Annotated[User, Depends(get_user)],
-    verified: Annotated[bool, Depends(action_verified)],
+    verified: Annotated[bool, Depends(is_action_verified)],
 ) -> Response:
     if not verified:
-        return RedirectResponse("/verify-action?action=delete-account")
+        return RedirectResponse(f"/verify-action?action={UnsafeAction.delete_account}")
     return templates.TemplateResponse(
         "delete-account.html",
         {"request": request, "user": user},

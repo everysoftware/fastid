@@ -16,6 +16,7 @@ def login(request: Request) -> Any:
         "response_type": "code",
         "client_id": settings.client_id,
         "redirect_uri": request.url_for("callback"),
+        "scope": ["openid"],
     }
     url = f"{settings.fastid_url}/authorize?{urlencode(params)}"
     return RedirectResponse(url=url)

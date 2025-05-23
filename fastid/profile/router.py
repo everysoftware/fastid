@@ -1,9 +1,8 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
 
-from fastid.auth.dependencies import UserDep
-from fastid.auth.permissions import Requires
+from fastid.auth.dependencies import UserDep, UserVTDep
 from fastid.auth.schemas import (
     UserChangeEmail,
     UserChangePassword,
@@ -26,29 +25,26 @@ async def patch(
 
 @router.patch(
     "/users/me/email",
-    dependencies=[Depends(Requires(action_verified=True))],
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def change_email(service: ProfilesDep, user: UserDep, dto: UserChangeEmail) -> Any:
+async def change_email(service: ProfilesDep, user: UserVTDep, dto: UserChangeEmail) -> Any:
     return await service.change_email(user, dto)
 
 
 @router.patch(
     "/users/me/password",
-    dependencies=[Depends(Requires(action_verified=True))],
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def change_password(service: ProfilesDep, user: UserDep, dto: UserChangePassword) -> Any:
+async def change_password(service: ProfilesDep, user: UserVTDep, dto: UserChangePassword) -> Any:
     return await service.change_password(user, dto)
 
 
 @router.delete(
     "/users/me",
-    dependencies=[Depends(Requires(action_verified=True))],
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def delete(service: ProfilesDep, user: UserDep) -> Any:
+async def delete(service: ProfilesDep, user: UserVTDep) -> Any:
     return await service.delete_account(user)

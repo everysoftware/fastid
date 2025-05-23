@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Login | {{ app_title }} {% endblock %}
+{% block title %}Sign in | {{ app_title }} {% endblock %}
 
 {% block style %}
     .divider:after,
@@ -29,7 +29,13 @@
             <div class="row d-flex align-items-center justify-content-center h-100">
                 <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
                     <form id="loginForm">
-                        <h4 class="text-center mb-4">Sign in</h4>
+                        {% if app %}
+                            <h4 class="text-center mb-4">Sign in to {{ app.name }}</h4>
+                            <p class="text-center mb-4">By continuing, {{ app_title }} will share your name, email address, and telegram with {{ app.name }}. See {{ app.name }}’s Privacy Policy and Terms of Service.</p>
+                        {% else %}
+                            <h4 class="text-center mb-4">Sign in</h4>
+                        {% endif %}
+
                         <div data-mdb-input-init class="form-outline mb-4">
                             <input type="email" id="email" class="form-control form-control-lg" placeholder="Email"
                                    required/>
@@ -49,7 +55,7 @@
 
                         <div class="d-flex justify-content-around align-items-center mb-4">
                             <a href="/register">Don't have an account?</a>
-                            <a href="/recover">Forgot password?</a>
+                            <a href="/restore">Forgot password?</a>
                         </div>
 
                         {% if providers_meta.any_enabled %}

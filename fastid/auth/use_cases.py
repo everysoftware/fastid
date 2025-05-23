@@ -27,9 +27,9 @@ class AuthUseCases(UseCase):
         await self.uow.commit()
         return user
 
-    async def get_userinfo(self, token: str) -> User:
+    async def get_userinfo(self, token: str, *, token_type: str = "access") -> User:  # noqa: S107
         try:
-            payload = jwt_backend.validate("access", token)
+            payload = jwt_backend.validate(token_type, token)
         except FastLinkError as e:
             raise InvalidTokenError from e
         try:

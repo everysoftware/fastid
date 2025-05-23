@@ -18,11 +18,6 @@ AuthDep = Annotated[AuthUseCases, Depends()]
 
 header_transport = HeaderTransport()
 cookie_transport = CookieTransport(name="fastidaccesstoken", max_age=auth_settings.jwt_access_expires_in)
-verify_token_transport = CookieTransport(
-    name="fastidverifytoken",
-    scheme_name="VerifyTokenCookie",
-    max_age=auth_settings.jwt_verify_token_expires_in,
-)
 auth_bus = AuthBus(header_transport, cookie_transport)
 
 
@@ -36,8 +31,24 @@ async def get_user(
 user_dep = Depends(get_user)
 UserDep = Annotated[User, user_dep]
 
+vt_transport = CookieTransport(
+    name="fastidverifytoken",
+    scheme_name="VerifyTokenCookie",
+    max_age=auth_settings.jwt_verify_token_expires_in,
+)
 
-async def get_optional_user(service: AuthDep, request: Request) -> User | None:
+
+async def get_user_by_vt(
+    service: AuthDep,
+    token: Annotated[str, Depends(vt_transport)],
+) -> User:
+    return await service.get_userinfo(token, token_type="verify")  # noqa: S106
+
+
+UserVTDep = Annotated[User, Depends(get_user_by_vt)]
+
+
+async def get_user_or_none(service: AuthDep, request: Request) -> User | None:
     token = auth_bus.parse_request(request, auto_error=False)
     if token is None:
         return None
@@ -45,3 +56,6 @@ async def get_optional_user(service: AuthDep, request: Request) -> User | None:
         return await service.get_userinfo(token)
     except ClientError:
         return None
+
+
+UserOrNoneDep = Annotated[User | None, Depends(get_user_or_none)]

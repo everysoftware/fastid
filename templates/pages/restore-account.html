@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Restore account | {{ app_title }}{% endblock %}
+
+{% block nav %}
+    <li class="nav-item">
+        <a class="nav-link" href="/login">Login</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/register">Register</a>
+    </li>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="/static/js/restore_account.js"></script>
+{% endblock %}
+
+{% block main %}
+    <section class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-3">Restore account</h4>
+                        <p class="text-muted">
+                            Enter your email address. If it exists in {{ app_title }}, we will send a one-time code to it.
+                        </p>
+                        <form id="sendCodeForm">
+                            <div data-mdb-input-init class="form-outline mb-4">
+                                <input type="email" id="email" class="form-control" required>
+                                <label class="form-label" for="email">Email</label>
+                            </div>
+                            <!-- Send Code Button -->
+                            <button data-mdb-ripple-init id="sendCodeButton" type="submit"
+                                    class="btn btn-secondary w-100 mb-4">
+                                Send Code
+                            </button>
+                        </form>
+
+                        <form id="restoreAccountForm">
+                            <div id="codeInputContainer" class="d-none mb-4">
+                                <label for="verificationCode" class="form-label">Enter one-time code sent to your
+                                    email:</label>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                    <input type="text" maxlength="1" class="form-control text-center"
+                                           style="width: 40px; font-size: 1.5rem" required>
+                                </div>
+                                <input type="hidden" id="fullCodeInput">
+                                <button data-mdb-ripple-init type="submit" id="confirmButton"
+                                        class="btn btn-primary w-100 mt-4" disabled>
+                                    Confirm
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="mt-4">
+                            <h5 class="fw-bold">Tips</h5>
+                            <ul class="list-unstyled text-muted">
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>
+                                    Check your spam folder if you don’t receive the code immediately.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
