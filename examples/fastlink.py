@@ -10,7 +10,7 @@ from examples.config import settings
 
 app = FastAPI()
 fastid = FastLink(
-    ProviderMeta(server_url="http://localhost:8012"),
+    ProviderMeta(server_url="http://localhost:8012", scope=["openid"]),
     settings.client_id,
     settings.client_secret,
     "http://localhost:8000/callback",
@@ -19,12 +19,14 @@ fastid = FastLink(
 
 @app.get("/login")
 async def login() -> Any:
-    url = await fastid.login_url()
-    return RedirectResponse(url=url)
+    async with fastid:
+        url = await fastid.login_url()
+        return RedirectResponse(url=url)
 
 
 @app.get("/callback")
 async def oauth_callback(callback: Annotated[OAuth2Callback, Depends()]) -> Any:
-    await fastid.login(callback)
-    user = await fastid.userinfo()
-    return JSONResponse(content=user)
+    async with fastid:
+        await fastid.login(callback)
+        user = await fastid.userinfo()
+        return JSONResponse(content=user)
