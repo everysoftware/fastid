@@ -9,10 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from fastid.database.base import Entity
 
 if TYPE_CHECKING:
-    from fastlink.schemas import OpenIDBearer
-
     from fastid.auth.models import User
     from fastid.database.utils import UUIDv7
+    from fastid.oauth.schemas import OpenIDBearer
 
 
 class OAuthAccount(Entity):

@@ -1,22 +1,22 @@
 from collections.abc import Callable, MutableMapping
 
-from fastlink import HttpxClient
+from fastlink import SSOBase
 
 from fastid.oauth.exceptions import OAuthProviderDisabledError, OAuthProviderNotFoundError
-from fastid.oauth.schemas import ProviderMeta, RegistryMeta
+from fastid.oauth.schemas import SSOMeta, SSORegistryMeta
 
 
-class ProviderRegistry:  # pragma: nocover
+class SSORegistry:  # pragma: nocover
     def __init__(
         self,
         *,
         base_authorization_url: str,
         base_revoke_url: str,
     ) -> None:
-        self.metadata = RegistryMeta()
+        self.metadata = SSORegistryMeta()
         self.base_authorization_url = base_authorization_url
         self.base_revoke_url = base_revoke_url
-        self._providers: MutableMapping[str, Callable[[], HttpxClient]] = {}
+        self._providers: MutableMapping[str, Callable[[], SSOBase]] = {}
 
     def provider(
         self,
@@ -26,11 +26,11 @@ class ProviderRegistry:  # pragma: nocover
         icon: str,
         color: str,
         enabled: bool = True,
-    ) -> Callable[[Callable[[], HttpxClient]], Callable[[], HttpxClient]]:
+    ) -> Callable[[Callable[[], SSOBase]], Callable[[], SSOBase]]:
         def wrapper(
-            factory: Callable[[], HttpxClient],
-        ) -> Callable[[], HttpxClient]:
-            meta = ProviderMeta(
+            factory: Callable[[], SSOBase],
+        ) -> Callable[[], SSOBase]:
+            meta = SSOMeta(
                 name=name,
                 title=title,
                 icon=icon,
@@ -45,7 +45,7 @@ class ProviderRegistry:  # pragma: nocover
 
         return wrapper
 
-    def get(self, name: str) -> HttpxClient:
+    def get(self, name: str) -> SSOBase:
         if name not in self.metadata.providers:
             raise OAuthProviderNotFoundError
         if not self.metadata.providers[name].enabled:

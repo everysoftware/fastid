@@ -12,10 +12,9 @@ from fastid.oauth.config import telegram_settings
 from fastid.security.crypto import crypt_ctx
 
 if TYPE_CHECKING:
-    from fastlink.schemas import OpenIDBearer
-
     from fastid.auth.schemas import UserCreate
     from fastid.oauth.models import OAuthAccount
+    from fastid.oauth.schemas import OpenIDBearer
 
 NotificationMethod = Literal["email", "telegram"]
 

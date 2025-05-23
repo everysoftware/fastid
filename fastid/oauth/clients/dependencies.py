@@ -1,10 +1,10 @@
 from typing import Annotated
 
 from fastapi import Depends
-from fastlink import GoogleOAuth, TelegramAuth, YandexOAuth
+from fastlink import GoogleSSO, TelegramSSO, YandexSSO
 
 from fastid.core.config import main_settings
-from fastid.oauth.clients.registry import ProviderRegistry
+from fastid.oauth.clients.registry import SSORegistry
 from fastid.oauth.config import (
     google_settings,
     oauth_settings,
@@ -12,7 +12,7 @@ from fastid.oauth.config import (
     yandex_settings,
 )
 
-registry = ProviderRegistry(
+registry = SSORegistry(
     base_authorization_url=oauth_settings.base_authorization_url,
     base_revoke_url=oauth_settings.base_revoke_url,
 )
@@ -25,8 +25,8 @@ registry = ProviderRegistry(
     color="#F44336",
     enabled=google_settings.enabled,
 )
-def get_google() -> GoogleOAuth:
-    return GoogleOAuth(
+def get_google_sso() -> GoogleSSO:
+    return GoogleSSO(
         google_settings.client_id,
         google_settings.client_secret,
         f"{oauth_settings.base_redirect_url}/google",
@@ -40,10 +40,11 @@ def get_google() -> GoogleOAuth:
     color="#03A9F4",
     enabled=telegram_settings.enabled,
 )
-def get_telegram() -> TelegramAuth:
-    return TelegramAuth(
+def get_telegram_sso() -> TelegramSSO:
+    return TelegramSSO(
         telegram_settings.bot_token,
-        redirect_uri=f"{main_settings.api_url}/oauth/redirect/telegram",
+        f"{main_settings.api_url}/oauth/redirect/telegram",
+        f"{main_settings.api_url}/oauth/callback/telegram",
     )
 
 
@@ -54,16 +55,16 @@ def get_telegram() -> TelegramAuth:
     color="#EA4335",
     enabled=yandex_settings.enabled,
 )
-def get_yandex() -> YandexOAuth:
-    return YandexOAuth(
+def get_yandex_sso() -> YandexSSO:
+    return YandexSSO(
         yandex_settings.client_id,
         yandex_settings.client_secret,
         f"{oauth_settings.base_redirect_url}/yandex",
     )
 
 
-def get_registry() -> ProviderRegistry:
+def get_registry() -> SSORegistry:
     return registry
 
 
-RegistryDep = Annotated[ProviderRegistry, Depends(get_registry)]
+RegistryDep = Annotated[SSORegistry, Depends(get_registry)]

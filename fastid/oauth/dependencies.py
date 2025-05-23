@@ -11,11 +11,11 @@ from fastid.oauth.use_cases import OAuthUseCases
 OAuthAccountsDep = Annotated[OAuthUseCases, Depends()]
 
 
-def valid_callback(provider: str, request: Request) -> OAuth2Callback | TelegramCallback:
+def valid_callback(request: Request) -> OAuth2Callback:
     log.info("OAuth callback received: request_url=%s", str(request.url))
-    callback: OAuth2Callback | TelegramCallback
-    if provider != "telegram":
-        callback = OAuth2Callback.model_validate(request.query_params)
-    else:
-        callback = TelegramCallback.model_validate(request.query_params)
-    return callback
+    return OAuth2Callback.model_validate(request.query_params)
+
+
+def valid_telegram_callback(request: Request) -> TelegramCallback:
+    log.info("OAuth callback received: request_url=%s", str(request.url))
+    return TelegramCallback.model_validate(request.query_params)

@@ -1,13 +1,14 @@
 from typing import Any
 
 from faker import Faker
-from fastlink.schemas import OAuth2Callback, OpenID, OpenIDBearer, TokenResponse
+from fastlink.schemas import OAuth2Callback, OpenID, TokenResponse
 from fastlink.telegram.schemas import TelegramCallback
 from fastlink.telegram.utils import compute_hmac_sha256
 
 from fastid.apps.schemas import AppCreate, AppUpdate
 from fastid.auth.schemas import UserCreate, UserUpdate
 from fastid.oauth.config import telegram_settings
+from fastid.oauth.schemas import OpenIDBearer
 from fastid.security.crypto import crypt_ctx
 from tests.utils.auth import generate_random_state
 
@@ -71,26 +72,30 @@ OAUTH_TOKEN_RESPONSE = TokenResponse(
 )
 
 
-def openid_factory(provider: str, **kwargs: Any) -> OpenID:
+def openid_factory() -> OpenID:
     return OpenID(
         id=str(faker.random_number(digits=10)),
-        provider=provider,
         first_name=faker.first_name(),
         last_name=faker.last_name(),
         email=faker.email(),
         picture=faker.image_url(),
-        **kwargs,
     )
 
 
-GOOGLE_OPENID = openid_factory("google")
-YANDEX_OPENID = openid_factory("yandex")
-TELEGRAM_OPENID = openid_factory("telegram")
+GOOGLE_OPENID = openid_factory()
+YANDEX_OPENID = openid_factory()
+TELEGRAM_OPENID = openid_factory()
 TELEGRAM_OPENID.email = None
 
-GOOGLE_OPENID_BEARER = OpenIDBearer(**GOOGLE_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump())
-YANDEX_OPENID_BEARER = OpenIDBearer(**YANDEX_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump())
-TELEGRAM_OPENID_BEARER = OpenIDBearer(**TELEGRAM_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump())
+GOOGLE_OPENID_BEARER = OpenIDBearer(
+    provider="google", **GOOGLE_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump()
+)
+YANDEX_OPENID_BEARER = OpenIDBearer(
+    provider="yandex", **YANDEX_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump()
+)
+TELEGRAM_OPENID_BEARER = OpenIDBearer(
+    provider="telegram", **TELEGRAM_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump()
+)
 
 
 class MockError(Exception):

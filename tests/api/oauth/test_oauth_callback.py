@@ -15,8 +15,8 @@ async def test_oauth_callback_authorize(client: AsyncClient, provider: str, open
     authorize_mock = AsyncMock(return_value=mocks.OAUTH_TOKEN_RESPONSE)
     userinfo_mock = AsyncMock(return_value=openid)
     with (
-        patch("fastlink.HttpxClient.authorize", new=authorize_mock),
-        patch("fastlink.HttpxClient.userinfo", new=userinfo_mock),
+        patch("fastlink.SSOBase.login", new=authorize_mock),
+        patch("fastlink.SSOBase.openid", new=userinfo_mock),
     ):
         response = await client.get(f"/oauth/callback/{provider}", params=params)
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
@@ -32,8 +32,8 @@ async def test_oauth_callback_authorize_email_exists(
     authorize_mock = AsyncMock(return_value=mocks.OAUTH_TOKEN_RESPONSE)
     userinfo_mock = AsyncMock(return_value=openid)
     with (
-        patch("fastlink.HttpxClient.authorize", new=authorize_mock),
-        patch("fastlink.HttpxClient.userinfo", new=userinfo_mock),
+        patch("fastlink.SSOBase.login", new=authorize_mock),
+        patch("fastlink.SSOBase.openid", new=userinfo_mock),
     ):
         response = await client.get(f"/oauth/callback/{provider}", params=params)
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
@@ -47,8 +47,8 @@ async def test_oauth_callback_connect(
     authorize_mock = AsyncMock(return_value=mocks.OAUTH_TOKEN_RESPONSE)
     userinfo_mock = AsyncMock(return_value=openid)
     with (
-        patch("fastlink.HttpxClient.authorize", new=authorize_mock),
-        patch("fastlink.HttpxClient.userinfo", new=userinfo_mock),
+        patch("fastlink.SSOBase.login", new=authorize_mock),
+        patch("fastlink.SSOBase.openid", new=userinfo_mock),
     ):
         response = await client.get(
             f"/oauth/callback/{provider}", headers={"Authorization": f"Bearer {user_token.access_token}"}, params=params
@@ -64,8 +64,8 @@ async def test_oauth_callback_double_connect(
     authorize_mock = AsyncMock(return_value=mocks.OAUTH_TOKEN_RESPONSE)
     userinfo_mock = AsyncMock(return_value=openid)
     with (
-        patch("fastlink.HttpxClient.authorize", new=authorize_mock),
-        patch("fastlink.HttpxClient.userinfo", new=userinfo_mock),
+        patch("fastlink.SSOBase.login", new=authorize_mock),
+        patch("fastlink.SSOBase.openid", new=userinfo_mock),
     ):
         response = await client.get(
             f"/oauth/callback/{provider}", headers={"Authorization": f"Bearer {user_token.access_token}"}, params=params
@@ -83,8 +83,8 @@ async def test_telegram_callback_register(client: AsyncClient) -> None:
     authorize_mock = AsyncMock(return_value=mocks.OAUTH_TOKEN_RESPONSE)
     userinfo_mock = AsyncMock(return_value=mocks.TELEGRAM_OPENID)
     with (
-        patch("fastlink.TelegramAuth.authorize", new=authorize_mock),
-        patch("fastlink.TelegramAuth.userinfo", new=userinfo_mock),
+        patch("fastlink.TelegramSSO.login", new=authorize_mock),
+        patch("fastlink.TelegramSSO.openid", new=userinfo_mock),
     ):
         response = await client.get(
             "/oauth/callback/telegram",
@@ -98,8 +98,8 @@ async def test_telegram_callback_connect(client: AsyncClient, user_token: TokenR
     authorize_mock = AsyncMock(return_value=mocks.OAUTH_TOKEN_RESPONSE)
     userinfo_mock = AsyncMock(return_value=mocks.TELEGRAM_OPENID)
     with (
-        patch("fastlink.TelegramAuth.authorize", new=authorize_mock),
-        patch("fastlink.TelegramAuth.userinfo", new=userinfo_mock),
+        patch("fastlink.TelegramSSO.login", new=authorize_mock),
+        patch("fastlink.TelegramSSO.openid", new=userinfo_mock),
     ):
         response = await client.get(
             "/oauth/callback/telegram",

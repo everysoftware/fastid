@@ -1,11 +1,12 @@
 import pytest
-from fastlink.schemas import OpenIDBearer, TokenResponse
+from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
 from fastid.auth.schemas import UserDTO
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.oauth.models import OAuthAccount
+from fastid.oauth.schemas import OpenIDBearer
 from tests import mocks
 
 

@@ -6,7 +6,7 @@ from fastid.notify.clients.base import NotificationClient
 from fastid.notify.clients.schemas import Notification
 
 
-class TelegramClient(NotificationClient):
+class TelegramNotificationClient(NotificationClient):
     def __init__(self, bot: Bot) -> None:
         self._bot = bot
 

@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from fastapi import Depends
 
 from fastid.notify.clients.smtp import MailClient
-from fastid.notify.clients.telegram import TelegramClient
+from fastid.notify.clients.telegram import TelegramNotificationClient
 from fastid.notify.config import notify_settings
 from fastid.oauth.config import telegram_settings
 
@@ -30,10 +30,10 @@ def get_bot() -> Bot:
     return Bot(telegram_settings.bot_token, default=DefaultBotProperties(parse_mode="Markdown"))
 
 
-async def get_telegram(bot: Annotated[Bot, Depends(get_bot)]) -> AsyncIterator[TelegramClient]:
-    async with TelegramClient(bot) as telegram:
+async def get_telegram_nc(bot: Annotated[Bot, Depends(get_bot)]) -> AsyncIterator[TelegramNotificationClient]:
+    async with TelegramNotificationClient(bot) as telegram:
         yield telegram
 
 
 MailDep = Annotated[MailClient, Depends(get_mail)]
-TelegramDep = Annotated[TelegramClient, Depends(get_telegram)]
+TelegramDep = Annotated[TelegramNotificationClient, Depends(get_telegram_nc)]
