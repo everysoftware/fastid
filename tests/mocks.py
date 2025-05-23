@@ -2,7 +2,7 @@ from typing import Any
 
 from faker import Faker
 from fastlink.schemas import OAuth2Callback, OpenID, TokenResponse
-from fastlink.telegram.schemas import TelegramCallback
+from fastlink.telegram.schemas import TelegramCallback, TelegramWidget
 from fastlink.telegram.utils import compute_hmac_sha256
 
 from fastid.apps.schemas import AppCreate, AppUpdate
@@ -96,6 +96,7 @@ YANDEX_OPENID_BEARER = OpenIDBearer(
 TELEGRAM_OPENID_BEARER = OpenIDBearer(
     provider="telegram", **TELEGRAM_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump()
 )
+TELEGRAM_WIDGET = TelegramWidget(bot_username=faker.user_name(), callback_url=faker.url())
 
 
 class MockError(Exception):
