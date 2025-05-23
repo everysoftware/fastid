@@ -9,8 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("sendCodeForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("newEmail").value;
-        const params = {new_email: email};
-        const response = await profileClient.post("/otp/send?action=change-email", params);
+        const params = {action: "change-email", email: email};
+        const response = await profileClient.post("/otp/send", params);
         if (response.ok) {
             codeInputContainer.classList.remove("d-none");
             confirmButton.disabled = false;

@@ -9,6 +9,7 @@ from fastid.auth.schemas import (
     UserDTO,
     UserUpdate,
 )
+from fastid.notify.dependencies import NotifyDep
 from fastid.profile.dependencies import ProfilesDep
 
 router = APIRouter(tags=["Users"])
@@ -28,7 +29,8 @@ async def patch(
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def change_email(service: ProfilesDep, user: UserVTDep, dto: UserChangeEmail) -> Any:
+async def change_email(service: ProfilesDep, notify_service: NotifyDep, user: UserVTDep, dto: UserChangeEmail) -> Any:
+    await notify_service.validate_otp(user, dto.code)
     return await service.change_email(user, dto)
 
 

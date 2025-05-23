@@ -55,12 +55,20 @@ class NotificationUseCases(UseCase):
             case _:  # pragma: nocover
                 raise ValueError(f"Unknown method: {method}")
 
+    async def validate_otp(self, user: User, code: str) -> None:
+        try:
+            user_code = await self.cache.pop(f"otp:users:{user.id}")
+        except KeyNotFoundError as e:
+            raise WrongCodeError from e
+        if not secrets.compare_digest(user_code, code):
+            raise WrongCodeError
+
     async def verify_otp(self, user: User | None, dto: VerifyOTPRequest) -> str:
         if dto.action == UnsafeAction.recover_password:
             assert dto.email is not None
             user = await self._get_user_by_email(dto.email)
         assert user is not None
-        await self._validate_otp(user, dto.code)
+        await self.validate_otp(user, dto.code)
         return jwt_backend.create("verify", JWTPayload(sub=str(user.id)))
 
     async def _get_user_by_email(self, email: str) -> User:
@@ -77,11 +85,3 @@ class NotificationUseCases(UseCase):
             expire=auth_settings.verification_code_expires_in,
         )
         return code
-
-    async def _validate_otp(self, user: User, code: str) -> None:
-        try:
-            user_code = await self.cache.pop(f"otp:users:{user.id}")
-        except KeyNotFoundError as e:
-            raise WrongCodeError from e
-        if not secrets.compare_digest(user_code, code):
-            raise WrongCodeError
