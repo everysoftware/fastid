@@ -4,7 +4,6 @@ from fastapi import Depends, FastAPI
 from fastapi.responses import RedirectResponse
 from fastlink import FastLink
 from fastlink.schemas import OAuth2Callback, ProviderMeta
-from starlette.responses import JSONResponse
 
 from examples.config import settings
 
@@ -25,8 +24,6 @@ async def login() -> Any:
 
 
 @app.get("/callback")
-async def oauth_callback(callback: Annotated[OAuth2Callback, Depends()]) -> Any:
+async def callback(call: Annotated[OAuth2Callback, Depends()]) -> Any:
     async with fastid:
-        await fastid.login(callback)
-        user = await fastid.userinfo()
-        return JSONResponse(content=user)
+        return await fastid.callback_raw(call)

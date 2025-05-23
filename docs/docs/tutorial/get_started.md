@@ -1,5 +1,7 @@
 # Get Started
 
+## Create App
+
 To start using FastID, you need to [create](http://localhost:8012/admin/app/create) an application in the admin panel.
 This will allow you to use FastID for
 authentication in your application.
@@ -9,15 +11,17 @@ authentication in your application.
 Once you have created an application, you can use the standard OAuth 2.0 flow to authenticate users. FastID supports the
 authorization code flow, which is the most secure and recommended way to authenticate users.
 
+## HTTPX example
+
 Here is an example of how to use FastID for authentication in a Python application using the
 [FastAPI](https://fastapi.tiangolo.com/) framework and the [httpx](https://www.python-httpx.org/) library.
 
 ```python
-from typing import Any, Annotated
+from typing import Any
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import FastAPI, Response, Request, Depends, HTTPException, status
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 
 FASTID_URL = "http://localhost:8012"
@@ -33,6 +37,7 @@ def login(request: Request) -> Any:
         "response_type": "code",
         "client_id": FASTID_CLIENT_ID,
         "redirect_uri": request.url_for("callback"),
+        "scope": "openid",
     }
     url = f"{FASTID_URL}/authorize?{urlencode(params)}"
     return RedirectResponse(url=url)
@@ -40,7 +45,7 @@ def login(request: Request) -> Any:
 
 @app.get("/callback")
 def callback(code: str) -> Any:
-    token_data = httpx.post(
+    response = httpx.post(
         f"{FASTID_URL}/api/v1/token",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
@@ -50,35 +55,56 @@ def callback(code: str) -> Any:
             "code": code,
         },
     )
-    token = token_data.json()
-    response = Response(content="You are now logged in!")
-    response.set_cookie("access_token", token["access_token"])
-    return response
-
-
-def current_user(request: Request) -> dict[str, Any]:
-    token = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "No access token")
+    token = response.json()["access_token"]
     response = httpx.get(
         f"{FASTID_URL}/api/v1/userinfo",
         headers={"Authorization": f"Bearer {token}"},
     )
     return response.json()
 
-
-@app.get("/test")
-def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
-    return user
 ```
 
-In this example, we define three routes:
+## FastLink example
+
+You can also use the [FastLink](https://github.com/everysoftware/fastlink) as a faster and safer way:
+
+```python
+from typing import Annotated, Any
+
+from fastapi import Depends, FastAPI
+from fastapi.responses import RedirectResponse
+from fastlink import FastLink
+from fastlink.schemas import OAuth2Callback, ProviderMeta
+
+app = FastAPI()
+fastid = FastLink(
+   ProviderMeta(server_url="http://localhost:8012", scope=["openid"]),
+   ...,  # Client ID
+   ...,  # Client Secret
+   "http://localhost:8000/callback",
+)
+
+
+@app.get("/login")
+async def login() -> Any:
+   async with fastid:
+      url = await fastid.login_url()
+      return RedirectResponse(url=url)
+
+
+@app.get("/callback")
+async def callback(call: Annotated[OAuth2Callback, Depends()]) -> Any:
+   async with fastid:
+      return await fastid.callback_raw(call)
+```
+
+## Results
+
+In this example, we define two routes:
 
 1. `/login`: Redirects the user to the FastID authorization page.
 2. `/callback`: Handles the callback from FastID after the user has logged in. It exchanges the authorization code for
-   an access token and sets it as a cookie.
-3. `/test`: A protected route that requires the user to be logged in. It retrieves the user's information from FastID
-   using the access token.
+   an access token and retrieves the user's information.
 
 Run the FastAPI application:
 
@@ -87,7 +113,6 @@ fastapi dev examples/httpx.py
 ```
 
 Visit [http://localhost:8000/login](http://localhost:8000/login) to start the authentication process. After logging in,
-you will be redirected to the `/callback` route, where the access token will be set as a cookie. You can then
-access the `/test` route to retrieve the user's information.
+you will be redirected to the `/callback` route, where you can see the user's information.
 
-![Sign In](../img/test_response.png)
+![Test Response](../img/test_response.png)

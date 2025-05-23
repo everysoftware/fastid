@@ -1,6 +1,6 @@
 from collections.abc import MutableMapping, Sequence
 
-from fastlink.schemas import OpenID, ProviderMeta, TokenResponse
+from fastlink.schemas import DiscoveryDocument, OpenID, ProviderMeta, TokenResponse
 from pydantic import Field
 
 from fastid.core.schemas import BaseModel
@@ -36,6 +36,7 @@ class OAuthAccountDTO(EntityDTO, OAuthAccountBase):
 
 class InspectProviderResponse(BaseModel):
     meta: ProviderMeta
+    discovery: DiscoveryDocument
     login_url: str
 
 
