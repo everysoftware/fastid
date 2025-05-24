@@ -34,6 +34,7 @@ class OAuthUseCases(UseCase):
             login_url = await session.login_url()
             return InspectProviderResponse(
                 meta=session.meta,
+                discovery=session.discovery,
                 login_url=login_url,
             )
 

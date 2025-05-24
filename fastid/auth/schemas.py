@@ -37,6 +37,7 @@ class UserUpdate(BaseModel):
 
 class UserChangeEmail(BaseModel):
     new_email: str
+    code: str
 
 
 class UserChangePassword(BaseModel):

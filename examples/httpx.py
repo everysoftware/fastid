@@ -1,8 +1,8 @@
-from typing import Annotated, Any
+from typing import Any
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 
 from examples.config import settings
@@ -16,6 +16,7 @@ def login(request: Request) -> Any:
         "response_type": "code",
         "client_id": settings.client_id,
         "redirect_uri": request.url_for("callback"),
+        "scope": "openid",
     }
     url = f"{settings.fastid_url}/authorize?{urlencode(params)}"
     return RedirectResponse(url=url)
@@ -23,7 +24,7 @@ def login(request: Request) -> Any:
 
 @app.get("/callback")
 def callback(code: str) -> Any:
-    token_data = httpx.post(
+    response = httpx.post(
         f"{settings.fastid_url}/api/v1/token",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
@@ -33,23 +34,9 @@ def callback(code: str) -> Any:
             "code": code,
         },
     )
-    token = token_data.json()
-    response = Response(content="You are now logged in!")
-    response.set_cookie("access_token", token["access_token"])
-    return response
-
-
-def current_user(request: Request) -> dict[str, Any]:
-    token = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "No access token")
+    token = response.json()["access_token"]
     response = httpx.get(
         f"{settings.fastid_url}/api/v1/userinfo",
         headers={"Authorization": f"Bearer {token}"},
     )
-    return response.json()  # type: ignore[no-any-return]
-
-
-@app.get("/test")
-def test(user: Annotated[dict[str, Any], Depends(current_user)]) -> Any:
-    return user
+    return response.json()

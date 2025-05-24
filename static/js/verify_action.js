@@ -3,7 +3,9 @@
 import {profileClient} from "./dependencies.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    await profileClient.post("/notify/otp");
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    await profileClient.post(`/otp/send?action=${action}`);
     document.getElementById("nextButton").addEventListener("click", async (e) => {
         e.preventDefault();
         const code = document.getElementById("fullCodeInput").value;
@@ -12,9 +14,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
         const body = {
+            action: action,
             code: code,
         };
-        const response = await profileClient.post("/notify/verify-token", {}, body);
+        const response = await profileClient.post("/otp/verify", {}, body);
         if (response.ok) {
             location.reload();
         }

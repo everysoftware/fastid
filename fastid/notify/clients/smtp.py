@@ -32,8 +32,7 @@ class MailClient(NotificationClient):
         self._client.send_message(msg)
 
     async def __aenter__(self) -> Self:
-        self._client.__enter__()
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        self._client.__exit__(exc_type, exc_val, exc_tb)
+        pass

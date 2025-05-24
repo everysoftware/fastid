@@ -5,7 +5,7 @@ from fastlink.exceptions import FastLinkError
 from starlette.requests import Request
 
 from fastid.api.exceptions import ClientError, UnauthorizedError
-from fastid.auth.dependencies import AuthDep, cookie_transport, verify_token_transport
+from fastid.auth.dependencies import AuthDep, cookie_transport, vt_transport
 from fastid.auth.grants import AuthorizationCodeGrant
 from fastid.auth.models import User
 from fastid.auth.schemas import OAuth2ConsentRequest
@@ -14,7 +14,7 @@ from fastid.security.jwt import (
 )
 
 
-async def get_optional_user(
+async def get_user_or_none(
     auth: AuthDep,
     request: Request,
 ) -> User | None:
@@ -40,10 +40,10 @@ async def get_user(
         raise UnauthorizedError from e
 
 
-def action_verified(
+def is_action_verified(
     request: Request,
 ) -> bool:
-    token = verify_token_transport.get_token(request)
+    token = vt_transport.get_token(request)
     if token is None:
         return False
     try:

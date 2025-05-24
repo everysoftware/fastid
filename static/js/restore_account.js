@@ -8,8 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("sendCodeForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("newEmail").value;
-        const params = {action: "change-email", email: email};
+        const email = document.getElementById("email").value;
+        const params = {action: "recover-password", email: email};
         const response = await profileClient.post("/otp/send", params);
         if (response.ok) {
             codeInputContainer.classList.remove("d-none");
@@ -17,15 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.getElementById("emailChangeForm").addEventListener("submit", async (e) => {
+    document.getElementById("restoreAccountForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("newEmail").value;
+        const email = document.getElementById("email").value;
         const code = document.getElementById("fullCodeInput").value;
-        const body = {code: code, new_email: email};
-        const response = await profileClient.patch("/users/me/email", {}, body);
+        const body = {action: "recover-password", code: code, email: email};
+        const response = await profileClient.post("/otp/verify", {}, body);
         if (response.ok) {
-            alert("Email updated successfully!");
-            location.assign("/profile");
+            location.assign("/verify-action?action=change-password");
         }
     });
 });

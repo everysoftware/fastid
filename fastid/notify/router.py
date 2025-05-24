@@ -3,34 +3,31 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Depends
 from starlette.responses import JSONResponse
 
-from fastid.auth.dependencies import UserDep, verify_token_transport
+from fastid.auth.dependencies import UserOrNoneDep, vt_transport
 from fastid.notify.dependencies import NotifyDep
-from fastid.notify.schemas import OTPRequest, VerificationNotification, VerifyTokenRequest
+from fastid.notify.schemas import SendOTPRequest, VerifyOTPRequest
 
-router = APIRouter(prefix="/notify", tags=["Notify"])
+router = APIRouter()
 
 
-@router.post("/otp")
-def otp_request(
-    user: UserDep,
-    service: NotifyDep,
-    dto: Annotated[OTPRequest, Depends()],
+@router.post("/otp/send", tags=["OTP"])
+async def send_otp(
+    user: UserOrNoneDep,
+    notify_service: NotifyDep,
+    dto: Annotated[SendOTPRequest, Depends()],
     background: BackgroundTasks,
 ) -> None:
-    if dto.new_email is None:
-        notification = VerificationNotification(user)
-    else:
-        notification = VerificationNotification(user, method="email", new_email=dto.new_email)
-    background.add_task(service.push_code, notification)
+    notification = await notify_service.get_otp_notification(user, dto)
+    background.add_task(notify_service.push, notification)
 
 
-@router.post("/verify-token")
-async def verify_token_request(
-    user: UserDep,
-    service: NotifyDep,
-    dto: VerifyTokenRequest,
+@router.post("/otp/verify", tags=["OTP"])
+async def verify_otp(
+    user: UserOrNoneDep,
+    notify_service: NotifyDep,
+    dto: VerifyOTPRequest,
 ) -> JSONResponse:
-    token = await service.authorize_with_code(user, dto)
+    token = await notify_service.verify_otp(user, dto)
     response = JSONResponse(content={"verify_token": token})
-    verify_token_transport.set_token(response, token)
+    vt_transport.set_token(response, token)
     return response

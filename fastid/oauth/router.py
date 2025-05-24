@@ -6,14 +6,15 @@ from fastlink import TelegramSSO
 from fastlink.schemas import OAuth2Callback
 from fastlink.telegram.schemas import TelegramCallback
 from starlette import status
+from starlette.requests import Request
 from starlette.responses import HTMLResponse
 
 from fastid.auth.config import auth_settings
-from fastid.auth.dependencies import UserDep, cookie_transport, get_optional_user
-from fastid.auth.models import User
+from fastid.auth.dependencies import UserDep, UserOrNoneDep, cookie_transport
+from fastid.core.dependencies import log
 from fastid.database.schemas import PageDTO
 from fastid.oauth.clients.dependencies import get_telegram_sso
-from fastid.oauth.dependencies import OAuthAccountsDep, valid_callback, valid_telegram_callback
+from fastid.oauth.dependencies import OAuthAccountsDep
 from fastid.oauth.schemas import InspectProviderResponse, OAuthAccountDTO
 
 router = APIRouter(prefix="/oauth", tags=["OAuth"])
@@ -51,9 +52,11 @@ async def oauth_login(
 )
 async def telegram_callback(
     service: OAuthAccountsDep,
-    user: Annotated[User | None, Depends(get_optional_user)],
-    callback: Annotated[TelegramCallback, Depends(valid_telegram_callback)],
+    request: Request,
+    user: UserOrNoneDep,
+    callback: Annotated[TelegramCallback, Depends()],
 ) -> Any:
+    log.info("OAuth callback received: request_url=%s", str(request.url))
     response: Response = RedirectResponse(url=auth_settings.authorization_endpoint)
     if user is not None:
         await service.connect(user, "telegram", callback)
@@ -70,10 +73,12 @@ async def telegram_callback(
 )
 async def oauth_callback(
     service: OAuthAccountsDep,
-    user: Annotated[User | None, Depends(get_optional_user)],
+    request: Request,
+    user: UserOrNoneDep,
     provider: str,
-    callback: Annotated[OAuth2Callback, Depends(valid_callback)],
+    callback: Annotated[OAuth2Callback, Depends()],
 ) -> Any:
+    log.info("OAuth callback received: request_url=%s", str(request.url))
     response: Response = RedirectResponse(url=auth_settings.authorization_endpoint)
     if user is not None:
         await service.connect(user, provider, callback)
