@@ -29,6 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Passwords do not match.");
                 return;
             }
+            const passwordRegex = /^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,20})$/;
+            if (!passwordRegex.test(password)) {
+                alert("Password must be at least 8 characters long and include a number and a special character.");
+                return;
+            }
             const body = {
                 email: document.getElementById("email").value,
                 password: password,

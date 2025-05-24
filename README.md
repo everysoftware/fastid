@@ -72,8 +72,8 @@ make up
 FastID is available at [http://localhost:8012](http://localhost:8012):
 
 ![Sign In](img/signin.png)
-![Profile](img/profile.png)
-![Connections](img/connections.png)
+![Profile](img/profile1.png)
+![Connections](img/profile2.png)
 
 Admin panel is available at: [http://localhost:8012/admin](http://localhost:8012/admin):
 
@@ -90,7 +90,7 @@ To start using FastID, you need to [create](http://localhost:8012/admin/app/crea
 This will allow you to use FastID for
 authentication in your application.
 
-![Sign In](img/create_app.png)
+![Create app](img/admin_create_app.png)
 
 Once you have created an application, you can use the standard OAuth 2.0 flow to authenticate users. FastID supports the
 authorization code flow, which is the most secure and recommended way to authenticate users.
@@ -143,7 +143,6 @@ def callback(code: str) -> Any:
         headers={"Authorization": f"Bearer {token}"},
     )
     return response.json()
-
 ```
 
 In this example, we define two routes:
@@ -158,9 +157,13 @@ Run the FastAPI application:
 fastapi dev examples/httpx.py
 ```
 
-Visit [http://localhost:8000/login](http://localhost:8000/login) to start the authentication process. After logging in,
-you will be redirected to the `/callback` route, where you can see the user's information.
+Visit [http://localhost:8000/login](http://localhost:8000/login) to start the authentication process. You will be
+redirected to the FastID login page, where you can log in with your credentials or use a third-party provider.
 
-![Test Response](img/test_response.png)
+![Login](img/oauth_consent.png)
+
+After logging in, you will be redirected to the `/callback` route, where you can access the user's information.
+
+![Test Response](img/oauth_callback.png)
 
 **Made with ❤️**

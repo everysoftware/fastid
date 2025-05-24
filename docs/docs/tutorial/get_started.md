@@ -6,12 +6,12 @@ To start using FastID, you need to [create](http://localhost:8012/admin/app/crea
 This will allow you to use FastID for
 authentication in your application.
 
-![Sign In](../img/create_app.png)
+![Sign In](../img/admin_create_app.png)
 
 Once you have created an application, you can use the standard OAuth 2.0 flow to authenticate users. FastID supports the
 authorization code flow, which is the most secure and recommended way to authenticate users.
 
-## HTTPX example
+## HTTPX Example
 
 Here is an example of how to use FastID for authentication in a Python application using the
 [FastAPI](https://fastapi.tiangolo.com/) framework and the [httpx](https://www.python-httpx.org/) library.
@@ -64,7 +64,7 @@ def callback(code: str) -> Any:
 
 ```
 
-## FastLink example
+## FastLink Example
 
 You can also use the [FastLink](https://github.com/everysoftware/fastlink) as a faster and safer way:
 
@@ -78,24 +78,24 @@ from fastlink.schemas import OAuth2Callback, ProviderMeta
 
 app = FastAPI()
 fastid = FastLink(
-   ProviderMeta(server_url="http://localhost:8012", scope=["openid"]),
-   ...,  # Client ID
-   ...,  # Client Secret
-   "http://localhost:8000/callback",
+    ProviderMeta(server_url="http://localhost:8012", scope=["openid"]),
+    ...,  # Client ID
+    ...,  # Client Secret
+    "http://localhost:8000/callback",
 )
 
 
 @app.get("/login")
 async def login() -> Any:
-   async with fastid:
-      url = await fastid.login_url()
-      return RedirectResponse(url=url)
+    async with fastid:
+        url = await fastid.login_url()
+        return RedirectResponse(url=url)
 
 
 @app.get("/callback")
 async def callback(call: Annotated[OAuth2Callback, Depends()]) -> Any:
-   async with fastid:
-      return await fastid.callback_raw(call)
+    async with fastid:
+        return await fastid.callback_raw(call)
 ```
 
 ## Results
@@ -112,7 +112,11 @@ Run the FastAPI application:
 fastapi dev examples/httpx.py
 ```
 
-Visit [http://localhost:8000/login](http://localhost:8000/login) to start the authentication process. After logging in,
-you will be redirected to the `/callback` route, where you can see the user's information.
+Visit [http://localhost:8000/login](http://localhost:8000/login) to start the authentication process. You will be
+redirected to the FastID login page, where you can log in with your credentials or use a third-party provider.
 
-![Test Response](../img/test_response.png)
+![Login](../img/oauth_consent.png)
+
+After logging in, you will be redirected to the `/callback` route, where you can access the user's information.
+
+![Test Response](../img/oauth_callback.png)
