@@ -2,8 +2,9 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, status
 from fastlink.schemas import OAuth2Grant, TokenResponse
+from starlette.responses import Response
 
-from fastid.auth.dependencies import AuthDep, UserDep, cookie_transport
+from fastid.auth.dependencies import AuthDep, UserDep, cookie_transport, vt_transport
 from fastid.auth.exceptions import NotSupportedGrantError
 from fastid.auth.grants import (
     AuthorizationCodeGrant,
@@ -66,4 +67,6 @@ def me(user: UserDep) -> Any:
     status_code=status.HTTP_200_OK,
 )
 def logout() -> Any:
-    return cookie_transport.get_logout_response()
+    response = Response()
+    response = cookie_transport.delete_token(response)
+    return vt_transport.delete_token(response)
