@@ -106,13 +106,14 @@ def verify_action(
 @router.get("/change-password")
 def change_password(
     request: Request,
+    user: Annotated[User | None, Depends(get_user_or_none)],
     verified: Annotated[bool, Depends(is_action_verified)],
 ) -> Response:
     if not verified:
         return RedirectResponse(f"/verify-action?action={UnsafeAction.change_password}")
     return templates.TemplateResponse(
         "change-password.html",
-        {"request": request},
+        {"request": request, "user": user},
     )
 
 

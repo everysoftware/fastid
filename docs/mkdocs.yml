@@ -127,6 +127,7 @@ nav:
       - tutorial/get_started.md
       - tutorial/notifications.md
       - tutorial/social.md
+      - tutorial/observability.md
       - tutorial/api.md
 
 extra:
