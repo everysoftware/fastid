@@ -15,11 +15,11 @@ from fastid.plugins.obs.prometheus import PrometheusMiddleware
 
 class EndpointFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return record.getMessage().find("GET /metrics") == -1
+        return record.getMessage().find("GET /metrics") == -1 and record.getMessage().find("GET /api/v1/metrics") == -1
 
 
 class MetricsPlugin(Plugin):
-    plugin_name = "metrics"
+    name = "metrics"
 
     def __init__(self, app_name: str = "fastid") -> None:
         self.app_name = app_name

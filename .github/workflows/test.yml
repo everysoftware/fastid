@@ -61,7 +61,7 @@ jobs:
         run: |
           touch .env
           docker compose down -v --remove-orphans
-          docker compose up -d db redis
+          docker compose up -d fastid-db fastid-redis
           poetry run make certs
 
       - name: Run tests

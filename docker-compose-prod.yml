@@ -1,4 +1,4 @@
 services:
-  fastapi:
+  fastid-app:
     build:
       target: prod

@@ -9,7 +9,10 @@ from fastid.core.dependencies import log
 
 
 class MiniApp:
-    module_name = "unknown_module"
+    name = "unknown_app"
+
+    @abstractmethod
+    def create(self) -> FastAPI: ...
 
     @abstractmethod
     def install(self, app: FastAPI) -> None: ...
@@ -22,7 +25,8 @@ class MiniApp:
 
 
 class Plugin:
-    plugin_name: str = "unknown_plugin"
+    name: str = "unknown_plugin"
+    scope: Sequence[str] = ()
 
     @abstractmethod
     def install(self, app: FastAPI) -> None: ...
@@ -30,26 +34,29 @@ class Plugin:
 
 def app_factory(
     *,
-    title: str = "Unknown app",
-    mini_apps: Sequence[MiniApp] = (),
+    title: str = "FastID",
+    apps: Sequence[MiniApp] = (),
     **kwargs: Any,
 ) -> FastAPI:
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         # Startup tasks
-        for m in mini_apps:
+        for m in apps:
             await m.on_startup(_app)
         yield
         # Shutdown tasks
-        for m in mini_apps:
+        for m in apps:
             await m.on_shutdown(_app)
 
-    app = FastAPI(title=title, lifespan=lifespan, **kwargs)
-    for mini_app in mini_apps:
-        mini_app.install(app)
-    installed = [mini_app.module_name for mini_app in mini_apps]
-    log.info("Mini apps (%d): %s", len(installed), ", ".join(installed))
-    return app
+    master_app = FastAPI(title=title, lifespan=lifespan, **kwargs)
+
+    # Install apps
+    for app in apps:
+        app.install(master_app)
+    installed = [mini_app.name for mini_app in apps]
+    log.info("Apps (%d): %s", len(installed), ", ".join(installed))
+
+    return master_app
 
 
 class UseCase:
