@@ -7,7 +7,7 @@ from fastid.core.base import Plugin
 
 
 class CORSPlugin(Plugin):
-    plugin_name = "cors"
+    name = "cors"
 
     def __init__(
         self,

@@ -11,7 +11,7 @@ from fastid.dashboard.views import OAuthAccountAdmin, OAuthClientAdmin, UserAdmi
 
 
 class AdminMiniApp(MiniApp):
-    module_name = "admin"
+    name = "admin"
 
     def __init__(
         self,
@@ -23,10 +23,10 @@ class AdminMiniApp(MiniApp):
         self.base_url = base_url
         self.admin_kwargs = admin_kwargs
 
-    def install(self, app: FastAPI) -> None:
-        admin_app = FastAPI()
+    def create(self) -> FastAPI:
+        app = FastAPI()
         admin = Admin(
-            admin_app,
+            app,
             self.engine,
             base_url="/",
             authentication_backend=admin_auth,
@@ -35,5 +35,9 @@ class AdminMiniApp(MiniApp):
         admin.add_view(UserAdmin)
         admin.add_view(OAuthClientAdmin)
         admin.add_view(OAuthAccountAdmin)
+        return app
+
+    def install(self, app: FastAPI) -> None:
+        admin_app = self.create()
         app.mount(self.base_url, admin_app)
         app.extra["admin_app"] = admin_app

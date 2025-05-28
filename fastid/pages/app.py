@@ -8,19 +8,19 @@ from fastid.auth.config import auth_settings
 from fastid.core.base import MiniApp
 from fastid.oauth.clients.dependencies import registry
 from fastid.pages.exceptions import add_exception_handlers
-from fastid.pages.router import router as auth_router
+from fastid.pages.router import router as pages_router
 from fastid.pages.templating import templates
 
-routers = [auth_router]
+routers = [pages_router]
 
 
 class FrontendMiniApp(MiniApp):
-    module_name = "frontend"
+    name = "frontend"
 
     def __init__(
         self,
         *,
-        title: str = "Unnamed app",
+        title: str = "FastID Frontend",
         base_url: str = "/",
         static_url: str = "/static",
         favicon_url: str = "/static/assets/favicon.png",
@@ -34,25 +34,29 @@ class FrontendMiniApp(MiniApp):
         self.static_url = static_url
         self.fastapi_kwargs = fastapi_kwargs
 
+    def create(self) -> FastAPI:
+        self._set_templates_env()
+        app = FastAPI(title=self.title, **self.fastapi_kwargs)
+        add_exception_handlers(app)
+        app.add_middleware(
+            SessionMiddleware,
+            secret_key=auth_settings.jwt_private_key,
+            session_cookie="fastidsession",
+        )
+        main_router = APIRouter()
+        for router in routers:
+            main_router.include_router(router)
+        app.include_router(main_router)
+        return app
+
+    def install(self, app: FastAPI) -> None:
+        frontend_app = self.create()
+        app.mount(self.static_url, StaticFiles(directory="static"), name="static")
+        app.mount(self.base_url, frontend_app)
+        app.extra["frontend_app"] = frontend_app
+
     def _set_templates_env(self) -> None:
         templates.env.globals["app_title"] = self.title
         templates.env.globals["favicon_url"] = self.favicon_url
         templates.env.globals["logo_url"] = self.logo_url
         templates.env.globals["providers_meta"] = registry.metadata
-
-    def install(self, app: FastAPI) -> None:
-        self._set_templates_env()
-        frontend_app = FastAPI(title=self.title, **self.fastapi_kwargs)
-        add_exception_handlers(frontend_app)
-        frontend_app.add_middleware(
-            SessionMiddleware,
-            secret_key=auth_settings.jwt_private_key,
-            session_cookie="fastidsession",
-        )
-        app.mount(self.static_url, StaticFiles(directory="static"), name="static")
-        main_router = APIRouter()
-        for router in routers:
-            main_router.include_router(router)
-        frontend_app.include_router(main_router)
-        app.mount(self.base_url, frontend_app)
-        app.extra["frontend_app"] = frontend_app

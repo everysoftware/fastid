@@ -46,12 +46,12 @@ Instrument = Literal["logger", "httpx", "sqlalchemy"]
 
 
 class TracingPlugin(Plugin):
-    plugin_name = "tracing"
+    name = "tracing"
 
     def __init__(
         self,
         *,
-        app_name: str = "unnamed_app",
+        app_name: str = "fastid",
         export_url: str = "http://localhost:4317",
         instrument: Sequence[Instrument] = ("logger", "httpx"),
         **extra: Any,
