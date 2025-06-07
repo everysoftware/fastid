@@ -9,7 +9,7 @@ from examples.config import settings
 
 app = FastAPI()
 fastid = FastLink(
-    ProviderMeta(server_url="http://localhost:8012", scope=["openid"]),
+    ProviderMeta(server_url=settings.fastid_url, scope=["openid"]),
     settings.client_id,
     settings.client_secret,
     "http://localhost:8000/callback",
