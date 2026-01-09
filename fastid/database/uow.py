@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Self, cast
 
 from fastid.apps.repositories import AppRepository
 from fastid.auth.repositories import UserRepository
+from fastid.notify.repositories import EmailTemplateRepository, TelegramTemplateRepository
 from fastid.oauth.repositories import OAuthAccountRepository
 
 if TYPE_CHECKING:
@@ -18,6 +19,8 @@ class SQLAlchemyUOW:
     users: UserRepository
     oauth_accounts: OAuthAccountRepository
     apps: AppRepository
+    email_templates: EmailTemplateRepository
+    telegram_templates: TelegramTemplateRepository
 
     _session_factory: async_sessionmaker[AsyncSession]
     _session: AsyncSession
@@ -30,6 +33,8 @@ class SQLAlchemyUOW:
         self.users = UserRepository(self._session)
         self.oauth_accounts = OAuthAccountRepository(self._session)
         self.apps = AppRepository(self._session)
+        self.email_templates = EmailTemplateRepository(self._session)
+        self.telegram_templates = TelegramTemplateRepository(self._session)
 
     @property
     def is_active(self) -> bool:

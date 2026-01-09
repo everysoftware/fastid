@@ -1,6 +1,7 @@
 import pytest
 
 from fastid.auth.models import User
+from fastid.auth.schemas import Contact, ContactType
 
 
 @pytest.mark.parametrize(
@@ -23,16 +24,19 @@ def test_user_display_name_no_names() -> None:
 @pytest.mark.parametrize(
     ("user", "notification_method"),
     [
-        (User(email="user@example.com"), "email"),
-        (User(telegram_id=1), "telegram"),
-        (User(email="user@example.com", telegram_id=1), "telegram"),
+        (User(email="user@example.com"), Contact(type=ContactType.email, recipient={"email": "user@example.com"})),
+        (User(telegram_id=1), Contact(type=ContactType.telegram, recipient={"telegram_id": 1})),
+        (
+            User(email="user@example.com", telegram_id=1),
+            Contact(type=ContactType.telegram, recipient={"telegram_id": 1}),
+        ),
     ],
 )
-def test_user_notification_method(user: User, notification_method: str) -> None:
-    assert user.notification_method == notification_method
+def test_user_notification_method(user: User, contact: Contact) -> None:
+    assert user.find_priority_contact() == contact
 
 
 def test_user_notification_method_no_contacts() -> None:
     user = User()
     with pytest.raises(ValueError):  # noqa: PT011
-        _ = user.notification_method
+        _ = user.find_priority_contact()

@@ -8,7 +8,7 @@ from fastid.auth.dependencies import cookie_transport
 from fastid.auth.grants import AuthorizationCodeGrant
 from fastid.auth.models import User
 from fastid.auth.schemas import OAuth2ConsentRequest
-from fastid.notify.schemas import UnsafeAction
+from fastid.notify.schemas import UserAction
 from fastid.oauth.dependencies import OAuthAccountsDep
 from fastid.pages.dependencies import (
     get_user,
@@ -93,7 +93,7 @@ def restore_account(
 def verify_action(
     request: Request,
     verified: Annotated[bool, Depends(is_action_verified)],
-    action: UnsafeAction,
+    action: UserAction,
 ) -> Response:
     if verified:
         return RedirectResponse(f"/{action}")
@@ -110,7 +110,7 @@ def change_password(
     verified: Annotated[bool, Depends(is_action_verified)],
 ) -> Response:
     if not verified:
-        return RedirectResponse(f"/verify-action?action={UnsafeAction.change_password}")
+        return RedirectResponse(f"/verify-action?action={UserAction.change_password}")
     return templates.TemplateResponse(
         "change-password.html",
         {"request": request, "user": user},
@@ -124,7 +124,7 @@ def change_email(
     verified: Annotated[bool, Depends(is_action_verified)],
 ) -> Any:
     if not verified:
-        return RedirectResponse(f"/verify-action?action={UnsafeAction.change_email}")
+        return RedirectResponse(f"/verify-action?action={UserAction.change_email}")
     return templates.TemplateResponse(
         "change-email.html",
         {"request": request, "user": user},
@@ -138,7 +138,7 @@ def delete_account(
     verified: Annotated[bool, Depends(is_action_verified)],
 ) -> Response:
     if not verified:
-        return RedirectResponse(f"/verify-action?action={UnsafeAction.delete_account}")
+        return RedirectResponse(f"/verify-action?action={UserAction.delete_account}")
     return templates.TemplateResponse(
         "delete-account.html",
         {"request": request, "user": user},

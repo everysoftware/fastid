@@ -3,15 +3,15 @@ from typing import Any
 from fastapi import APIRouter, Depends
 from starlette import status
 
-from fastid.admin.router import router as admin_auth_router
 from fastid.api.exceptions import TestError
 from fastid.apps.router import router as app_router
 from fastid.auth.dependencies import auth_flows
 from fastid.auth.router import router as auth_router
 from fastid.core.schemas import ErrorResponse
-from fastid.notify.router import router as notifier_router
+from fastid.notify.router import router as notify_router
 from fastid.oauth.router import router as oauth_router
 from fastid.profile.router import router as profile_router
+from fastid.superuser.router import router as superuser_router
 
 api_router = APIRouter(
     responses={
@@ -26,9 +26,9 @@ api_router = APIRouter(
 secured_router = APIRouter(dependencies=[Depends(f) for f in auth_flows])
 secured_router.include_router(auth_router)
 secured_router.include_router(oauth_router)
-secured_router.include_router(notifier_router)
+secured_router.include_router(notify_router)
 secured_router.include_router(profile_router)
-secured_router.include_router(admin_auth_router)
+secured_router.include_router(superuser_router)
 secured_router.include_router(app_router)
 
 api_router.include_router(secured_router)

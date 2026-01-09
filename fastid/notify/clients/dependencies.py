@@ -1,5 +1,4 @@
 import smtplib
-from collections.abc import AsyncIterator
 from typing import Annotated
 
 from aiogram import Bot
@@ -18,21 +17,19 @@ def get_smtp() -> smtplib.SMTP:
     return server
 
 
-async def get_mail(server: Annotated[smtplib.SMTP, Depends(get_smtp)]) -> AsyncIterator[MailClient]:
-    async with MailClient(
+def get_mail(server: Annotated[smtplib.SMTP, Depends(get_smtp)]) -> MailClient:
+    return MailClient(
         server,
         from_name=notify_settings.from_name,
-    ) as mail:
-        yield mail
+    )
 
 
 def get_bot() -> Bot:
     return Bot(telegram_settings.bot_token, default=DefaultBotProperties(parse_mode="Markdown"))
 
 
-async def get_telegram_nc(bot: Annotated[Bot, Depends(get_bot)]) -> AsyncIterator[TelegramNotificationClient]:
-    async with TelegramNotificationClient(bot) as telegram:
-        yield telegram
+def get_telegram_nc(bot: Annotated[Bot, Depends(get_bot)]) -> TelegramNotificationClient:
+    return TelegramNotificationClient(bot)
 
 
 MailDep = Annotated[MailClient, Depends(get_mail)]

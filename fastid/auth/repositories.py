@@ -9,7 +9,7 @@ class UserRepository(SQLAlchemyRepository[User]):
     model_type = User
 
 
-class UserEmailSpecification(Specification):
+class EmailUserSpecification(Specification):
     def __init__(self, email: str) -> None:
         self.email = email
 

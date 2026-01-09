@@ -1,14 +1,23 @@
+import secrets
+
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
+from fastid.admin.config import admin_settings
 from fastid.auth.config import auth_settings
-from fastid.dashboard.config import admin_settings
 
 
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         data = await request.form()
-        if data["username"] != admin_settings.username or data["password"] != admin_settings.password:
+        username = data["username"]
+        password = data["password"]
+        assert isinstance(username, str)
+        assert isinstance(password, str)
+
+        if not secrets.compare_digest(username, admin_settings.username) or not secrets.compare_digest(
+            password, admin_settings.password
+        ):
             return False
         request.session.update({"authenticated": True})
         return True

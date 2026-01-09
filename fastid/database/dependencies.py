@@ -15,9 +15,14 @@ engine = create_async_engine(
 session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
 
-async def get_uow() -> AsyncIterator[SQLAlchemyUOW]:
-    async with SQLAlchemyUOW(session_factory) as uow:
+async def get_uow_raw() -> SQLAlchemyUOW:
+    return SQLAlchemyUOW(session_factory)
+
+
+async def get_uow(uow: Annotated[SQLAlchemyUOW, Depends(get_uow_raw)]) -> AsyncIterator[SQLAlchemyUOW]:
+    async with uow:
         yield uow
 
 
 UOWDep = Annotated[SQLAlchemyUOW, Depends(get_uow)]
+UOWRawDep = Annotated[SQLAlchemyUOW, Depends(get_uow_raw)]

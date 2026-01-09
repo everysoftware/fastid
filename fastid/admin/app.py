@@ -5,9 +5,9 @@ from sqladmin import Admin
 from sqlalchemy import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from fastid.admin.auth import admin_auth
+from fastid.admin.views import EmailTemplateAdmin, OAuthAccountAdmin, OAuthClientAdmin, TelegramTemplateAdmin, UserAdmin
 from fastid.core.base import MiniApp
-from fastid.dashboard.auth import admin_auth
-from fastid.dashboard.views import OAuthAccountAdmin, OAuthClientAdmin, UserAdmin
 
 
 class AdminMiniApp(MiniApp):
@@ -35,6 +35,8 @@ class AdminMiniApp(MiniApp):
         admin.add_view(UserAdmin)
         admin.add_view(OAuthClientAdmin)
         admin.add_view(OAuthAccountAdmin)
+        admin.add_view(EmailTemplateAdmin)
+        admin.add_view(TelegramTemplateAdmin)
         return app
 
     def install(self, app: FastAPI) -> None:

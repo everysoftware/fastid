@@ -6,7 +6,7 @@ certs:
 
 .PHONY: deps
 deps:
-	docker-compose up db redis -d
+	docker-compose up fastid-db fastid-redis -d
 
 .PHONY: up
 up:

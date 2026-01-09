@@ -1,8 +1,8 @@
+from fastid.admin.app import AdminMiniApp
+from fastid.admin.config import admin_settings
 from fastid.api.app import APIMiniApp
 from fastid.core.base import Plugin, app_factory
 from fastid.core.config import cors_settings, main_settings
-from fastid.dashboard.app import AdminMiniApp
-from fastid.dashboard.config import admin_settings
 from fastid.database.dependencies import engine
 from fastid.pages.app import FrontendMiniApp
 from fastid.plugins.obs.config import obs_settings

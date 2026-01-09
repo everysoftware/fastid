@@ -6,6 +6,7 @@ from fastid.core.schemas import BaseSettings
 
 class AdminSettings(BaseSettings):
     enabled: bool = True
+    email: str = "admin@fastid.com"
     username: str = "admin"
     password: str = "admin"
     favicon_url: str = "https://fastapi.tiangolo.com/img/favicon.png"

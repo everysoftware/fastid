@@ -2,13 +2,11 @@ import asyncio
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any, Self
 
-from fastid.notify.clients.base import NotificationClient
-from fastid.notify.clients.schemas import Notification
+from fastid.auth.schemas import Contact
 
 
-class MailClient(NotificationClient):
+class MailClient:
     def __init__(
         self,
         client: smtplib.SMTP,
@@ -19,20 +17,14 @@ class MailClient(NotificationClient):
         self.username = self._client.user
         self.from_name = from_name
 
-    async def send(self, notification: Notification) -> None:
-        await asyncio.to_thread(self._send, notification)
+    async def send(self, contact: Contact, subject: str, content: str) -> None:
+        await asyncio.to_thread(self._send, contact, subject, content)
 
-    def _send(self, notification: Notification) -> None:
+    def _send(self, contact: Contact, subject: str, content: str) -> None:
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = notification.subject
+        msg["Subject"] = subject
         msg["From"] = f"{self.from_name} <{self.username}>"
-        msg["To"] = notification.user_email
-        msg.attach(MIMEText(notification.as_html(), "html"))
+        msg["To"] = f"<{contact.recipient['email']}>"
+        msg.attach(MIMEText(content, "html"))
 
         self._client.send_message(msg)
-
-    async def __aenter__(self) -> Self:
-        return self
-
-    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        pass

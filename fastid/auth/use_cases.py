@@ -2,7 +2,7 @@ from fastlink.exceptions import FastLinkError
 
 from fastid.auth.exceptions import InvalidTokenError, UserAlreadyExistsError, UserIDNotFoundError
 from fastid.auth.models import User
-from fastid.auth.repositories import UserEmailSpecification
+from fastid.auth.repositories import EmailUserSpecification
 from fastid.auth.schemas import UserCreate
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
@@ -17,7 +17,7 @@ class AuthUseCases(UseCase):
 
     async def register(self, dto: UserCreate) -> User:
         try:
-            await self.uow.users.find(UserEmailSpecification(dto.email))
+            await self.uow.users.find(EmailUserSpecification(dto.email))
         except NoResultFoundError:
             pass
         else:

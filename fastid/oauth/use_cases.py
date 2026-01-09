@@ -5,7 +5,7 @@ from fastlink.schemas import OAuth2Callback, TokenResponse
 from fastlink.telegram.schemas import TelegramCallback
 
 from fastid.auth.models import User
-from fastid.auth.repositories import UserEmailSpecification
+from fastid.auth.repositories import EmailUserSpecification
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
@@ -117,7 +117,7 @@ class OAuthUseCases(UseCase):
         user = None
         if open_id.email:
             with contextlib.suppress(NoResultFoundError):
-                user = await self.uow.users.find(UserEmailSpecification(open_id.email))
+                user = await self.uow.users.find(EmailUserSpecification(open_id.email))
         if user is None:
             user = User.from_open_id(open_id)
             user = await self.uow.users.add(user)

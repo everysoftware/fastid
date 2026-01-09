@@ -25,7 +25,7 @@ ENV POETRY_NO_INTERACTION=1
 ENV APP_DIR=$APP_DIR
 ENV ENVIRONMENT_SET=1
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN pip install "poetry==$POETRY_VERSION"
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
 WORKDIR $APP_PATH

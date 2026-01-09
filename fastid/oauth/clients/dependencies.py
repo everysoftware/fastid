@@ -38,7 +38,7 @@ def get_google_sso() -> GoogleSSO:
     title="Telegram",
     icon="fa-telegram",
     color="#03A9F4",
-    enabled=telegram_settings.enabled,
+    enabled=telegram_settings.oauth_enabled,
 )
 def get_telegram_sso() -> TelegramSSO:
     return TelegramSSO(

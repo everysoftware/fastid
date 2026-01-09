@@ -1,3 +1,8 @@
+from __future__ import annotations
+
+from enum import StrEnum, auto
+from typing import Any
+
 from fastlink.schemas import (
     OAuth2ConsentRequest as BaseOAuth2ConsentRequest,
 )
@@ -50,3 +55,13 @@ class OAuth2TokenRequest(BaseOAuth2TokenRequest):
 
 class OAuth2ConsentRequest(BaseOAuth2ConsentRequest):
     scope: str = "openid email name"
+
+
+class Contact(BaseModel):
+    type: ContactType
+    recipient: dict[str, Any]
+
+
+class ContactType(StrEnum):
+    email = auto()
+    telegram = auto()

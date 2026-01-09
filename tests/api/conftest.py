@@ -12,7 +12,7 @@ from fastid.auth.schemas import UserDTO
 from fastid.cache.storage import CacheStorage
 from fastid.core.dependencies import log_provider
 from fastid.database.uow import SQLAlchemyUOW
-from fastid.notify.schemas import UnsafeAction
+from fastid.notify.schemas import UserAction
 from fastid.security.crypto import generate_otp
 from tests import mocks
 from tests.utils.auth import authorize_password_grant, register_user
@@ -74,7 +74,7 @@ async def verify_token(client: AsyncClient, cache: CacheStorage, user: UserDTO, 
     response = await client.post(
         "/otp/verify",
         json={
-            "action": UnsafeAction.change_password,
+            "action": UserAction.change_password,
             "code": code,
         },
         headers={"Authorization": f"Bearer {user_token.access_token}"},

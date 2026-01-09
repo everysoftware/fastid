@@ -1,22 +1,25 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Self
+from typing import TYPE_CHECKING, Self
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fastid.auth.exceptions import WrongPasswordError
+from fastid.auth.schemas import Contact, ContactType
 from fastid.database.base import Entity
 from fastid.database.utils import uuid
+from fastid.notify.config import notify_settings
+from fastid.notify.schemas import SendOTPRequest, UserAction
 from fastid.oauth.config import telegram_settings
 from fastid.security.crypto import crypt_ctx
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
     from fastid.auth.schemas import UserCreate
     from fastid.oauth.models import OAuthAccount
     from fastid.oauth.schemas import OpenIDBearer
-
-NotificationMethod = Literal["email", "telegram"]
 
 
 class User(Entity):
@@ -44,14 +47,6 @@ class User(Entity):
         if self.first_name:
             return self.first_name
         raise ValueError(f"User id={self.id} has no available names")
-
-    @hybrid_property
-    def notification_method(self) -> NotificationMethod:
-        if self.telegram_id is not None and telegram_settings.enabled:
-            return "telegram"
-        if self.email is not None:
-            return "email"
-        raise ValueError(f"User id={self.id} has no available contacts")
 
     @classmethod
     def from_create(cls, dto: UserCreate) -> Self:
@@ -101,3 +96,42 @@ class User(Entity):
 
     def verify(self) -> None:
         self.is_verified = True
+
+    def is_email_available(self) -> bool:
+        return self.email is not None
+
+    def is_telegram_available(self) -> bool:
+        return self.telegram_id is not None and telegram_settings.notification_enabled
+
+    def email_contact(self) -> Contact:
+        if not self.is_email_available():
+            raise ValueError(f"User id={self.id} has no available email")
+        return Contact(type=ContactType.email, recipient={"email": self.email})
+
+    def telegram_contact(self) -> Contact:
+        if not self.is_telegram_available():
+            raise ValueError(f"User id={self.id} has no available telegram")
+        return Contact(type=ContactType.telegram, recipient={"telegram_id": self.telegram_id})
+
+    def find_contacts(self) -> Mapping[ContactType, Contact]:
+        contacts = {}
+        if self.is_email_available():
+            contacts[ContactType.email] = self.email_contact()
+        if self.telegram_id is not None and telegram_settings.notification_enabled:
+            contacts[ContactType.telegram] = self.telegram_contact()
+        if not contacts:
+            raise ValueError(f"User id={self.id} has no available contacts")
+        return contacts
+
+    def sort_contacts(self) -> Sequence[Contact]:
+        contacts = list(self.find_contacts().values())
+        contacts.sort(key=lambda x: notify_settings.contact_priority[x.type])
+        return contacts
+
+    def find_priority_contact(self) -> Contact:
+        return self.sort_contacts()[0]
+
+    def find_contact_for_otp(self, dto: SendOTPRequest) -> Contact:
+        if dto.action == UserAction.change_email:
+            return Contact(type=ContactType.email, recipient={"email": dto.email})
+        return self.find_priority_contact()

@@ -6,6 +6,7 @@ from sqladmin import ModelView
 from fastid.apps.models import App
 from fastid.database.alembic import OAuthAccount, User
 from fastid.database.utils import naive_utc
+from fastid.notify.models import EmailTemplate, TelegramTemplate
 
 
 def time_format(m: Any, a: Any) -> Any:
@@ -88,4 +89,39 @@ class OAuthAccountAdmin(BaseView, model=OAuthAccount):
 
     column_searchable_list = [
         OAuthAccount.email,
+    ]
+
+
+class EmailTemplateAdmin(BaseView, model=EmailTemplate):
+    name = "Email Template"
+    name_plural = "Email Templates"
+    icon = "fa-solid fa-envelope"
+
+    column_list = [
+        EmailTemplate.id,
+        EmailTemplate.slug,
+        EmailTemplate.subject,
+        EmailTemplate.created_at,
+        EmailTemplate.updated_at,
+    ]
+
+    column_searchable_list = [
+        EmailTemplate.slug,
+    ]
+
+
+class TelegramTemplateAdmin(BaseView, model=TelegramTemplate):
+    name = "Telegram Template"
+    name_plural = "Telegram Templates"
+    icon = "fa-brands fa-telegram"
+
+    column_list = [
+        TelegramTemplate.id,
+        TelegramTemplate.slug,
+        TelegramTemplate.created_at,
+        TelegramTemplate.updated_at,
+    ]
+
+    column_searchable_list = [
+        TelegramTemplate.slug,
     ]
