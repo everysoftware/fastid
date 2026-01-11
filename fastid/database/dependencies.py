@@ -15,7 +15,7 @@ engine = create_async_engine(
 session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
 
-async def get_uow_raw() -> SQLAlchemyUOW:
+def get_uow_raw() -> SQLAlchemyUOW:
     return SQLAlchemyUOW(session_factory)
 
 

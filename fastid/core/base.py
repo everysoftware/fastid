@@ -1,6 +1,5 @@
 from abc import abstractmethod
-from collections.abc import AsyncIterator, Sequence
-from contextlib import asynccontextmanager
+from collections.abc import Sequence
 from typing import Any
 
 from fastapi import FastAPI
@@ -17,12 +16,6 @@ class MiniApp:
     @abstractmethod
     def install(self, app: FastAPI) -> None: ...
 
-    async def on_startup(self, app: FastAPI) -> None:
-        pass
-
-    async def on_shutdown(self, app: FastAPI) -> None:
-        pass
-
 
 class Plugin:
     name: str = "unknown_plugin"
@@ -38,17 +31,7 @@ def app_factory(
     apps: Sequence[MiniApp] = (),
     **kwargs: Any,
 ) -> FastAPI:
-    @asynccontextmanager
-    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-        # Startup tasks
-        for m in apps:
-            await m.on_startup(_app)
-        yield
-        # Shutdown tasks
-        for m in apps:
-            await m.on_shutdown(_app)
-
-    master_app = FastAPI(title=title, lifespan=lifespan, **kwargs)
+    master_app = FastAPI(title=title, **kwargs)
 
     # Install apps
     for app in apps:

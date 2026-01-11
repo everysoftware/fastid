@@ -22,7 +22,7 @@ def test_user_display_name_no_names() -> None:
 
 
 @pytest.mark.parametrize(
-    ("user", "notification_method"),
+    ("user", "contact"),
     [
         (User(email="user@example.com"), Contact(type=ContactType.email, recipient={"email": "user@example.com"})),
         (User(telegram_id=1), Contact(type=ContactType.telegram, recipient={"telegram_id": 1})),
@@ -32,11 +32,11 @@ def test_user_display_name_no_names() -> None:
         ),
     ],
 )
-def test_user_notification_method(user: User, contact: Contact) -> None:
+def test_user_priority_contact(user: User, contact: Contact) -> None:
     assert user.find_priority_contact() == contact
 
 
-def test_user_notification_method_no_contacts() -> None:
+def test_user_priority_contact_no_contacts() -> None:
     user = User()
     with pytest.raises(ValueError):  # noqa: PT011
         _ = user.find_priority_contact()

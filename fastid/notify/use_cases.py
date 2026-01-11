@@ -13,6 +13,7 @@ from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWRawDep
 from fastid.database.exceptions import NoResultFoundError
+from fastid.database.utils import transactional
 from fastid.notify.clients.dependencies import MailDep, TelegramDep
 from fastid.notify.config import jinja_env
 from fastid.notify.exceptions import NoEmailError, NoTelegramIDError, TemplateNotFoundError, WrongCodeError
@@ -30,7 +31,7 @@ from fastid.security.jwt import jwt_backend
 class NotificationUseCases(UseCase):
     def __init__(
         self,
-        uow: UOWRawDep,
+        uow: UOWRawDep,  # Due to background nature of notification use cases, use raw dependency
         mail: MailDep,
         telegram: TelegramDep,
         cache: CacheDep,
@@ -40,44 +41,44 @@ class NotificationUseCases(UseCase):
         self.telegram = telegram
         self.cache = cache
 
+    @transactional
     async def push_email(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
-        async with self.uow:
-            if contact is None:
-                try:
-                    contact = user.email_contact()
-                except ValueError as e:
-                    raise NoEmailError from e
-            assert contact.type == ContactType.email
-
-            base = await self.uow.email_templates.find(EmailTemplateSlugSpecification("base"))
-            base_template = jinja_env.from_string(base.source)
-
+        if contact is None:
             try:
-                main = await self.uow.email_templates.find(EmailTemplateSlugSpecification(dto.template_slug))
-            except NoResultFoundError as e:
-                raise TemplateNotFoundError from e
+                contact = user.email_contact()
+            except ValueError as e:
+                raise NoEmailError from e
+        assert contact.type == ContactType.email
 
-            main_template = jinja_env.from_string(main.source)
-            content = main_template.render(base=base_template, user=user, **dto.template_args)
-            await self.mail.send(contact=contact, subject=main.subject, content=content)
+        base = await self.uow.email_templates.find(EmailTemplateSlugSpecification("base"))
+        base_template = jinja_env.from_string(base.source)
 
+        try:
+            main = await self.uow.email_templates.find(EmailTemplateSlugSpecification(dto.template_slug))
+        except NoResultFoundError as e:
+            raise TemplateNotFoundError from e
+
+        main_template = jinja_env.from_string(main.source)
+        content = main_template.render(base=base_template, user=user, **dto.template_args)
+        await self.mail.send(contact=contact, subject=main.subject, content=content)
+
+    @transactional
     async def push_telegram(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
-        async with self.uow:
-            if contact is None:
-                try:
-                    contact = user.telegram_contact()
-                except ValueError as e:
-                    raise NoTelegramIDError from e
-            assert contact.type == ContactType.telegram
-
+        if contact is None:
             try:
-                template = await self.uow.telegram_templates.find(TelegramTemplateSlugSpecification(dto.template_slug))
-            except NoResultFoundError as e:
-                raise TemplateNotFoundError from e
+                contact = user.telegram_contact()
+            except ValueError as e:
+                raise NoTelegramIDError from e
+        assert contact.type == ContactType.telegram
 
-            jinja_template = jinja_env.from_string(template.source)
-            content = jinja_template.render(user=user, **dto.template_args)
-            await self.telegram.send(contact=contact, content=content)
+        try:
+            template = await self.uow.telegram_templates.find(TelegramTemplateSlugSpecification(dto.template_slug))
+        except NoResultFoundError as e:
+            raise TemplateNotFoundError from e
+
+        jinja_template = jinja_env.from_string(template.source)
+        content = jinja_template.render(user=user, **dto.template_args)
+        await self.telegram.send(contact=contact, content=content)
 
     async def push(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
         if contact is None:
@@ -116,6 +117,7 @@ class NotificationUseCases(UseCase):
         await self.validate_otp(user, dto.code)
         return jwt_backend.create("verify", JWTPayload(sub=str(user.id)))
 
+    @transactional
     async def _get_user_by_email(self, email: str) -> User:
         try:
             return await self.uow.users.find(EmailUserSpecification(email))

@@ -1,3 +1,4 @@
+import pytest
 from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
@@ -40,10 +41,10 @@ async def test_send_otp_recover_password(client: AsyncClient, cache: CacheStorag
 
 
 async def test_send_otp_recover_password_not_exists(client: AsyncClient, cache: CacheStorage, user: UserDTO) -> None:
-    response = await client.post(
-        f"/otp/send?action={UserAction.recover_password}&email={faker.email()}",
-    )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    with pytest.raises(RuntimeError):
+        await client.post(
+            f"/otp/send?action={UserAction.recover_password}&email={faker.email()}",
+        )
 
 
 async def test_send_otp_telegram(

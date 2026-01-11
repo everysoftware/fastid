@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -12,7 +13,7 @@ from fastid.cache.dependencies import get_cache
 from fastid.cache.storage import CacheStorage, RedisStorage
 from fastid.core.app import app
 from fastid.core.dependencies import log_provider
-from fastid.database.dependencies import get_uow
+from fastid.database.dependencies import get_uow_raw
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.notify.clients.dependencies import get_bot, get_smtp
 from tests.dependencies import (
@@ -26,7 +27,18 @@ from tests.dependencies import (
 )
 from tests.utils.db import delete_all, get_temp_db
 
+if TYPE_CHECKING:
+    from fastapi import FastAPI
+
 logger = log_provider.logger(__name__)
+
+
+CUSTOM_MARKERS = {"slow": "marks tests as slow (deselect with '-m \"not slow\"')"}
+
+
+def pytest_configure(config: Any) -> None:
+    for marker, description in CUSTOM_MARKERS.items():
+        config.addinivalue_line("markers", f"{marker}: {description}")
 
 
 @pytest.fixture(scope="session")
@@ -53,8 +65,8 @@ def db_url(engine: AsyncEngine) -> str:
 
 @pytest.fixture
 async def client() -> AsyncIterator[AsyncClient]:
-    api_app = app.extra["api_app"]
-    api_app.dependency_overrides[get_uow] = get_test_uow
+    api_app: FastAPI = app.extra["api_app"]
+    api_app.dependency_overrides[get_uow_raw] = get_test_uow
     api_app.dependency_overrides[get_cache] = get_test_cache
     api_app.dependency_overrides[get_smtp] = lambda: MagicMock()
     api_app.dependency_overrides[get_bot] = lambda: AsyncMock()
@@ -73,7 +85,7 @@ async def client() -> AsyncIterator[AsyncClient]:
 @pytest.fixture
 async def frontend_client() -> AsyncIterator[AsyncClient]:
     frontend_app = app.extra["frontend_app"]
-    frontend_app.dependency_overrides[get_uow] = get_test_uow
+    frontend_app.dependency_overrides[get_uow_raw] = get_test_uow
     frontend_app.dependency_overrides[get_cache] = get_test_cache
 
     transport = ASGITransport(app=frontend_app)
@@ -104,9 +116,14 @@ async def session(
 
 
 @pytest.fixture
-async def uow(session_factory: async_sessionmaker[AsyncSession], engine: AsyncEngine) -> AsyncIterator[SQLAlchemyUOW]:
-    async with SQLAlchemyUOW(session_factory) as uow:
-        yield uow
+def uow_raw(session_factory: async_sessionmaker[AsyncSession]) -> SQLAlchemyUOW:
+    return SQLAlchemyUOW(session_factory)
+
+
+@pytest.fixture
+async def uow(uow_raw: SQLAlchemyUOW, engine: AsyncEngine) -> AsyncIterator[SQLAlchemyUOW]:
+    async with uow_raw:
+        yield uow_raw
 
     await delete_all(engine)
 

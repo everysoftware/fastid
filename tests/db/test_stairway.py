@@ -28,6 +28,7 @@ def get_revisions() -> list[Script]:
     return revisions
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("revision", get_revisions())
 def test_migrations_stairway(revision: Script) -> None:
     """Stairway tests."""

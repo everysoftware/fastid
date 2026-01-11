@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Any, Self, cast
 
+from sqlalchemy import select
+
 from fastid.apps.repositories import AppRepository
 from fastid.auth.repositories import UserRepository
 from fastid.notify.repositories import EmailTemplateRepository, TelegramTemplateRepository
@@ -22,38 +24,41 @@ class SQLAlchemyUOW:
     email_templates: EmailTemplateRepository
     telegram_templates: TelegramTemplateRepository
 
-    _session_factory: async_sessionmaker[AsyncSession]
-    _session: AsyncSession
+    session_factory: async_sessionmaker[AsyncSession]
+    session: AsyncSession
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
-        self._session_factory = session_factory
+        self.session_factory = session_factory
 
     async def begin(self) -> None:
-        self._session = self._session_factory()
-        self.users = UserRepository(self._session)
-        self.oauth_accounts = OAuthAccountRepository(self._session)
-        self.apps = AppRepository(self._session)
-        self.email_templates = EmailTemplateRepository(self._session)
-        self.telegram_templates = TelegramTemplateRepository(self._session)
+        self.session = self.session_factory()
+        self.users = UserRepository(self.session)
+        self.oauth_accounts = OAuthAccountRepository(self.session)
+        self.apps = AppRepository(self.session)
+        self.email_templates = EmailTemplateRepository(self.session)
+        self.telegram_templates = TelegramTemplateRepository(self.session)
 
     @property
     def is_active(self) -> bool:
-        if not hasattr(self, "_session") or not self._session:
+        if not hasattr(self, "session") or not self.session:
             return False
-        return cast(bool, self._session.is_active)
+        return cast(bool, self.session.is_active)
 
     async def commit(self) -> None:
-        await self._session.commit()
+        await self.session.commit()
 
     async def rollback(self) -> None:
-        await self._session.rollback()
+        await self.session.rollback()
 
     async def close(self) -> None:
-        task = asyncio.create_task(self._session.close())
+        task = asyncio.create_task(self.session.close())
         await asyncio.shield(task)
 
     async def flush(self) -> None:
-        await self._session.flush()
+        await self.session.flush()
+
+    async def healthcheck(self) -> None:
+        await self.session.execute(select(1))
 
     async def __aenter__(self) -> Self:
         await self.begin()

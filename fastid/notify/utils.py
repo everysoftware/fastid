@@ -21,7 +21,3 @@ def collect_telegram_templates() -> Iterable[TelegramTemplate]:
     with Path("templates/notifications/md/welcome.md").open() as f:
         welcome = TelegramTemplate(slug="welcome", source=f.read())
     return [code, welcome]
-
-
-EMAIL_TEMPLATES = collect_email_templates()
-TELEGRAM_TEMPLATES = collect_telegram_templates()

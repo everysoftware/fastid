@@ -1,5 +1,3 @@
-from collections.abc import AsyncIterator
-
 from redis.asyncio import ConnectionPool, Redis
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -25,10 +23,9 @@ test_engine = create_async_engine(test_db_url, pool_pre_ping=True, poolclass=poo
 test_session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
 
-async def get_test_uow() -> AsyncIterator[SQLAlchemyUOW]:
-    logger.info("Use get_uow dependency")
-    async with SQLAlchemyUOW(test_session_factory) as uow:
-        yield uow
+def get_test_uow() -> SQLAlchemyUOW:
+    logger.info("Use get_uow_raw dependency")
+    return SQLAlchemyUOW(test_session_factory)
 
 
 def get_test_cache() -> CacheStorage:
