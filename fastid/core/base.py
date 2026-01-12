@@ -1,10 +1,14 @@
 from abc import abstractmethod
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Sequence
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI
 
+from fastid.api.lifespan import LifespanTasks
+from fastid.cache.dependencies import get_cache
 from fastid.core.dependencies import log
+from fastid.database.dependencies import get_uow_raw
 
 
 class MiniApp:
@@ -31,7 +35,18 @@ def app_factory(
     apps: Sequence[MiniApp] = (),
     **kwargs: Any,
 ) -> FastAPI:
-    master_app = FastAPI(title=title, **kwargs)
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        # Startup tasks
+        tasks = LifespanTasks(uow_factory=get_uow_raw, cache_factory=get_cache)
+        async with tasks:
+            await tasks.on_startup()
+        yield
+        # Shutdown tasks
+        async with tasks:
+            await tasks.on_shutdown()
+
+    master_app = FastAPI(title=title, lifespan=lifespan, **kwargs)
 
     # Install apps
     for app in apps:

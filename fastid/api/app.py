@@ -1,17 +1,13 @@
-from collections.abc import AsyncIterator, Sequence
-from contextlib import asynccontextmanager
+from collections.abc import Sequence
 from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastid.api.exceptions import add_exception_handlers
-from fastid.api.lifespan import LifespanTasks
 from fastid.api.routing import api_router
-from fastid.cache.dependencies import get_cache
 from fastid.core.base import MiniApp, Plugin
 from fastid.core.dependencies import log
-from fastid.database.dependencies import get_uow_raw
 
 
 class APIMiniApp(MiniApp):
@@ -36,21 +32,9 @@ class APIMiniApp(MiniApp):
         self.fastapi_kwargs = fastapi_kwargs
 
     def create(self) -> FastAPI:
-        @asynccontextmanager
-        async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-            # Startup tasks
-            tasks = LifespanTasks(uow_factory=get_uow_raw, cache_factory=get_cache)
-            async with tasks:
-                await tasks.on_startup()
-            yield
-            # Shutdown tasks
-            async with tasks:
-                await tasks.on_shutdown()
-
         app = FastAPI(
             title=self.title,
             version=self.version,
-            lifespan=lifespan,
             **self.fastapi_kwargs,
         )
         app.include_router(api_router)
