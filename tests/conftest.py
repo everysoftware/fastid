@@ -32,7 +32,6 @@ if TYPE_CHECKING:
 
 logger = log_provider.logger(__name__)
 
-
 CUSTOM_MARKERS = {"slow": "marks tests as slow (deselect with '-m \"not slow\"')"}
 
 
@@ -107,7 +106,8 @@ async def conn(engine: AsyncEngine) -> AsyncIterator[AsyncConnection]:
 
 @pytest.fixture
 async def session(
-    engine: AsyncEngine, session_factory: async_sessionmaker[AsyncSession]
+    engine: AsyncEngine,
+    session_factory: async_sessionmaker[AsyncSession],
 ) -> AsyncIterator[AsyncSession]:
     async with session_factory() as session:
         yield session

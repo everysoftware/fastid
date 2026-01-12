@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Self, cast
+from typing import TYPE_CHECKING, Self, cast
 
 from sqlalchemy import select
 
@@ -11,6 +11,8 @@ from fastid.notify.repositories import EmailTemplateRepository, TelegramTemplate
 from fastid.oauth.repositories import OAuthAccountRepository
 
 if TYPE_CHECKING:
+    from types import TracebackType
+
     from sqlalchemy.ext.asyncio import (
         AsyncSession,
         async_sessionmaker,
@@ -64,7 +66,9 @@ class SQLAlchemyUOW:
         await self.begin()
         return self
 
-    async def __aexit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> bool:
+    async def __aexit__(
+        self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: TracebackType | None
+    ) -> bool:
         if exc_type is None:
             await self.commit()
         else:

@@ -46,7 +46,8 @@ class User(Entity):
             return f"{self.first_name} {self.last_name}"
         if self.first_name:
             return self.first_name
-        raise ValueError(f"User id={self.id} has no available names")
+        msg = f"User id={self.id} has no available names"
+        raise ValueError(msg)
 
     @classmethod
     def from_create(cls, dto: UserCreate) -> Self:
@@ -105,12 +106,14 @@ class User(Entity):
 
     def email_contact(self) -> Contact:
         if not self.is_email_available():
-            raise ValueError(f"User id={self.id} has no available email")
+            msg = f"User id={self.id} has no available email"
+            raise ValueError(msg)
         return Contact(type=ContactType.email, recipient={"email": self.email})
 
     def telegram_contact(self) -> Contact:
         if not self.is_telegram_available():
-            raise ValueError(f"User id={self.id} has no available telegram")
+            msg = f"User id={self.id} has no available telegram"
+            raise ValueError(msg)
         return Contact(type=ContactType.telegram, recipient={"telegram_id": self.telegram_id})
 
     def find_contacts(self) -> Mapping[ContactType, Contact]:
@@ -120,7 +123,8 @@ class User(Entity):
         if self.telegram_id is not None and telegram_settings.notification_enabled:
             contacts[ContactType.telegram] = self.telegram_contact()
         if not contacts:
-            raise ValueError(f"User id={self.id} has no available contacts")
+            msg = f"User id={self.id} has no available contacts"
+            raise ValueError(msg)
         return contacts
 
     def sort_contacts(self) -> Sequence[Contact]:

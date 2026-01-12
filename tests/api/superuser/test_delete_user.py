@@ -26,6 +26,7 @@ async def test_delete_user_not_su(client: AsyncClient, user: UserDTO, user_token
 
 async def test_delete_user_not_exists(client: AsyncClient, user_su_token: TokenResponse) -> None:
     response = await client.delete(
-        f"/users/{uuid()}", headers={"Authorization": f"Bearer {user_su_token.access_token}"}
+        f"/users/{uuid()}",
+        headers={"Authorization": f"Bearer {user_su_token.access_token}"},
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND

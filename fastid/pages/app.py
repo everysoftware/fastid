@@ -40,7 +40,7 @@ class FrontendMiniApp(MiniApp):
         add_exception_handlers(app)
         app.add_middleware(
             SessionMiddleware,
-            secret_key=auth_settings.jwt_private_key,
+            secret_key=str(auth_settings.jwt_private_key),
             session_cookie="fastidsession",
         )
         main_router = APIRouter()

@@ -42,3 +42,7 @@ async def test_pop(cache: CacheStorage, mock_record: dict[str, str]) -> None:
 async def test_pop_not_exists(cache: CacheStorage) -> None:
     with pytest.raises(KeyNotFoundError):
         await cache.pop("test")
+
+
+async def test_hc(cache: CacheStorage) -> None:
+    await cache.healthcheck()

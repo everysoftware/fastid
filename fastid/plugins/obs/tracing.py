@@ -67,7 +67,7 @@ class TracingPlugin(Plugin):
             attributes={
                 "service.name": self.app_name,
                 "compose_service": self.app_name,
-            }
+            },
         )
         tracer = TracerProvider(resource=resource)
         trace.set_tracer_provider(tracer)

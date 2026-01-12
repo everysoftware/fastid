@@ -40,3 +40,15 @@ def test_user_priority_contact_no_contacts() -> None:
     user = User()
     with pytest.raises(ValueError):  # noqa: PT011
         _ = user.find_priority_contact()
+
+
+def test_user_no_telegram_contact() -> None:
+    user = User(email="user@example.com")
+    with pytest.raises(ValueError):  # noqa: PT011
+        _ = user.telegram_contact()
+
+
+def test_user_no_email_contact() -> None:
+    user = User(telegram_id=1)
+    with pytest.raises(ValueError):  # noqa: PT011
+        _ = user.email_contact()

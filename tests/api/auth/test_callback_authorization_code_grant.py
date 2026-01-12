@@ -20,7 +20,9 @@ async def test_ac_grant_callback(frontend_client: AsyncClient, oauth_app: AppDTO
 
 
 async def test_ac_grant_callback_invalid_redirect_uri(
-    frontend_client: AsyncClient, oauth_app: AppDTO, user_token: TokenResponse
+    frontend_client: AsyncClient,
+    oauth_app: AppDTO,
+    user_token: TokenResponse,
 ) -> None:
     assert user_token.access_token is not None
     frontend_client.cookies.set(cookie_transport.name, user_token.access_token)
@@ -39,7 +41,9 @@ async def test_ac_grant_callback_invalid_redirect_uri(
 
 
 async def test_ac_grant_callback_invalid_response_type(
-    frontend_client: AsyncClient, oauth_app: AppDTO, user_token: TokenResponse
+    frontend_client: AsyncClient,
+    oauth_app: AppDTO,
+    user_token: TokenResponse,
 ) -> None:
     redirect_uri = oauth_app.redirect_uris.split(";")[0]
     assert user_token.access_token is not None

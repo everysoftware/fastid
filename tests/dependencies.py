@@ -19,7 +19,7 @@ alembic_config = alembic_config_from_url(test_db_url)
 test_redis_pool = ConnectionPool.from_url(cache_settings.redis_url)
 test_redis = Redis(connection_pool=test_redis_pool)
 
-test_engine = create_async_engine(test_db_url, pool_pre_ping=True, poolclass=pool.NullPool)
+test_engine = create_async_engine(test_db_url, poolclass=pool.NullPool)
 test_session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
 

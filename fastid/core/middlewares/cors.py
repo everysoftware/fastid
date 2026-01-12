@@ -12,7 +12,7 @@ class CORSPlugin(Plugin):
     def __init__(
         self,
         *,
-        origins: Sequence[str] | None = None,
+        origins: Sequence[str] = (),
         origin_regex: str | None = None,
     ) -> None:
         self.origins = origins

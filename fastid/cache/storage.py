@@ -49,7 +49,8 @@ class RedisStorage(CacheStorage):
     async def get(self, key: str) -> str:
         value = await self.client.get(f"{self.key}:{key}")
         if value is None:
-            raise KeyNotFoundError(f"Key {key} not found")
+            msg = f"Key {key} not found"
+            raise KeyNotFoundError(msg)
         return str(json.loads(value))
 
     async def delete(self, key: str) -> None:
@@ -58,7 +59,8 @@ class RedisStorage(CacheStorage):
     async def pop(self, key: str) -> str:
         value = await self.client.getdel(f"{self.key}:{key}")
         if value is None:
-            raise KeyNotFoundError(f"Key {key} not found")
+            msg = f"Key {key} not found"
+            raise KeyNotFoundError(msg)
         return cast(str, json.loads(value))
 
     async def healthcheck(self) -> None:

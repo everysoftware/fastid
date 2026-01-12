@@ -20,7 +20,10 @@ async def test_send_otp(client: AsyncClient, cache: CacheStorage, user: UserDTO,
 
 
 async def test_send_otp_change_email(
-    client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse
+    client: AsyncClient,
+    cache: CacheStorage,
+    user: UserDTO,
+    user_token: TokenResponse,
 ) -> None:
     response = await client.post(
         f"/otp/send?action={UserAction.change_email}&email={faker.email()}",
@@ -48,7 +51,10 @@ async def test_send_otp_recover_password_not_exists(client: AsyncClient, cache: 
 
 
 async def test_send_otp_telegram(
-    client: AsyncClient, cache: CacheStorage, user_tg: UserDTO, user_tg_token: TokenResponse
+    client: AsyncClient,
+    cache: CacheStorage,
+    user_tg: UserDTO,
+    user_tg_token: TokenResponse,
 ) -> None:
     response = await client.post(
         f"/otp/send?action={UserAction.change_password}",

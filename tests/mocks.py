@@ -7,6 +7,7 @@ from fastlink.telegram.utils import compute_hmac_sha256
 
 from fastid.apps.schemas import AppCreate, AppUpdate
 from fastid.auth.schemas import UserCreate, UserUpdate
+from fastid.notify.schemas import PushNotificationRequest
 from fastid.oauth.config import telegram_settings
 from fastid.oauth.schemas import OpenIDBearer
 from fastid.security.crypto import crypt_ctx
@@ -43,6 +44,8 @@ USER_TG_CREATE = user_create_factory()
 USER_RECORD = user_record_factory(USER_CREATE)
 USER_SU_RECORD = user_record_factory(USER_SU_CREATE, is_superuser=True)
 USER_TG_RECORD = user_record_factory(USER_TG_CREATE, telegram_id=faker.random_number())
+USER_TG_ONLY_RECORD = user_record_factory(USER_TG_CREATE, telegram_id=faker.random_number())
+USER_TG_ONLY_RECORD["email"] = None
 
 CACHE_RECORD = {
     "key": faker.word(),
@@ -88,15 +91,24 @@ TELEGRAM_OPENID = openid_factory()
 TELEGRAM_OPENID.email = None
 
 GOOGLE_OPENID_BEARER = OpenIDBearer(
-    provider="google", **GOOGLE_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump()
+    provider="google",
+    **GOOGLE_OPENID.model_dump(),
+    **OAUTH_TOKEN_RESPONSE.model_dump(),
 )
 YANDEX_OPENID_BEARER = OpenIDBearer(
-    provider="yandex", **YANDEX_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump()
+    provider="yandex",
+    **YANDEX_OPENID.model_dump(),
+    **OAUTH_TOKEN_RESPONSE.model_dump(),
 )
 TELEGRAM_OPENID_BEARER = OpenIDBearer(
-    provider="telegram", **TELEGRAM_OPENID.model_dump(), **OAUTH_TOKEN_RESPONSE.model_dump()
+    provider="telegram",
+    **TELEGRAM_OPENID.model_dump(),
+    **OAUTH_TOKEN_RESPONSE.model_dump(),
 )
 TELEGRAM_WIDGET = TelegramWidget(bot_username=faker.user_name(), callback_url=faker.url())
+
+PUSH_NOTIFICATION_REQUEST = PushNotificationRequest(template_slug="welcome")
+PUSH_NOTIFICATION_REQUEST_FAKE_TEMPLATE = PushNotificationRequest(template_slug="fake")
 
 
 class MockError(Exception):

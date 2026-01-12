@@ -16,7 +16,8 @@ class AdminAuth(AuthenticationBackend):
         assert isinstance(password, str)
 
         if not secrets.compare_digest(username, admin_settings.username) or not secrets.compare_digest(
-            password, admin_settings.password
+            password,
+            admin_settings.password,
         ):
             return False
         request.session.update({"authenticated": True})

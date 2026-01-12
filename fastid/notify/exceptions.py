@@ -25,3 +25,9 @@ class NoTelegramIDError(ClientError):
     message = "User with this id does not have any active telegram id"
     error_code = "no_telegram_id"
     status_code = status.HTTP_400_BAD_REQUEST
+
+
+class InvalidContactTypeError(ClientError):
+    message = "Invalid contact type"
+    error_code = "invalid_contact_type"
+    status_code = status.HTTP_400_BAD_REQUEST

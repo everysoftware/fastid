@@ -26,7 +26,10 @@ async def test_verify_otp(client: AsyncClient, cache: CacheStorage, user: UserDT
 
 
 async def test_verify_otp_not_exists(
-    client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse
+    client: AsyncClient,
+    cache: CacheStorage,
+    user: UserDTO,
+    user_token: TokenResponse,
 ) -> None:
     code = generate_otp()
     response = await client.post(
@@ -41,7 +44,10 @@ async def test_verify_otp_not_exists(
 
 
 async def test_verify_otp_wrong_code(
-    client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse
+    client: AsyncClient,
+    cache: CacheStorage,
+    user: UserDTO,
+    user_token: TokenResponse,
 ) -> None:
     code = generate_otp()
     fake_code = generate_otp()

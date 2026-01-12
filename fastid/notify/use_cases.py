@@ -1,5 +1,4 @@
 import secrets
-from typing import assert_never
 
 from fastlink.jwt.schemas import JWTPayload
 
@@ -15,7 +14,13 @@ from fastid.database.dependencies import UOWRawDep, transactional
 from fastid.database.exceptions import NoResultFoundError
 from fastid.notify.clients.dependencies import MailDep, TelegramDep
 from fastid.notify.config import jinja_env
-from fastid.notify.exceptions import NoEmailError, NoTelegramIDError, TemplateNotFoundError, WrongCodeError
+from fastid.notify.exceptions import (
+    InvalidContactTypeError,
+    NoEmailError,
+    NoTelegramIDError,
+    TemplateNotFoundError,
+    WrongCodeError,
+)
 from fastid.notify.repositories import EmailTemplateSlugSpecification, TelegramTemplateSlugSpecification
 from fastid.notify.schemas import (
     PushNotificationRequest,
@@ -87,8 +92,8 @@ class NotificationUseCases(UseCase):
                 return await self.push_email(user, dto, contact)
             case ContactType.telegram:
                 return await self.push_telegram(user, dto, contact)
-            case _:
-                assert_never(contact.type)
+            case _:  # pragma: nocover
+                raise InvalidContactTypeError
 
     async def push_otp(self, user: User | None, dto: SendOTPRequest) -> None:
         if dto.action == UserAction.recover_password:

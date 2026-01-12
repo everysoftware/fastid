@@ -25,7 +25,10 @@ async def register_user(uow: SQLAlchemyUOW, data: dict[str, Any]) -> UserDTO:
 
 
 async def authorize_password_grant(
-    client: AsyncClient, username: str, password: str, scope: str = "offline_access"
+    client: AsyncClient,
+    username: str,
+    password: str,
+    scope: str = "offline_access",
 ) -> TokenResponse:
     response = await client.post(
         "/token",
@@ -42,7 +45,10 @@ async def authorize_password_grant(
 
 
 async def get_ac_grant_callback(
-    frontend_client: AsyncClient, oauth_app: AppDTO, token: TokenResponse, scope: str = "openid offline_access"
+    frontend_client: AsyncClient,
+    oauth_app: AppDTO,
+    token: TokenResponse,
+    scope: str = "openid offline_access",
 ) -> OAuth2Callback:
     redirect_uri = oauth_app.redirect_uris.split(";")[0]
     assert token.access_token is not None
@@ -66,7 +72,9 @@ async def get_ac_grant_callback(
 
 
 async def authorize_authorization_code_grant(
-    client: AsyncClient, oauth_app: AppDTO, callback: OAuth2Callback
+    client: AsyncClient,
+    oauth_app: AppDTO,
+    callback: OAuth2Callback,
 ) -> TokenResponse:
     response = await client.post(
         "/token",

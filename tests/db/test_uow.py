@@ -36,3 +36,7 @@ async def test_uow_is_active(session_factory: async_sessionmaker[AsyncSession]) 
     assert not uow.is_active
     async with uow:
         assert uow.is_active
+
+
+async def test_uow_hc(uow: SQLAlchemyUOW) -> None:
+    await uow.healthcheck()

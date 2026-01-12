@@ -31,14 +31,16 @@ fast-depends = "^2.4.12"
 uuid-utils = "^0.9.0"
 typer = "^0.14.0"
 fastlink = "^0.1.6"
+argon2-cffi = "^25.1.0"
+psycopg2 = "^2.9.11"
 
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.10.0"
 ruff = "^0.7.1"
 pre-commit = "^3.7.0"
-pytest = "^8.2.0"
-pytest-asyncio = "^0.23.6"
+pytest = "^9.0.2"
+pytest-asyncio = "^1.3.0"
 sqlalchemy-utils = "^0.41.2"
 faker = "^28.4.1"
 codespell = "^2.4.1"
@@ -66,47 +68,12 @@ output-format = "concise"
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-    "RUF",  # ruff rules
-    "C90",  # mccabe
-    "N",  # pep8-naming
-    "ASYNC",  # flake8-async
-    "T20",  # flake8-print
-    "SIM",  # flake8-simplify
-    "PT",  # flake8-pytest-style
-    "PTH",  # flake8-puse-pathlib
-    "TCH",  # flake8-type-checking
-    "PERF",  # Perflint
-    # new
-    "S",  # flake8-bandit
-    "FBT",  # flake8-boolean-trap
-    "A",  # flake8-builtins
-    "DTZ",  # flake8-datetimez
-    "FA",  # flake8-future-annotations
-    "LOG",  # flake8-logging
-    "G",  # flake8-logging-format
-    "INP",  # flake8-no-pep420
-    "PIE",  # flake8-pie
-    "RSE",  # flake8-raise
-    "RET",  # flake8-return
-    "SLF",  # flake8-self
-    "SLOT",  # flake8-slots
-    "TID",  # flake8-tidy-imports
-    "ARG",  # flake8-unused-arguments
-    "FLY",  # flynt
-    "PGH",  # pygrep-hooks
-    "PL",  # pylint
-    "FURB",  # refurb
-    "TRY",  # tryceratops
+    "ALL"
 ]
 ignore = [
-    "E501",  # line too long, handled by formatter later
+    "D",  # docstrings
+    "DOC",  # docstrings
+    "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed in `var`
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
     "W191",  # indentation contains tabs
@@ -114,6 +81,11 @@ ignore = [
     "S101",  # use of assert detected
     "TRY003",  # avoid specifying long messages outside the exception class
     "PLR6301",  # method could be a function, class method, or static method
+
+    # Handled by formatter later
+    "ISC001",  # single line implicit string concatenation
+    "COM812",  # missing trailing comma
+    "E501",  # line too long
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -145,6 +117,8 @@ disallow_any_unimported = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 
 [tool.coverage.run]
 parallel = true

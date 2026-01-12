@@ -1,5 +1,6 @@
 from collections.abc import Callable
-from typing import Any, Self
+from types import TracebackType
+from typing import Self
 
 from fastid.admin.config import admin_settings
 from fastid.auth.models import User
@@ -55,6 +56,8 @@ class LifespanTasks:
         await self.uow.__aenter__()
         return self
 
-    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> bool:
+    async def __aexit__(
+        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
+    ) -> bool:
         await self.uow.__aexit__(exc_type, exc_val, exc_tb)
         return False

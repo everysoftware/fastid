@@ -87,7 +87,7 @@ class SQLAlchemyRepository(IRepository[T], ABC):
                 criteria=criteria,
                 sorting=sorting,
                 pagination=pagination,
-            )
+            ),
         )
         return self._to_page(result.all())
 

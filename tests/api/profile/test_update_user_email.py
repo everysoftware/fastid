@@ -10,7 +10,11 @@ from tests.mocks import faker
 
 
 async def test_update_user_email(
-    client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse, verify_token: str
+    client: AsyncClient,
+    cache: CacheStorage,
+    user: UserDTO,
+    user_token: TokenResponse,
+    verify_token: str,
 ) -> None:
     code = generate_otp()
     await cache.set(f"otp:users:{user.id}", code)
@@ -51,7 +55,10 @@ async def test_update_user_email_already_exists(  # noqa: PLR0913
 
 
 async def test_update_user_email_not_verified(
-    client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse
+    client: AsyncClient,
+    cache: CacheStorage,
+    user: UserDTO,
+    user_token: TokenResponse,
 ) -> None:
     code = generate_otp()
     await cache.set(f"otp:users:{user.id}", code)

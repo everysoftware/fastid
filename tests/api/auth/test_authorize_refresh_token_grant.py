@@ -25,7 +25,9 @@ async def test_authorize_refresh_token_grant(client: AsyncClient, oauth_app: App
 
 
 async def test_authorize_refresh_token_grant_fake_token(
-    client: AsyncClient, oauth_app: AppDTO, user_token: TokenResponse
+    client: AsyncClient,
+    oauth_app: AppDTO,
+    user_token: TokenResponse,
 ) -> None:
     response = await client.post(
         "/token",
@@ -41,7 +43,9 @@ async def test_authorize_refresh_token_grant_fake_token(
 
 
 async def test_authorize_refresh_token_grant_invalid_client_id(
-    client: AsyncClient, oauth_app: AppDTO, user_token: TokenResponse
+    client: AsyncClient,
+    oauth_app: AppDTO,
+    user_token: TokenResponse,
 ) -> None:
     response = await client.post(
         "/token",
@@ -57,7 +61,9 @@ async def test_authorize_refresh_token_grant_invalid_client_id(
 
 
 async def test_authorize_refresh_token_grant_invalid_client_secret(
-    client: AsyncClient, oauth_app: AppDTO, user_token: TokenResponse
+    client: AsyncClient,
+    oauth_app: AppDTO,
+    user_token: TokenResponse,
 ) -> None:
     response = await client.post(
         "/token",
