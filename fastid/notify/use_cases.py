@@ -11,9 +11,8 @@ from fastid.auth.schemas import Contact, ContactType
 from fastid.cache.dependencies import CacheDep
 from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
-from fastid.database.dependencies import UOWRawDep
+from fastid.database.dependencies import UOWRawDep, transactional
 from fastid.database.exceptions import NoResultFoundError
-from fastid.database.utils import transactional
 from fastid.notify.clients.dependencies import MailDep, TelegramDep
 from fastid.notify.config import jinja_env
 from fastid.notify.exceptions import NoEmailError, NoTelegramIDError, TemplateNotFoundError, WrongCodeError

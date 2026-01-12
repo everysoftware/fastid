@@ -34,7 +34,7 @@ async def _reset_redis(redis_client: Redis) -> None:
 
 
 @pytest.fixture(autouse=True)
-async def _start_app(uow_raw: SQLAlchemyUOW) -> None:
+async def _start_app() -> None:
     tasks = LifespanTasks(uow_factory=get_test_uow, cache_factory=get_test_cache)
     async with tasks:
         await tasks.create_templates()

@@ -18,11 +18,11 @@ up-prod:
 
 .PHONY: test
 test:
-	pytest . -x -s -v --ff
+	pytest . -x -s -v --ff -m 'not slow'
 
 .PHONY: testcov
 testcov:
-	coverage run -m pytest -x --ff
+	coverage run -m pytest -x --ff -m 'not slow'
 	coverage combine
 	coverage report --show-missing --skip-covered --sort=cover --precision=2
 	coverage html
