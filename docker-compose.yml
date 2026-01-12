@@ -32,6 +32,7 @@ services:
       timeout: 10s
     networks:
       - fastid-net
+      - observability_net
 
   fastid-redis:
     image: redis:latest
@@ -55,6 +56,7 @@ services:
       - "6312:6379"
     networks:
       - fastid-net
+      - observability_net
 
   fastid-app:
     build:
@@ -77,6 +79,7 @@ services:
       - "./static:/opt/fastid/static"
     networks:
       - fastid-net
+      - observability_net
 
 volumes:
   pg_data:
@@ -84,3 +87,5 @@ volumes:
 networks:
   fastid-net:
     name: fastid-net
+  observability_net:
+    name: observability_net

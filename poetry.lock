@@ -4458,19 +4458,19 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)
 
 [[package]]
 name = "uvicorn-worker"
-version = "0.2.0"
+version = "0.4.0"
 description = "Uvicorn worker for Gunicorn! ✨"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "uvicorn_worker-0.2.0-py3-none-any.whl", hash = "sha256:65dcef25ab80a62e0919640f9582216ee05b3bb1dc2f0e58b354ca0511c398fb"},
-    {file = "uvicorn_worker-0.2.0.tar.gz", hash = "sha256:f6894544391796be6eeed37d48cae9d7739e5a105f7e37061eccef2eac5a0295"},
+    {file = "uvicorn_worker-0.4.0-py3-none-any.whl", hash = "sha256:e2ed952cef976f5e9e429d7269640bbcafbd36c80aa80f1003c8c77a6797abde"},
+    {file = "uvicorn_worker-0.4.0.tar.gz", hash = "sha256:8ee5306070d8f38dce124adce488c3c0b50f20cf0c0222b12c66188da7214493"},
 ]
 
 [package.dependencies]
-gunicorn = ">=20.1.0"
-uvicorn = ">=0.14.0"
+gunicorn = ">=21.0.0"
+uvicorn = ">=0.36.0"
 
 [[package]]
 name = "uvloop"
@@ -5071,4 +5071,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "c06a8ad7f0e5d16ebd3bc8cab5e116b5ebc25c847f597594ad3b0788ec214fc3"
+content-hash = "33971e828f2e737a5c2220856a1a9554edf268cec53be9c9385be50d97dd20ba"

@@ -6,15 +6,15 @@ certs:
 
 .PHONY: deps
 deps:
-	docker-compose up fastid-db fastid-redis -d
+	docker compose up fastid-db fastid-redis -d
 
 .PHONY: up
 up:
-	docker-compose up --build -d
+	docker compose up --build -d
 
 .PHONY: up-prod
 up-prod:
-	docker-compose -f docker-compose.yml -f docker-compose-prod.yml up --build -d
+	docker compose -f docker-compose.yml -f docker-compose-prod.yml up --build -d
 
 .PHONY: test
 test:
@@ -30,15 +30,15 @@ testcov:
 
 .PHONY: stop
 stop:
-	docker-compose stop
+	docker compose stop
 
 .PHONY: down
 down:
-	docker-compose down
+	docker compose down
 
 .PHONY: restart
 restart:
-	docker-compose restart
+	docker compose restart
 
 .PHONY: lint
 lint:
