@@ -1,7 +1,7 @@
 ARG APP_DIR=fastid
 ARG APP_PATH=/opt/$APP_DIR
 ARG PYTHON_VERSION=3.12-bullseye
-ARG POETRY_VERSION=1.8.2
+ARG POETRY_VERSION=2.2.1
 
 #
 # Stage: base
@@ -31,7 +31,8 @@ ENV PATH="$POETRY_HOME/bin:$PATH"
 WORKDIR $APP_PATH
 COPY ./poetry.lock ./pyproject.toml ./
 
-RUN poetry install --only main
+RUN poetry self add poetry-plugin-export
+RUN poetry install --only main --no-root
 RUN poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt
 
 #

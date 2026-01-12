@@ -1,16 +1,13 @@
 x-logging: &default-logging
-  # Comment below to enable Loki logging
-    driver: json-file
-  # Uncomment below to enable Loki logging
-  #  driver: loki
-  #  options:
-  #    loki-url: 'http://localhost:3100/api/prom/push'
-  #    loki-pipeline-stages: |
-  #      - multiline:
-  #          firstline: '^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}'
-  #          max_wait_time: 3s
-  #      - regex:
-  #          expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},d{3}) (?P<message>(?s:.*))$$'
+  driver: loki
+  options:
+    loki-url: 'http://localhost:3100/api/prom/push'
+    loki-pipeline-stages: |
+      - multiline:
+          firstline: '^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}'
+          max_wait_time: 3s
+      - regex:
+          expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},d{3}) (?P<message>(?s:.*))$$'
 
 services:
 

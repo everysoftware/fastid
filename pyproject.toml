@@ -5,7 +5,6 @@ description = "Effortless authentication solution for your services"
 authors = ["Ivan Stasevich <pravitel2015ify@gmail.com>"]
 readme = "README.md"
 
-
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = {extras = ["all"], version = "^0.115.5"}
@@ -13,7 +12,8 @@ sqlalchemy = { extras = ["asyncio"], version = "^2.0.30" }
 gunicorn = "^22.0.0"
 alembic = "^1.13.1"
 asyncpg = "^0.29.0"
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+passlib = "^1.7.4"
+bcrypt = "^4.3.0"
 pyjwt = {extras = ["crypto"], version = "^2.9.0"}
 sqladmin = "^0.19.0"
 humanize = "^4.10.0"
@@ -32,7 +32,6 @@ uuid-utils = "^0.9.0"
 typer = "^0.14.0"
 fastlink = "^0.1.6"
 argon2-cffi = "^25.1.0"
-psycopg2 = "^2.9.11"
 
 
 [tool.poetry.group.dev.dependencies]
