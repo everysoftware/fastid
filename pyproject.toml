@@ -179,7 +179,7 @@ omit = [
     '*/schemas.py',
     "fastid/plugins/*",
     "fastid/pages/*",
-    "fastid/dashboard/*",
+    "fastid/admin/*",
     "fastid/core/*",
     "fastid/api/*",
 ]
