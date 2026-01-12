@@ -33,7 +33,8 @@ class YandexSettings(BaseSettings, BaseOAuthSettings):
 
 
 class TelegramSettings(BaseSettings):
-    enabled: bool = False
+    oauth_enabled: bool = False
+    notification_enabled: bool = False
     bot_token: str = ""
 
     model_config = SettingsConfigDict(env_prefix="telegram_")

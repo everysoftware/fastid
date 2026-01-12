@@ -4,7 +4,7 @@ from starlette import status
 
 from fastid.auth.schemas import UserDTO
 from fastid.cache.storage import CacheStorage
-from fastid.notify.schemas import UnsafeAction
+from fastid.notify.schemas import UserAction
 from fastid.security.crypto import generate_otp
 
 
@@ -15,7 +15,7 @@ async def test_verify_otp(client: AsyncClient, cache: CacheStorage, user: UserDT
     response = await client.post(
         "/otp/verify",
         json={
-            "action": UnsafeAction.change_password,
+            "action": UserAction.change_password,
             "code": code,
         },
         headers={"Authorization": f"Bearer {user_token.access_token}"},
@@ -26,13 +26,16 @@ async def test_verify_otp(client: AsyncClient, cache: CacheStorage, user: UserDT
 
 
 async def test_verify_otp_not_exists(
-    client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse
+    client: AsyncClient,
+    cache: CacheStorage,
+    user: UserDTO,
+    user_token: TokenResponse,
 ) -> None:
     code = generate_otp()
     response = await client.post(
         "/otp/verify",
         json={
-            "action": UnsafeAction.change_password,
+            "action": UserAction.change_password,
             "code": code,
         },
         headers={"Authorization": f"Bearer {user_token.access_token}"},
@@ -41,7 +44,10 @@ async def test_verify_otp_not_exists(
 
 
 async def test_verify_otp_wrong_code(
-    client: AsyncClient, cache: CacheStorage, user: UserDTO, user_token: TokenResponse
+    client: AsyncClient,
+    cache: CacheStorage,
+    user: UserDTO,
+    user_token: TokenResponse,
 ) -> None:
     code = generate_otp()
     fake_code = generate_otp()
@@ -49,7 +55,7 @@ async def test_verify_otp_wrong_code(
     response = await client.post(
         "/otp/verify",
         json={
-            "action": UnsafeAction.change_password,
+            "action": UserAction.change_password,
             "code": fake_code,
         },
         headers={"Authorization": f"Bearer {user_token.access_token}"},

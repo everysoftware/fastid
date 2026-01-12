@@ -8,7 +8,10 @@ from tests.mocks import faker
 
 
 async def test_update_user_password(
-    client: AsyncClient, user: UserDTO, user_token: TokenResponse, verify_token: str
+    client: AsyncClient,
+    user: UserDTO,
+    user_token: TokenResponse,
+    verify_token: str,
 ) -> None:
     new_password = faker.password()
     client.cookies.set(vt_transport.name, verify_token)

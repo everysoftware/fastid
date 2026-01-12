@@ -21,7 +21,7 @@ class ClientError(Exception):
         error_code: str | None = None,
         status_code: int | None = None,
         headers: dict[str, str] | None = None,
-    ):
+    ) -> None:
         if message is not None:
             self.message = message
         if error_code is not None:

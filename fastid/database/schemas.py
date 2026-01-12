@@ -40,11 +40,14 @@ class SortingElement:
             case 2:
                 field, order = values
             case _:
-                raise ValidationError(f"Invalid format: {value}")
+                msg = f"Invalid format: {value}"
+                raise ValidationError(msg)
         if order not in {"asc", "desc"}:
-            raise ValidationError(f"Invalid sorting order: {order}")
+            msg = f"Invalid sorting order: {order}"
+            raise ValidationError(msg)
         if not hasattr(model_type, field):
-            raise ValidationError(f"Invalid sorting field: {field}")
+            msg = f"Invalid sorting field: {field}"
+            raise ValidationError(msg)
         return cls(field, cast(Literal["asc", "desc"], order))
 
 

@@ -142,7 +142,7 @@ def get_test_db_url(source_db_url: str) -> str:
 
 
 @asynccontextmanager
-async def get_temp_db(db_url: str | URL) -> AsyncIterator[None]:
+async def get_temp_db(db_url: str) -> AsyncIterator[None]:
     await create_database_async(db_url)
     try:
         yield

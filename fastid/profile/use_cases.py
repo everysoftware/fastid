@@ -3,7 +3,7 @@ from fastid.auth.exceptions import (
     UserIDNotFoundError,
 )
 from fastid.auth.models import User
-from fastid.auth.repositories import UserEmailSpecification
+from fastid.auth.repositories import EmailUserSpecification
 from fastid.auth.schemas import (
     UserChangeEmail,
     UserChangePassword,
@@ -37,7 +37,7 @@ class ProfileUseCases(UseCase):
 
     async def change_email(self, user: User, dto: UserChangeEmail) -> User:
         try:
-            await self.uow.users.find(UserEmailSpecification(dto.new_email))
+            await self.uow.users.find(EmailUserSpecification(dto.new_email))
         except NoResultFoundError:
             pass
         else:

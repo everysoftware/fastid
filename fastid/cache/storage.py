@@ -8,6 +8,8 @@ from fastid.cache.exceptions import KeyNotFoundError
 
 
 class CacheStorage(ABC):
+    client: Any
+
     @abstractmethod
     async def keys(self, pattern: str = "*") -> set[str]: ...
 
@@ -22,6 +24,9 @@ class CacheStorage(ABC):
 
     @abstractmethod
     async def pop(self, key: str) -> str: ...
+
+    @abstractmethod
+    async def healthcheck(self) -> None: ...
 
 
 class RedisStorage(CacheStorage):
@@ -44,7 +49,8 @@ class RedisStorage(CacheStorage):
     async def get(self, key: str) -> str:
         value = await self.client.get(f"{self.key}:{key}")
         if value is None:
-            raise KeyNotFoundError(f"Key {key} not found")
+            msg = f"Key {key} not found"
+            raise KeyNotFoundError(msg)
         return str(json.loads(value))
 
     async def delete(self, key: str) -> None:
@@ -53,5 +59,9 @@ class RedisStorage(CacheStorage):
     async def pop(self, key: str) -> str:
         value = await self.client.getdel(f"{self.key}:{key}")
         if value is None:
-            raise KeyNotFoundError(f"Key {key} not found")
+            msg = f"Key {key} not found"
+            raise KeyNotFoundError(msg)
         return cast(str, json.loads(value))
+
+    async def healthcheck(self) -> None:
+        await self.client.ping()

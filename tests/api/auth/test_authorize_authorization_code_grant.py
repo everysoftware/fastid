@@ -8,7 +8,10 @@ from tests.utils.auth import authorize_authorization_code_grant, get_ac_grant_ca
 
 
 async def test_authorize_authorization_code_grant(
-    client: AsyncClient, frontend_client: AsyncClient, oauth_app: AppDTO, user_token: TokenResponse
+    client: AsyncClient,
+    frontend_client: AsyncClient,
+    oauth_app: AppDTO,
+    user_token: TokenResponse,
 ) -> None:
     callback = await get_ac_grant_callback(frontend_client, oauth_app, user_token)
     token = await authorize_authorization_code_grant(client, oauth_app, callback)
@@ -18,7 +21,10 @@ async def test_authorize_authorization_code_grant(
 
 
 async def test_authorize_authorization_code_grant_fake_code(
-    client: AsyncClient, frontend_client: AsyncClient, oauth_app: AppDTO, user_token: TokenResponse
+    client: AsyncClient,
+    frontend_client: AsyncClient,
+    oauth_app: AppDTO,
+    user_token: TokenResponse,
 ) -> None:
     code = generate_otp()
     response = await client.post(

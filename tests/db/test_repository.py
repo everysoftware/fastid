@@ -2,7 +2,7 @@ import pytest
 
 from fastid.api.exceptions import ValidationError
 from fastid.auth.models import User
-from fastid.auth.repositories import UserEmailSpecification
+from fastid.auth.repositories import EmailUserSpecification
 from fastid.database.exceptions import NoResultFoundError, NotSupportedPaginationError
 from fastid.database.schemas import LimitOffset, Pagination, Sorting
 from fastid.database.uow import SQLAlchemyUOW
@@ -47,13 +47,13 @@ async def test_repository_delete(uow: SQLAlchemyUOW, mock_user: User) -> None:
 
 async def test_repository_find(uow: SQLAlchemyUOW, mock_user: User) -> None:
     assert mock_user.email is not None
-    user = await uow.users.find(UserEmailSpecification(mock_user.email))
+    user = await uow.users.find(EmailUserSpecification(mock_user.email))
     assert user == mock_user
 
 
 async def test_repository_find_non_existent(uow: SQLAlchemyUOW) -> None:
     with pytest.raises(NoResultFoundError):
-        await uow.users.find(UserEmailSpecification("user@example.com"))
+        await uow.users.find(EmailUserSpecification("user@example.com"))
 
 
 @pytest.mark.parametrize(

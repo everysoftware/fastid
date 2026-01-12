@@ -24,7 +24,10 @@ async def test_oauth_callback_authorize(client: AsyncClient, provider: str, open
 
 @pytest.mark.parametrize(("provider", "openid"), [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID)])
 async def test_oauth_callback_authorize_email_exists(
-    client: AsyncClient, user: UserDTO, provider: str, openid: OpenID
+    client: AsyncClient,
+    user: UserDTO,
+    provider: str,
+    openid: OpenID,
 ) -> None:
     openid.email = user.email
 
@@ -41,7 +44,10 @@ async def test_oauth_callback_authorize_email_exists(
 
 @pytest.mark.parametrize(("provider", "openid"), [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID)])
 async def test_oauth_callback_connect(
-    client: AsyncClient, user_token: TokenResponse, provider: str, openid: OpenID
+    client: AsyncClient,
+    user_token: TokenResponse,
+    provider: str,
+    openid: OpenID,
 ) -> None:
     params = mocks.OAUTH_CALLBACK.model_dump(mode="json", exclude_unset=True)
     authorize_mock = AsyncMock(return_value=mocks.OAUTH_TOKEN_RESPONSE)
@@ -51,14 +57,19 @@ async def test_oauth_callback_connect(
         patch("fastlink.SSOBase.openid", new=userinfo_mock),
     ):
         response = await client.get(
-            f"/oauth/callback/{provider}", headers={"Authorization": f"Bearer {user_token.access_token}"}, params=params
+            f"/oauth/callback/{provider}",
+            headers={"Authorization": f"Bearer {user_token.access_token}"},
+            params=params,
         )
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
 
 @pytest.mark.parametrize(("provider", "openid"), [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID)])
 async def test_oauth_callback_double_connect(
-    client: AsyncClient, user_token: TokenResponse, provider: str, openid: OpenID
+    client: AsyncClient,
+    user_token: TokenResponse,
+    provider: str,
+    openid: OpenID,
 ) -> None:
     params = mocks.OAUTH_CALLBACK.model_dump(mode="json", exclude_unset=True)
     authorize_mock = AsyncMock(return_value=mocks.OAUTH_TOKEN_RESPONSE)
@@ -68,12 +79,16 @@ async def test_oauth_callback_double_connect(
         patch("fastlink.SSOBase.openid", new=userinfo_mock),
     ):
         response = await client.get(
-            f"/oauth/callback/{provider}", headers={"Authorization": f"Bearer {user_token.access_token}"}, params=params
+            f"/oauth/callback/{provider}",
+            headers={"Authorization": f"Bearer {user_token.access_token}"},
+            params=params,
         )
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
         response = await client.get(
-            f"/oauth/callback/{provider}", headers={"Authorization": f"Bearer {user_token.access_token}"}, params=params
+            f"/oauth/callback/{provider}",
+            headers={"Authorization": f"Bearer {user_token.access_token}"},
+            params=params,
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 

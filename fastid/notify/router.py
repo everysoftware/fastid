@@ -3,11 +3,31 @@ from typing import Annotated
 from fastapi import APIRouter, BackgroundTasks, Depends
 from starlette.responses import JSONResponse
 
-from fastid.auth.dependencies import UserOrNoneDep, vt_transport
+from fastid.auth.dependencies import UserDep, UserOrNoneDep, vt_transport
 from fastid.notify.dependencies import NotifyDep
-from fastid.notify.schemas import SendOTPRequest, VerifyOTPRequest
+from fastid.notify.schemas import PushNotificationRequest, SendOTPRequest, VerifyOTPRequest
 
-router = APIRouter()
+router = APIRouter(tags=["Notifications"])
+
+
+@router.post("/email/send")
+async def send_email(
+    user: UserDep,
+    notify_service: NotifyDep,
+    dto: PushNotificationRequest,
+    background: BackgroundTasks,
+) -> None:
+    background.add_task(notify_service.push_email, user, dto)
+
+
+@router.post("/telegram/send")
+async def send_telegram(
+    user: UserDep,
+    notify_service: NotifyDep,
+    dto: PushNotificationRequest,
+    background: BackgroundTasks,
+) -> None:
+    background.add_task(notify_service.push_telegram, user, dto)
 
 
 @router.post("/otp/send", tags=["OTP"])
@@ -17,8 +37,7 @@ async def send_otp(
     dto: Annotated[SendOTPRequest, Depends()],
     background: BackgroundTasks,
 ) -> None:
-    notification = await notify_service.get_otp_notification(user, dto)
-    background.add_task(notify_service.push, notification)
+    background.add_task(notify_service.push_otp, user, dto)
 
 
 @router.post("/otp/verify", tags=["OTP"])

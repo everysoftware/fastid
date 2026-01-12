@@ -41,7 +41,7 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
 
         try:
             response = await call_next(request)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
             panels.EXCEPTIONS.labels(
                 method=method,
@@ -57,7 +57,8 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
             span = trace.get_current_span()
             trace_id = trace.format_trace_id(span.get_span_context().trace_id)
             panels.REQUESTS_PROCESSING_TIME.labels(method=method, path=path, app_name=self.app_name).observe(
-                after_time - before_time, exemplar={"TraceID": trace_id}
+                after_time - before_time,
+                exemplar={"TraceID": trace_id},
             )
         finally:
             panels.RESPONSES.labels(

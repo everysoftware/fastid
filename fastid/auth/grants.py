@@ -25,7 +25,7 @@ from fastid.auth.exceptions import (
     NotSupportedResponseTypeError,
 )
 from fastid.auth.models import User
-from fastid.auth.repositories import UserEmailSpecification
+from fastid.auth.repositories import EmailUserSpecification
 from fastid.auth.schemas import OAuth2ConsentRequest
 from fastid.cache.dependencies import CacheDep
 from fastid.cache.exceptions import KeyNotFoundError
@@ -82,7 +82,7 @@ class Grant(UseCase):
 class PasswordGrant(Grant):
     async def authorize(self, form: OAuth2PasswordRequest) -> TokenResponse:
         try:
-            user = await self.uow.users.find(UserEmailSpecification(form.username))
+            user = await self.uow.users.find(EmailUserSpecification(form.username))
         except NoResultFoundError as e:
             raise EmailNotFoundError from e
         user.verify_password(form.password)

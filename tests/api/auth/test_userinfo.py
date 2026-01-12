@@ -24,7 +24,8 @@ async def test_userinfo_user_not_exists(client: AsyncClient, user: UserDTO) -> N
 
 async def test_userinfo_fake_token(client: AsyncClient, user: UserDTO) -> None:
     response = await client.get(
-        "/userinfo", headers={"Authorization": f"Bearer {faker.pystr(min_chars=8, max_chars=256)}"}
+        "/userinfo",
+        headers={"Authorization": f"Bearer {faker.pystr(min_chars=8, max_chars=256)}"},
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 

@@ -14,7 +14,7 @@ app = FastAPI()
 def login(request: Request) -> Any:
     params = {
         "response_type": "code",
-        "client_id": settings.client_id,
+        "client_id": settings.fastid_client_id,
         "redirect_uri": request.url_for("callback"),
         "scope": "openid",
     }
@@ -29,8 +29,8 @@ def callback(code: str) -> Any:
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
             "grant_type": "authorization_code",
-            "client_id": settings.client_id,
-            "client_secret": settings.client_secret,
+            "client_id": settings.fastid_client_id,
+            "client_secret": settings.fastid_client_secret,
             "code": code,
         },
     )

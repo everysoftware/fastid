@@ -71,7 +71,7 @@ async def telegram_callback(
     "/callback/{provider}",
     status_code=status.HTTP_200_OK,
 )
-async def oauth_callback(
+async def oauth_get_callback(
     service: OAuthAccountsDep,
     request: Request,
     user: UserOrNoneDep,

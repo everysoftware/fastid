@@ -74,6 +74,7 @@ services:
       - fastid-redis
     logging: *default-logging
     volumes:
+      - "./migrations:/opt/fastid/migrations"
       - "./fastid:/opt/fastid/fastid"
       - "./templates:/opt/fastid/templates"
       - "./static:/opt/fastid/static"

@@ -20,8 +20,8 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
+# from myapp import mymodel  # noqa: ERA001
+# target_metadata = mymodel.Base.metadata  # noqa: ERA001
 target_metadata = BaseOrm.metadata
 
 current_url = config.get_main_option("sqlalchemy.url")
@@ -31,7 +31,7 @@ if not current_url or current_url == "driver://user:pass@localhost/dbname":
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
+# my_important_option = config.get_main_option("my_important_option")  # noqa: ERA001
 # ... etc.
 
 
@@ -71,7 +71,6 @@ async def run_async_migrations() -> None:
     and associate a connection with the context.
 
     """
-
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -87,7 +86,6 @@ async def run_async_migrations() -> None:
 # https://alembic.sqlalchemy.org/en/latest/cookbook.html#programmatic-api-use-connection-sharing-with-asyncio
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-
     connectable = config.attributes.get("connection", None)
 
     if connectable is None:

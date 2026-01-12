@@ -7,14 +7,16 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine
 from starlette import status
 
+from fastid.api.lifespan import LifespanTasks
 from fastid.apps.schemas import AppDTO
 from fastid.auth.schemas import UserDTO
 from fastid.cache.storage import CacheStorage
 from fastid.core.dependencies import log_provider
 from fastid.database.uow import SQLAlchemyUOW
-from fastid.notify.schemas import UnsafeAction
+from fastid.notify.schemas import UserAction
 from fastid.security.crypto import generate_otp
 from tests import mocks
+from tests.dependencies import get_test_cache, get_test_uow
 from tests.utils.auth import authorize_password_grant, register_user
 from tests.utils.db import delete_all
 
@@ -29,6 +31,13 @@ async def _reset_db(engine: AsyncEngine) -> None:
 @pytest.fixture(autouse=True)
 async def _reset_redis(redis_client: Redis) -> None:
     await redis_client.flushdb()
+
+
+@pytest.fixture(autouse=True)
+async def _start_app() -> None:
+    tasks = LifespanTasks(uow_factory=get_test_uow, cache_factory=get_test_cache)
+    async with tasks:
+        await tasks.create_templates()
 
 
 @pytest.fixture
@@ -74,7 +83,7 @@ async def verify_token(client: AsyncClient, cache: CacheStorage, user: UserDTO, 
     response = await client.post(
         "/otp/verify",
         json={
-            "action": UnsafeAction.change_password,
+            "action": UserAction.change_password,
             "code": code,
         },
         headers={"Authorization": f"Bearer {user_token.access_token}"},

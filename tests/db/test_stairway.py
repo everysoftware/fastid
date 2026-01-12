@@ -1,5 +1,4 @@
-"""
-Test can find forgotten downgrade methods, undeleted data types in downgrade
+"""Test can find forgotten downgrade methods, undeleted data types in downgrade
 methods, typos and many other errors.
 
 Does not require any maintenance - you just add it once to check 80% of typos
@@ -28,6 +27,7 @@ def get_revisions() -> list[Script]:
     return revisions
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("revision", get_revisions())
 def test_migrations_stairway(revision: Script) -> None:
     """Stairway tests."""

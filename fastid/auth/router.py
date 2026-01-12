@@ -17,7 +17,7 @@ from fastid.auth.schemas import (
     UserDTO,
 )
 from fastid.notify.dependencies import NotifyDep
-from fastid.notify.schemas import WelcomeNotification
+from fastid.notify.schemas import PushNotificationRequest
 
 router = APIRouter(tags=["Auth"])
 
@@ -30,7 +30,7 @@ async def register(
     background: BackgroundTasks,
 ) -> Any:
     user = await service.register(dto)
-    background.add_task(notify.push, WelcomeNotification(user))  # pragma: nocover
+    background.add_task(notify.push, user, PushNotificationRequest(template_slug="welcome"))  # pragma: nocover
     return user  # pragma: nocover
 
 
