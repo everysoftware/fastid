@@ -30,7 +30,7 @@ async def register(
     background: BackgroundTasks,
 ) -> Any:
     user = await service.register(dto)
-    background.add_task(notify.push, user, PushNotificationRequest(template_slug="welcome"))  # pragma: nocover
+    background.add_task(notify.push, user, PushNotificationRequest(template="welcome"))  # pragma: nocover
     return user  # pragma: nocover
 
 

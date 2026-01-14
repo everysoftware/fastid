@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
     from fastid.auth.schemas import UserCreate
+    from fastid.notify.models import Notification
     from fastid.oauth.models import OAuthAccount
     from fastid.oauth.schemas import OpenIDBearer
 
@@ -35,6 +36,7 @@ class User(Entity):
     is_verified: Mapped[bool] = mapped_column(default=False)
 
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(back_populates="user", cascade="delete")
+    notifications: Mapped[list[Notification]] = relationship(back_populates="user", cascade="delete")
 
     @hybrid_property
     def is_oauth(self) -> bool:

@@ -1,4 +1,3 @@
-from collections.abc import Mapping
 from enum import StrEnum
 from typing import Any
 
@@ -15,8 +14,8 @@ class UserAction(StrEnum):
 
 
 class PushNotificationRequest(BaseModel):
-    template_slug: str
-    template_args: Mapping[str, Any] = Field(default_factory=dict)
+    template: str
+    context: dict[str, Any] = Field(default_factory=dict)
 
 
 class SendOTPRequest(BaseModel):

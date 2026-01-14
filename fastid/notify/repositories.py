@@ -2,7 +2,7 @@ from typing import Any
 
 from fastid.database.repository import SQLAlchemyRepository
 from fastid.database.specification import Specification
-from fastid.notify.models import EmailTemplate, TelegramTemplate
+from fastid.notify.models import EmailTemplate, Notification, TelegramTemplate
 
 
 class EmailTemplateRepository(SQLAlchemyRepository[EmailTemplate]):
@@ -27,3 +27,7 @@ class TelegramTemplateSlugSpecification(Specification):
 
     def apply(self, stmt: Any) -> Any:
         return stmt.where(TelegramTemplate.slug == self.slug)
+
+
+class NotificationRepository(SQLAlchemyRepository[Notification]):
+    model_type = Notification
