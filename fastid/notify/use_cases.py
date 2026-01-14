@@ -21,6 +21,7 @@ from fastid.notify.exceptions import (
     TemplateNotFoundError,
     WrongCodeError,
 )
+from fastid.notify.models import Notification, NotificationType
 from fastid.notify.repositories import EmailTemplateSlugSpecification, TelegramTemplateSlugSpecification
 from fastid.notify.schemas import (
     PushNotificationRequest,
@@ -58,13 +59,15 @@ class NotificationUseCases(UseCase):
         base_template = jinja_env.from_string(base.source)
 
         try:
-            main = await self.uow.email_templates.find(EmailTemplateSlugSpecification(dto.template_slug))
+            main = await self.uow.email_templates.find(EmailTemplateSlugSpecification(dto.template))
         except NoResultFoundError as e:
             raise TemplateNotFoundError from e
 
         main_template = jinja_env.from_string(main.source)
-        content = main_template.render(base=base_template, user=user, **dto.template_args)
+        content = main_template.render(base=base_template, user=user, **dto.context)
         await self.mail.send(contact=contact, subject=main.subject, content=content)
+        notification = Notification(user=user, type=NotificationType.email, template=dto.template, context=dto.context)
+        await self.uow.notifications.add(notification)
 
     @transactional
     async def push_telegram(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
@@ -76,13 +79,20 @@ class NotificationUseCases(UseCase):
         assert contact.type == ContactType.telegram
 
         try:
-            template = await self.uow.telegram_templates.find(TelegramTemplateSlugSpecification(dto.template_slug))
+            template = await self.uow.telegram_templates.find(TelegramTemplateSlugSpecification(dto.template))
         except NoResultFoundError as e:
             raise TemplateNotFoundError from e
 
         jinja_template = jinja_env.from_string(template.source)
-        content = jinja_template.render(user=user, **dto.template_args)
+        content = jinja_template.render(user=user, **dto.context)
         await self.telegram.send(contact=contact, content=content)
+        notification = Notification(
+            user=user,
+            type=NotificationType.telegram,
+            template=dto.template,
+            context=dto.context,
+        )
+        await self.uow.notifications.add(notification)
 
     async def push(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
         if contact is None:
@@ -102,7 +112,7 @@ class NotificationUseCases(UseCase):
         assert user is not None
         contact = user.find_contact_for_otp(dto)
         code = await self._generate_otp(user)
-        request = PushNotificationRequest(template_slug="code", template_args={"code": code})
+        request = PushNotificationRequest(template="code", context={"code": code})
         await self.push(user, request, contact)
 
     async def validate_otp(self, user: User, code: str) -> None:

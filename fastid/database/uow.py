@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from fastid.apps.repositories import AppRepository
 from fastid.auth.repositories import UserRepository
-from fastid.notify.repositories import EmailTemplateRepository, TelegramTemplateRepository
+from fastid.notify.repositories import EmailTemplateRepository, NotificationRepository, TelegramTemplateRepository
 from fastid.oauth.repositories import OAuthAccountRepository
 
 if TYPE_CHECKING:
@@ -25,6 +25,7 @@ class SQLAlchemyUOW:
     apps: AppRepository
     email_templates: EmailTemplateRepository
     telegram_templates: TelegramTemplateRepository
+    notifications: NotificationRepository
 
     session_factory: async_sessionmaker[AsyncSession]
     session: AsyncSession
@@ -39,6 +40,7 @@ class SQLAlchemyUOW:
         self.apps = AppRepository(self.session)
         self.email_templates = EmailTemplateRepository(self.session)
         self.telegram_templates = TelegramTemplateRepository(self.session)
+        self.notifications = NotificationRepository(self.session)
 
     @property
     def is_active(self) -> bool:

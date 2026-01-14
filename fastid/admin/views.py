@@ -6,7 +6,7 @@ from sqladmin import ModelView
 from fastid.apps.models import App
 from fastid.database.alembic import OAuthAccount, User
 from fastid.database.utils import naive_utc
-from fastid.notify.models import EmailTemplate, TelegramTemplate
+from fastid.notify.models import EmailTemplate, Notification, TelegramTemplate
 
 
 def time_format(m: Any, a: Any) -> Any:
@@ -26,7 +26,7 @@ class BaseView(ModelView):
     ]
 
     column_default_sort = [("created_at", True)]
-
+    column_type_formatters = {**ModelView.column_type_formatters}
     column_formatters = {
         "created_at": time_format,
         "updated_at": time_format,
@@ -79,7 +79,7 @@ class OAuthAccountAdmin(BaseView, model=OAuthAccount):
 
     column_list = [
         OAuthAccount.id,
-        OAuthAccount.user_id,
+        OAuthAccount.user,
         OAuthAccount.provider,
         OAuthAccount.email,
         OAuthAccount.display_name,
@@ -124,4 +124,23 @@ class TelegramTemplateAdmin(BaseView, model=TelegramTemplate):
 
     column_searchable_list = [
         TelegramTemplate.slug,
+    ]
+
+
+class NotificationAdmin(BaseView, model=Notification):
+    name = "Notification"
+    name_plural = "Notifications"
+    icon = "fa-solid fa-bell"
+
+    column_list = [
+        Notification.id,
+        Notification.user,
+        Notification.type,
+        Notification.template,
+        Notification.created_at,
+        Notification.updated_at,
+    ]
+
+    column_searchable_list = [
+        Notification.user,
     ]

@@ -107,8 +107,8 @@ TELEGRAM_OPENID_BEARER = OpenIDBearer(
 )
 TELEGRAM_WIDGET = TelegramWidget(bot_username=faker.user_name(), callback_url=faker.url())
 
-PUSH_NOTIFICATION_REQUEST = PushNotificationRequest(template_slug="welcome")
-PUSH_NOTIFICATION_REQUEST_FAKE_TEMPLATE = PushNotificationRequest(template_slug="fake")
+PUSH_NOTIFICATION_REQUEST = PushNotificationRequest(template="welcome")
+PUSH_NOTIFICATION_REQUEST_FAKE_TEMPLATE = PushNotificationRequest(template="fake")
 
 
 class MockError(Exception):

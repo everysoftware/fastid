@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any, Self
 from uuid import UUID
 
-from sqlalchemy import BigInteger, MetaData, Uuid, inspect
+from sqlalchemy import JSON, BigInteger, MetaData, Uuid, inspect
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -14,11 +14,7 @@ from sqlalchemy.orm import (
 from fastid.core.schemas import BaseModel
 from fastid.database.utils import naive_utc, uuid
 
-type_map = {
-    int: BigInteger,
-    Enum: SAEnum(Enum, native_enum=False),
-    UUID: Uuid(),
-}
+type_map = {int: BigInteger, Enum: SAEnum(Enum, native_enum=False), UUID: Uuid(), dict[str, Any]: JSON}
 
 NAMING_CONVENTION = {
     "ix": "%(column_0_label)s_idx",
@@ -46,9 +42,6 @@ class BaseOrm(DeclarativeBase):
     def dump(self) -> dict[str, Any]:  # pragma: nocover
         return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
 
-    def __repr__(self) -> str:  # pragma: nocover
-        return repr(self.dump())
-
 
 class Mixin:
     pass
@@ -73,3 +66,6 @@ class AuditMixin(Mixin):
 
 class Entity(BaseOrm, UUIDMixin, AuditMixin):
     __abstract__ = True
+
+    def __repr__(self) -> str:  # pragma: nocover
+        return f"{self.__class__.__name__} ('{self.id}')"
