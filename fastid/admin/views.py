@@ -26,7 +26,6 @@ class BaseView(ModelView):
     ]
 
     column_default_sort = [("created_at", True)]
-    column_type_formatters = {**ModelView.column_type_formatters}
     column_formatters = {
         "created_at": time_format,
         "updated_at": time_format,
