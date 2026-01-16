@@ -10,10 +10,12 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
 )
+from sqlalchemy_continuum import make_versioned
 
 from fastid.core.schemas import BaseModel
 from fastid.database.utils import naive_utc, uuid
 
+make_versioned()
 type_map = {int: BigInteger, Enum: SAEnum(Enum, native_enum=False), UUID: Uuid(), dict[str, Any]: JSON}
 
 NAMING_CONVENTION = {

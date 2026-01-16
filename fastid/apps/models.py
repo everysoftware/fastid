@@ -1,4 +1,5 @@
 import secrets
+from typing import Any
 
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -9,6 +10,7 @@ from fastid.database.utils import uuid_hex
 
 class App(Entity):
     __tablename__ = "apps"
+    __versioned__: dict[str, Any] = {}
 
     name: Mapped[str]
     slug: Mapped[str] = mapped_column(unique=True)

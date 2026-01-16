@@ -4141,6 +4141,29 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
+name = "sqlalchemy-continuum"
+version = "1.5.2"
+description = "Versioning and auditing extension for SQLAlchemy."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "sqlalchemy_continuum-1.5.2-py3-none-any.whl", hash = "sha256:978e525401089a7ccc96eed184bb4b362c25191e2562008ccc43adcc405ba346"},
+    {file = "sqlalchemy_continuum-1.5.2.tar.gz", hash = "sha256:2571d6eb6156bc8562afb392fdddeb4bb31e44a1fd1f3788cb625efe2f696c63"},
+]
+
+[package.dependencies]
+SQLAlchemy = ">=1.4.53,<2.1"
+
+[package.extras]
+dev = ["pre-commit (>=3.0.0)", "ruff (>=0.1.0)", "tox (>=4.0.0)"]
+docs = ["furo (>=2021.11.0)", "sphinx (>=4.0.0)"]
+flask = ["Flask (>=0.9)"]
+flask-login = ["Flask-Login (>=0.2.9)"]
+flask-sqlalchemy = ["Flask-SQLAlchemy (>=1.0)"]
+test = ["Flask (>=0.9)", "Flask-Login (>=0.2.9)", "Flask-SQLAlchemy (>=1.0)", "PyMySQL (>=0.8.0)", "packaging", "psycopg2 (>=2.4.6)", "pytest (>=2.3.5)"]
+
+[[package]]
 name = "sqlalchemy-utils"
 version = "0.41.2"
 description = "Various utility functions for SQLAlchemy."
@@ -5071,4 +5094,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "33971e828f2e737a5c2220856a1a9554edf268cec53be9c9385be50d97dd20ba"
+content-hash = "172307e28e48d08b14e5c1aace9dc4078c52fcc3f041f4a80c9b805ba0cd4bb4"

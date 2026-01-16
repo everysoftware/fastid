@@ -20,6 +20,7 @@ class NotificationType(StrEnum):
 
 class EmailTemplate(Entity):
     __tablename__ = "email_templates"
+    __versioned__: dict[str, Any] = {}
 
     slug: Mapped[str] = mapped_column(unique=True)
     subject: Mapped[str]
@@ -28,6 +29,7 @@ class EmailTemplate(Entity):
 
 class TelegramTemplate(Entity):
     __tablename__ = "telegram_templates"
+    __versioned__: dict[str, Any] = {}
 
     slug: Mapped[str] = mapped_column(unique=True)
     source: Mapped[str]

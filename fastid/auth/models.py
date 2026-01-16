@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
 class User(Entity):
     __tablename__ = "users"
+    __versioned__: dict[str, Any] = {}
 
     first_name: Mapped[str]
     last_name: Mapped[str | None]
