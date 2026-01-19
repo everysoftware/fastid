@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, BackgroundTasks, status
 
 from fastid.auth.dependencies import UserDep, UserVTDep
 from fastid.auth.schemas import (
@@ -11,17 +11,23 @@ from fastid.auth.schemas import (
 )
 from fastid.notify.dependencies import NotifyDep
 from fastid.profile.dependencies import ProfilesDep
+from fastid.webhooks.dependencies import WebhooksDep
+from fastid.webhooks.models import WebhookType
+from fastid.webhooks.schemas import SendWebhookRequest
 
 router = APIRouter(tags=["Users"])
 
 
 @router.patch("/users/me/profile", response_model=UserDTO, status_code=status.HTTP_200_OK)
 async def patch(
-    service: ProfilesDep,
-    user: UserDep,
-    dto: UserUpdate,
+    service: ProfilesDep, user: UserDep, dto: UserUpdate, webhooks: WebhooksDep, background: BackgroundTasks
 ) -> Any:
-    return await service.update_profile(user, dto)
+    user = await service.update_profile(user, dto)
+    webhook = SendWebhookRequest(
+        type=WebhookType.user_update_profile, payload=UserDTO.model_validate(user).model_dump(mode="json")
+    )
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
+    return user
 
 
 @router.patch(
@@ -29,9 +35,21 @@ async def patch(
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def change_email(service: ProfilesDep, notify_service: NotifyDep, user: UserVTDep, dto: UserChangeEmail) -> Any:
+async def change_email(  # noqa: PLR0913
+    service: ProfilesDep,
+    notify_service: NotifyDep,
+    user: UserVTDep,
+    dto: UserChangeEmail,
+    webhooks: WebhooksDep,
+    background: BackgroundTasks,
+) -> Any:
     await notify_service.validate_otp(user, dto.code)
-    return await service.change_email(user, dto)
+    user = await service.change_email(user, dto)
+    webhook = SendWebhookRequest(
+        type=WebhookType.user_update_profile, payload=UserDTO.model_validate(user).model_dump(mode="json")
+    )
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
+    return user
 
 
 @router.patch(
@@ -39,8 +57,15 @@ async def change_email(service: ProfilesDep, notify_service: NotifyDep, user: Us
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def change_password(service: ProfilesDep, user: UserVTDep, dto: UserChangePassword) -> Any:
-    return await service.change_password(user, dto)
+async def change_password(
+    service: ProfilesDep, user: UserVTDep, dto: UserChangePassword, webhooks: WebhooksDep, background: BackgroundTasks
+) -> Any:
+    user = await service.change_password(user, dto)
+    webhook = SendWebhookRequest(
+        type=WebhookType.user_update_profile, payload=UserDTO.model_validate(user).model_dump(mode="json")
+    )
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
+    return user
 
 
 @router.delete(
@@ -48,5 +73,10 @@ async def change_password(service: ProfilesDep, user: UserVTDep, dto: UserChange
     response_model=UserDTO,
     status_code=status.HTTP_200_OK,
 )
-async def delete(service: ProfilesDep, user: UserVTDep) -> Any:
-    return await service.delete_account(user)
+async def delete(service: ProfilesDep, user: UserVTDep, webhooks: WebhooksDep, background: BackgroundTasks) -> Any:
+    user = await service.delete_account(user)
+    webhook = SendWebhookRequest(
+        type=WebhookType.user_update_profile, payload=UserDTO.model_validate(user).model_dump(mode="json")
+    )
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
+    return user

@@ -18,6 +18,9 @@ from fastid.auth.schemas import (
 )
 from fastid.notify.dependencies import NotifyDep
 from fastid.notify.schemas import PushNotificationRequest
+from fastid.webhooks.dependencies import WebhooksDep
+from fastid.webhooks.models import WebhookType
+from fastid.webhooks.schemas import SendWebhookRequest
 
 router = APIRouter(tags=["Auth"])
 
@@ -26,11 +29,15 @@ router = APIRouter(tags=["Auth"])
 async def register(
     service: AuthDep,
     notify: NotifyDep,
+    webhooks: WebhooksDep,
     dto: UserCreate,
     background: BackgroundTasks,
 ) -> Any:
     user = await service.register(dto)
     background.add_task(notify.push, user, PushNotificationRequest(template="welcome"))  # pragma: nocover
+    background.add_task(
+        webhooks.send, SendWebhookRequest(type=WebhookType.user_registration, payload={"user": user})
+    )  # pragma: nocover
     return user  # pragma: nocover
 
 
@@ -39,11 +46,13 @@ async def register(
     status_code=status.HTTP_200_OK,
     response_model=TokenResponse,
 )
-async def authorize(
+async def authorize(  # noqa: PLR0913
     form: Annotated[OAuth2TokenRequest, Form()],
     password_grant: Annotated[PasswordGrant, Depends()],
     authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
     refresh_token_grant: Annotated[RefreshTokenGrant, Depends()],
+    webhooks: WebhooksDep,
+    background: BackgroundTasks,
 ) -> Any:
     match form.grant_type:
         case OAuth2Grant.password:
@@ -54,6 +63,9 @@ async def authorize(
             token = await refresh_token_grant.authorize(form.as_refresh_token_grant())
         case _:
             raise NotSupportedGrantError
+    background.add_task(
+        webhooks.send, SendWebhookRequest(type=WebhookType.user_login, payload={"token": token.model_dump(mode="json")})
+    )  # pragma: nocover
     return cookie_transport.get_login_response(token)
 
 

@@ -8,6 +8,7 @@ from fastid.database.versioning import (
     TelegramTemplateVersion,
     Transaction,
     UserVersion,
+    WebhookVersion,
 )
 
 
@@ -56,6 +57,7 @@ class BaseVersionView(ModelView):
     column_sortable_list = ["transaction_id"]
     column_filters = [
         OperationColumnFilter("transaction_id"),
+        OperationColumnFilter("operation_type"),
     ]
 
 
@@ -77,3 +79,8 @@ class EmailTemplateVersionAdmin(BaseVersionView, model=EmailTemplateVersion):
 class TelegramTemplateVersionAdmin(BaseVersionView, model=TelegramTemplateVersion):
     name = "Telegram Template Version"
     name_plural = "Telegram Template Versions"
+
+
+class WebhookVersionAdmin(BaseVersionView, model=WebhookVersion):
+    name = "Webhook Version"
+    name_plural = "Webhook Versions"

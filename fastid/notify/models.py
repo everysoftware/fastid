@@ -36,7 +36,7 @@ class TelegramTemplate(VersionedEntity):
 class Notification(Entity):
     __tablename__ = "notifications"
 
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
     type: Mapped[NotificationType]
     template: Mapped[str]
     context: Mapped[dict[str, Any]]

@@ -4,6 +4,7 @@ import humanize
 
 from fastid.database.utils import naive_utc
 
+JSON_SLICE_SIZE = 16
 OPERATION_TYPES = {0: "CREATE", 1: "UPDATE", 2: "DELETE"}
 
 
@@ -26,4 +27,14 @@ def time_format(m: Any, a: Any) -> Any:
 
 def operation_type_format(m: Any, a: Any) -> Any:
     val = getattr(m, a)
-    return OPERATION_TYPES[val]
+    return f"{OPERATION_TYPES[val]} ({val})"
+
+
+def json_format(m: Any, a: Any) -> Any:
+    val = str(getattr(m, a))
+    total_length = len(val)
+    if total_length <= 2 * JSON_SLICE_SIZE:
+        return val
+    first_part = val[:JSON_SLICE_SIZE]
+    last_part = val[-JSON_SLICE_SIZE:]
+    return f"{first_part}...{last_part}"
