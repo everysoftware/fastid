@@ -6,16 +6,13 @@ from sqlalchemy import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from fastid.admin.auth import admin_auth
-from fastid.admin.views import (
-    AppAdmin,
+from fastid.admin.views.entities import NotificationAdmin, OAuthAccountAdmin, UserAdmin
+from fastid.admin.views.settings import AppAdmin, EmailTemplateAdmin, TelegramTemplateAdmin
+from fastid.admin.views.versioning import (
     AppVersionAdmin,
-    EmailTemplateAdmin,
     EmailTemplateVersionAdmin,
-    NotificationAdmin,
-    OAuthAccountAdmin,
-    TelegramTemplateAdmin,
     TelegramTemplateVersionAdmin,
-    UserAdmin,
+    TransactionAdmin,
     UserVersionAdmin,
 )
 from fastid.core.base import MiniApp
@@ -52,6 +49,7 @@ class AdminMiniApp(MiniApp):
         admin.add_view(EmailTemplateAdmin)
         admin.add_view(TelegramTemplateAdmin)
         # Versioning
+        admin.add_view(TransactionAdmin)
         admin.add_view(UserVersionAdmin)
         admin.add_view(AppVersionAdmin)
         admin.add_view(EmailTemplateVersionAdmin)

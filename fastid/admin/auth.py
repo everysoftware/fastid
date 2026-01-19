@@ -15,7 +15,7 @@ class AdminAuth(AuthenticationBackend):
         assert isinstance(username, str)
         assert isinstance(password, str)
 
-        if not secrets.compare_digest(username, admin_settings.username) or not secrets.compare_digest(
+        if not secrets.compare_digest(username, admin_settings.email) or not secrets.compare_digest(
             password,
             admin_settings.password,
         ):

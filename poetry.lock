@@ -4029,14 +4029,14 @@ typer = ">=0.8.0"
 
 [[package]]
 name = "sqladmin"
-version = "0.19.0"
+version = "0.22.0"
 description = "SQLAlchemy admin for FastAPI and Starlette"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "sqladmin-0.19.0-py3-none-any.whl", hash = "sha256:7549df159c1a9e65d2a9bf66ddca321e4c2aafef824faa23b881fa0aa08b88bf"},
-    {file = "sqladmin-0.19.0.tar.gz", hash = "sha256:edd7d1a16e61fc4edb428dc92a99e9f5b41252127a9d93637ce1d9b3eaa20877"},
+    {file = "sqladmin-0.22.0-py3-none-any.whl", hash = "sha256:f2fb11165a70601a97f71956104b47da2c432db49b0d7966dc65e9e6343887d3"},
+    {file = "sqladmin-0.22.0.tar.gz", hash = "sha256:4ea904d97e4d030edb68fb0681330b4d963f422442a64bee487fdc46119b3729"},
 ]
 
 [package.dependencies]
@@ -5094,4 +5094,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "172307e28e48d08b14e5c1aace9dc4078c52fcc3f041f4a80c9b805ba0cd4bb4"
+content-hash = "fdf6fc122b5be5c3c943add4eb9c34b8f232a8b16d7e70af0140275ec303b825"

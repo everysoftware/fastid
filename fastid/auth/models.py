@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Self
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fastid.auth.exceptions import WrongPasswordError
 from fastid.auth.schemas import Contact, ContactType
-from fastid.database.base import Entity
+from fastid.database.base import VersionedEntity
 from fastid.database.utils import uuid
 from fastid.notify.config import notify_settings
 from fastid.notify.schemas import SendOTPRequest, UserAction
@@ -23,9 +23,8 @@ if TYPE_CHECKING:
     from fastid.oauth.schemas import OpenIDBearer
 
 
-class User(Entity):
+class User(VersionedEntity):
     __tablename__ = "users"
-    __versioned__: dict[str, Any] = {}
 
     first_name: Mapped[str]
     last_name: Mapped[str | None]

@@ -9,10 +9,12 @@ from fastid.oauth.models import OAuthAccount
 
 configure_mappers()
 
+
 from fastid.database.versioning import (  # noqa: E402
     AppVersion,
     EmailTemplateVersion,
     TelegramTemplateVersion,
+    Transaction,
     UserVersion,
 )
 
@@ -28,4 +30,5 @@ __all__ = [
     "AppVersion",
     "EmailTemplateVersion",
     "TelegramTemplateVersion",
+    "Transaction",
 ]

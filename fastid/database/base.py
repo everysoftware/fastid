@@ -71,3 +71,8 @@ class Entity(BaseOrm, UUIDMixin, AuditMixin):
 
     def __repr__(self) -> str:  # pragma: nocover
         return f"{self.__class__.__name__} ('{self.id}')"
+
+
+class VersionedEntity(Entity):
+    __abstract__ = True
+    __versioned__: dict[str, Any] = {}

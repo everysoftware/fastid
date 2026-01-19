@@ -7,7 +7,7 @@ from uuid import UUID  # noqa: TCH003
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fastid.database.base import Entity
+from fastid.database.base import Entity, VersionedEntity
 
 if TYPE_CHECKING:
     from fastid.auth.models import User
@@ -18,18 +18,16 @@ class NotificationType(StrEnum):
     telegram = auto()
 
 
-class EmailTemplate(Entity):
+class EmailTemplate(VersionedEntity):
     __tablename__ = "email_templates"
-    __versioned__: dict[str, Any] = {}
 
     slug: Mapped[str] = mapped_column(unique=True)
     subject: Mapped[str]
     source: Mapped[str]
 
 
-class TelegramTemplate(Entity):
+class TelegramTemplate(VersionedEntity):
     __tablename__ = "telegram_templates"
-    __versioned__: dict[str, Any] = {}
 
     slug: Mapped[str] = mapped_column(unique=True)
     source: Mapped[str]
