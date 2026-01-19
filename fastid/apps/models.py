@@ -3,11 +3,11 @@ import secrets
 from sqlalchemy.orm import Mapped, mapped_column
 
 from fastid.apps.exceptions import InvalidClientCredentialsError, InvalidRedirectURIError
-from fastid.database.base import Entity
+from fastid.database.base import VersionedEntity
 from fastid.database.utils import uuid_hex
 
 
-class App(Entity):
+class App(VersionedEntity):
     __tablename__ = "apps"
 
     name: Mapped[str]

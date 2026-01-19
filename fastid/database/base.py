@@ -10,10 +10,12 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
 )
+from sqlalchemy_continuum import make_versioned
 
 from fastid.core.schemas import BaseModel
 from fastid.database.utils import naive_utc, uuid
 
+make_versioned()
 type_map = {int: BigInteger, Enum: SAEnum(Enum, native_enum=False), UUID: Uuid(), dict[str, Any]: JSON}
 
 NAMING_CONVENTION = {
@@ -69,3 +71,8 @@ class Entity(BaseOrm, UUIDMixin, AuditMixin):
 
     def __repr__(self) -> str:  # pragma: nocover
         return f"{self.__class__.__name__} ('{self.id}')"
+
+
+class VersionedEntity(Entity):
+    __abstract__ = True
+    __versioned__: dict[str, Any] = {}

@@ -12,7 +12,7 @@ from sqlalchemy_utils.functions.database import (
 )
 from sqlalchemy_utils.functions.orm import quote
 
-from fastid.database.alembic import BaseOrm
+from fastid.database.models import BaseOrm
 
 
 # Next functions are copied from `sqlalchemy_utils` and slightly modified to support async.
