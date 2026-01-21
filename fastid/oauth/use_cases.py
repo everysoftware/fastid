@@ -1,6 +1,5 @@
 import contextlib
 
-from fastlink.jwt.schemas import JWTPayload
 from fastlink.schemas import OAuth2Callback, TokenResponse
 from fastlink.telegram.schemas import TelegramCallback
 
@@ -22,6 +21,7 @@ from fastid.oauth.repositories import (
 )
 from fastid.oauth.schemas import InspectProviderResponse, OpenIDBearer
 from fastid.security.jwt import jwt_backend
+from fastid.security.schemas import JWTPayload
 
 
 class OAuthUseCases(UseCase):

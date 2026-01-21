@@ -1,10 +1,9 @@
 import datetime
 
-from fastlink.jwt.manager import JWTManager
-from fastlink.jwt.schemas import JWTConfig
-
 from fastid.auth.config import auth_settings
 from fastid.core.config import main_settings
+from fastid.security.manager import JWTManager
+from fastid.security.schemas import JWTConfig
 
 conf = [
     JWTConfig(

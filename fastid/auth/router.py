@@ -58,17 +58,18 @@ async def authorize(  # noqa: PLR0913
 ) -> Any:
     match form.grant_type:
         case OAuth2Grant.password:
-            token = await password_grant.authorize(form.as_password_grant())
+            auth_response = await password_grant.authorize(form.as_password_grant())
         case OAuth2Grant.authorization_code:
-            token = await authorization_code_grant.authorize(form.as_authorization_code_grant())
+            auth_response = await authorization_code_grant.authorize(form.as_authorization_code_grant())
         case OAuth2Grant.refresh_token:
-            token = await refresh_token_grant.authorize(form.as_refresh_token_grant())
+            auth_response = await refresh_token_grant.authorize(form.as_refresh_token_grant())
         case _:
             raise NotSupportedGrantError
     background.add_task(
-        webhooks.send, SendWebhookRequest(type=WebhookType.user_login, payload={"token": token.model_dump(mode="json")})
+        webhooks.send,
+        SendWebhookRequest(type=WebhookType.user_login, payload={"auth": auth_response.model_dump(mode="json")}),
     )  # pragma: nocover
-    return cookie_transport.get_login_response(token)
+    return cookie_transport.get_login_response(auth_response.token)
 
 
 @router.get("/userinfo", response_model=UserDTO, status_code=status.HTTP_200_OK)

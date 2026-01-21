@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from typing import Any
 
-from fastlink.exceptions import FastLinkError
-from fastlink.jwt.schemas import JWTPayload
 from fastlink.schemas import (
     OAuth2AuthorizationCodeRequest,
     OAuth2Callback,
@@ -26,15 +24,17 @@ from fastid.auth.exceptions import (
 )
 from fastid.auth.models import User
 from fastid.auth.repositories import EmailUserSpecification
-from fastid.auth.schemas import OAuth2ConsentRequest
+from fastid.auth.schemas import AuthorizationResponse, OAuth2ConsentRequest, PayloadResponse, UserDTO
 from fastid.cache.dependencies import CacheDep
 from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
-from fastid.database.utils import UUIDv7
+from fastid.database.utils import UUIDv7, uuid
 from fastid.security.crypto import generate_otp
+from fastid.security.exceptions import JWTError
 from fastid.security.jwt import jwt_backend
+from fastid.security.schemas import JWTPayload
 
 
 class Grant(UseCase):
@@ -43,7 +43,7 @@ class Grant(UseCase):
         self.token_backend = jwt_backend
 
     @abstractmethod
-    async def authorize(self, form: Any) -> TokenResponse: ...
+    async def authorize(self, form: Any) -> AuthorizationResponse: ...
 
     async def validate_client(self, client_id: str) -> App:
         try:
@@ -56,31 +56,78 @@ class Grant(UseCase):
         app.verify_secret(client_secret)
         return app
 
-    def grant(self, user: User, scope: str) -> TokenResponse:
+    def grant(self, user: User, scope: str) -> AuthorizationResponse:
+        tokens = self.issue_tokens(user, scope)
+        return self.get_auth_response(user, scope, tokens)
+
+    def issue_tokens(self, user: User, scope: str) -> dict[str, dict[str, Any]]:
+        self._check_scope(user, scope)
+        tokens = {
+            token_type: {"is_issued": False, "token": None, "payload": None}
+            for token_type in ["access", "refresh", "id"]
+        }
+        self._issue_at(user, scope, tokens)
+        if "offline_access" in scope:
+            self._issue_rt(user, scope, tokens)
+        if "openid" in scope:
+            self._issue_it(user, tokens)
+        return tokens
+
+    def get_auth_response(self, user: User, scope: str, tokens: dict[str, Any]) -> AuthorizationResponse:
+        user_dto = UserDTO.model_validate(user)
+        payload = PayloadResponse(
+            access_token=tokens["access"]["payload"],
+            id_token=tokens["id"]["payload"],
+            refresh_token=tokens["refresh"]["payload"],
+        )
+        token_id = str(uuid())
+        expires_in = self.token_backend.get_lifetime("access")
+        token = TokenResponse(
+            token_id=token_id,
+            expires_in=expires_in,
+            scope=scope,
+            access_token=tokens["access"]["token"],
+            id_token=tokens["id"]["token"],
+            refresh_token=tokens["refresh"]["token"],
+        )
+        return AuthorizationResponse(user=user_dto, payload=payload, token=token)
+
+    @staticmethod
+    def _check_scope(user: User, scope: str) -> None:
         if "admin" in scope and not user.is_superuser:
             raise NoPermissionError
-        at = self.token_backend.create("access", JWTPayload(sub=str(user.id), scope=scope))
-        if "openid" in scope:
-            payload = JWTPayload(
-                sub=str(user.id),
-                name=user.display_name,
-                given_name=user.first_name,
-                family_name=user.last_name,
-                email=user.email,
-                email_verified=user.is_verified,
-            )
-            it = self.token_backend.create("id", payload)
-        else:
-            it = None
-        if "offline_access" in scope:
-            rt = self.token_backend.create("refresh", JWTPayload(sub=str(user.id), scope=scope))
-        else:
-            rt = None
-        return TokenResponse(access_token=at, id_token=it, refresh_token=rt)
+
+    def _issue_at(self, user: User, scope: str, tokens: dict[str, dict[str, Any]]) -> None:
+        schema = JWTPayload(sub=str(user.id), scope=scope)
+        token, payload = self.token_backend.create("access", schema)
+        tokens["access"]["is_issued"] = True
+        tokens["access"]["token"] = token
+        tokens["access"]["payload"] = payload
+
+    def _issue_rt(self, user: User, scope: str, tokens: dict[str, dict[str, Any]]) -> None:
+        schema = JWTPayload(sub=str(user.id), scope=scope)
+        token, payload = self.token_backend.create("refresh", schema)
+        tokens["refresh"]["is_issued"] = True
+        tokens["refresh"]["token"] = token
+        tokens["refresh"]["payload"] = payload
+
+    def _issue_it(self, user: User, tokens: dict[str, dict[str, Any]]) -> None:
+        schema = JWTPayload(
+            sub=str(user.id),
+            name=user.display_name,
+            given_name=user.first_name,
+            family_name=user.last_name,
+            email=user.email,
+            email_verified=user.is_verified,
+        )
+        token, payload = self.token_backend.create("id", schema)
+        tokens["id"]["is_issued"] = True
+        tokens["id"]["token"] = token
+        tokens["id"]["payload"] = payload
 
 
 class PasswordGrant(Grant):
-    async def authorize(self, form: OAuth2PasswordRequest) -> TokenResponse:
+    async def authorize(self, form: OAuth2PasswordRequest) -> AuthorizationResponse:
         try:
             user = await self.uow.users.find(EmailUserSpecification(form.username))
         except NoResultFoundError as e:
@@ -113,7 +160,7 @@ class AuthorizationCodeGrant(Grant):
         callback = OAuth2Callback(code=code, state=consent.state, redirect_uri=consent.redirect_uri)
         return callback.get_url()
 
-    async def authorize(self, form: OAuth2AuthorizationCodeRequest) -> TokenResponse:
+    async def authorize(self, form: OAuth2AuthorizationCodeRequest) -> AuthorizationResponse:
         await self.authenticate_client(form.client_id, form.client_secret)
         try:
             data = await self.cache.pop(f"ac:{form.client_id}:{form.code}")
@@ -128,11 +175,11 @@ class RefreshTokenGrant(Grant):
     async def authorize(
         self,
         form: OAuth2RefreshTokenRequest,
-    ) -> TokenResponse:
+    ) -> AuthorizationResponse:
         await self.authenticate_client(form.client_id, form.client_secret)
         try:
             content = self.token_backend.validate("refresh", form.refresh_token)
-        except FastLinkError as e:
+        except JWTError as e:
             raise InvalidTokenError from e
         assert content.scope is not None
         user = await self.uow.users.get(UUIDv7(content.sub))
