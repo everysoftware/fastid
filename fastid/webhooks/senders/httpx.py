@@ -11,7 +11,7 @@ class WebhookSender:
         async with self.client:
             try:
                 response = await self.client.post(url, json=payload)
-            except httpx.NetworkError as e:
+            except httpx.RequestError as e:
                 return {"status_code": 0, "content": {"error": str(e)}}
             try:
                 content = response.json()

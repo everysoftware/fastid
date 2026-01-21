@@ -34,10 +34,12 @@ async def register(
     background: BackgroundTasks,
 ) -> Any:
     user = await service.register(dto)
-    background.add_task(notify.push, user, PushNotificationRequest(template="welcome"))  # pragma: nocover
-    background.add_task(
-        webhooks.send, SendWebhookRequest(type=WebhookType.user_registration, payload={"user": user})
-    )  # pragma: nocover
+    notification = PushNotificationRequest(template="welcome")
+    background.add_task(notify.push, user, notification)  # pragma: nocover
+    webhook = SendWebhookRequest(
+        type=WebhookType.user_registration, payload=UserDTO.model_validate(user).model_dump(mode="json")
+    )
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
     return user  # pragma: nocover
 
 

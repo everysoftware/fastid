@@ -10,11 +10,11 @@ deps:
 
 .PHONY: up
 up:
-	docker compose up --build -d
+	docker compose up --build --wait
 
 .PHONY: up-prod
 up-prod:
-	docker compose -f docker-compose.yml -f docker-compose-prod.yml up --build -d
+	docker compose -f docker-compose.yml -f docker-compose-prod.yml up --build --wait
 
 .PHONY: test
 test:

@@ -46,7 +46,7 @@ async def change_email(  # noqa: PLR0913
     await notify_service.validate_otp(user, dto.code)
     user = await service.change_email(user, dto)
     webhook = SendWebhookRequest(
-        type=WebhookType.user_update_profile, payload=UserDTO.model_validate(user).model_dump(mode="json")
+        type=WebhookType.user_change_email, payload=UserDTO.model_validate(user).model_dump(mode="json")
     )
     background.add_task(webhooks.send, webhook)  # pragma: nocover
     return user
@@ -62,7 +62,7 @@ async def change_password(
 ) -> Any:
     user = await service.change_password(user, dto)
     webhook = SendWebhookRequest(
-        type=WebhookType.user_update_profile, payload=UserDTO.model_validate(user).model_dump(mode="json")
+        type=WebhookType.user_change_password, payload=UserDTO.model_validate(user).model_dump(mode="json")
     )
     background.add_task(webhooks.send, webhook)  # pragma: nocover
     return user
@@ -76,7 +76,7 @@ async def change_password(
 async def delete(service: ProfilesDep, user: UserVTDep, webhooks: WebhooksDep, background: BackgroundTasks) -> Any:
     user = await service.delete_account(user)
     webhook = SendWebhookRequest(
-        type=WebhookType.user_update_profile, payload=UserDTO.model_validate(user).model_dump(mode="json")
+        type=WebhookType.user_delete, payload=UserDTO.model_validate(user).model_dump(mode="json")
     )
     background.add_task(webhooks.send, webhook)  # pragma: nocover
     return user
