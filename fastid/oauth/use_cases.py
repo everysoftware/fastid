@@ -50,8 +50,8 @@ class OAuthUseCases(UseCase):
             account = await self._register(open_id)
         user = await self.uow.users.get(account.user_id)
         await self.uow.commit()
-        at = jwt_backend.create("access", JWTPayload(sub=str(user.id)))
-        return TokenResponse(access_token=at)
+        token_data = jwt_backend.create("access", JWTPayload(sub=str(user.id)))
+        return TokenResponse(access_token=token_data[0])
 
     async def connect(
         self,

@@ -1,7 +1,4 @@
-from fastid.api.exceptions import ClientError
-
-
-class JWTError(ClientError):
+class JWTError(Exception):
     pass
 
 

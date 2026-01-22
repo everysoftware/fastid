@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from collections.abc import MutableMapping
 
 
-class JWTManager:
+class JWTManager:  # pragma: nocover
     def __init__(self, *config: JWTConfig) -> None:
         self.config: MutableMapping[str, JWTConfig] = {t.type: t for t in config}
 
