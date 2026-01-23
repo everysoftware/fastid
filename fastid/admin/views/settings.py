@@ -1,7 +1,8 @@
-from sqladmin.filters import BooleanFilter, OperationColumnFilter
+from sqladmin.filters import AllUniqueStringValuesFilter, BooleanFilter, OperationColumnFilter
 
 from fastid.admin.views.base import BaseView
-from fastid.database.models import App, EmailTemplate, TelegramTemplate
+from fastid.admin.views.utils import json_format
+from fastid.database.models import App, EmailTemplate, TelegramTemplate, Webhook, WebhookEvent
 
 
 class AppAdmin(BaseView, model=App):
@@ -21,6 +22,7 @@ class AppAdmin(BaseView, model=App):
     column_filters = [
         BooleanFilter(App.is_active),
         OperationColumnFilter(App.client_id),
+        OperationColumnFilter(App.redirect_uris),
     ]
 
 
@@ -57,3 +59,50 @@ class TelegramTemplateAdmin(BaseView, model=TelegramTemplate):
     column_filters = [
         OperationColumnFilter(EmailTemplate.slug),
     ]
+
+
+class WebhookAdmin(BaseView, model=Webhook):
+    name = "Webhook"
+    name_plural = "Webhooks"
+    icon = "fa-solid fa-globe"
+    category = "Settings"
+
+    column_list = [
+        Webhook.id,
+        Webhook.app,
+        Webhook.url,
+        Webhook.created_at,
+        Webhook.updated_at,
+    ]
+    column_filters = [
+        OperationColumnFilter(Webhook.app_id),
+        AllUniqueStringValuesFilter(Webhook.type),
+        OperationColumnFilter(Webhook.url),
+    ]
+
+
+class WebhookEventAdmin(BaseView, model=WebhookEvent):
+    can_create = False
+    can_edit = False
+    can_delete = False
+
+    name = "Webhook Event"
+    name_plural = "Webhook Events"
+    icon = "fa-solid fa-book-atlas"
+    category = "Settings"
+
+    column_list = [
+        WebhookEvent.id,
+        WebhookEvent.webhook,
+        "webhook.type",
+        WebhookEvent.status_code,
+        WebhookEvent.request,
+        WebhookEvent.response,
+        WebhookEvent.created_at,
+        WebhookEvent.updated_at,
+    ]
+    column_filters = [
+        OperationColumnFilter(WebhookEvent.webhook_id),
+        OperationColumnFilter(WebhookEvent.status_code),
+    ]
+    column_formatters = {WebhookEvent.response: json_format, WebhookEvent.request: json_format}

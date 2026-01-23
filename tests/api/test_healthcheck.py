@@ -2,10 +2,16 @@ from fastapi import status
 from httpx import AsyncClient
 
 
-async def test_hc(client: AsyncClient) -> None:
-    response = await client.get("/hc")
+async def test_readiness(client: AsyncClient) -> None:
+    response = await client.get("/readiness")
     response.raise_for_status()
     assert response.json() == {"status": "ok"}
+
+
+async def test_liveness(client: AsyncClient) -> None:
+    response = await client.get("/liveness")
+    response.raise_for_status()
+    assert response.json() == {"db": True, "cache": True}
 
 
 async def test_exception(client: AsyncClient) -> None:

@@ -1,6 +1,5 @@
 import contextlib
 
-from fastlink.jwt.schemas import JWTPayload
 from fastlink.schemas import OAuth2Callback, TokenResponse
 from fastlink.telegram.schemas import TelegramCallback
 
@@ -22,6 +21,7 @@ from fastid.oauth.repositories import (
 )
 from fastid.oauth.schemas import InspectProviderResponse, OpenIDBearer
 from fastid.security.jwt import jwt_backend
+from fastid.security.schemas import JWTPayload
 
 
 class OAuthUseCases(UseCase):
@@ -50,8 +50,8 @@ class OAuthUseCases(UseCase):
             account = await self._register(open_id)
         user = await self.uow.users.get(account.user_id)
         await self.uow.commit()
-        at = jwt_backend.create("access", JWTPayload(sub=str(user.id)))
-        return TokenResponse(access_token=at)
+        token_data = jwt_backend.create("access", JWTPayload(sub=str(user.id)))
+        return TokenResponse(access_token=token_data[0])
 
     async def connect(
         self,

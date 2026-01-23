@@ -8,6 +8,7 @@ from fastid.api.exceptions import add_exception_handlers
 from fastid.api.routing import api_router
 from fastid.core.base import MiniApp, Plugin
 from fastid.core.dependencies import log
+from fastid.webhooks.router import router as webhooks_router
 
 
 class APIMiniApp(MiniApp):
@@ -35,6 +36,7 @@ class APIMiniApp(MiniApp):
         app = FastAPI(
             title=self.title,
             version=self.version,
+            webhooks=webhooks_router,
             **self.fastapi_kwargs,
         )
         app.include_router(api_router)

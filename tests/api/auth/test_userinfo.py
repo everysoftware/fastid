@@ -1,4 +1,3 @@
-from fastlink.jwt.schemas import JWTPayload
 from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
@@ -6,6 +5,7 @@ from starlette import status
 from fastid.auth.schemas import UserDTO
 from fastid.database.utils import uuid_hex
 from fastid.security.jwt import jwt_backend
+from fastid.security.schemas import JWTPayload
 from tests.mocks import faker
 
 
@@ -17,8 +17,8 @@ async def test_userinfo(client: AsyncClient, user: UserDTO, user_token: TokenRes
 
 
 async def test_userinfo_user_not_exists(client: AsyncClient, user: UserDTO) -> None:
-    at = jwt_backend.create("access", JWTPayload(sub=uuid_hex()))
-    response = await client.get("/userinfo", headers={"Authorization": f"Bearer {at}"})
+    token, _ = jwt_backend.create("access", JWTPayload(sub=uuid_hex()))
+    response = await client.get("/userinfo", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 

@@ -1,7 +1,5 @@
 import secrets
 
-from fastlink.jwt.schemas import JWTPayload
-
 from fastid.auth.config import auth_settings
 from fastid.auth.exceptions import EmailNotFoundError
 from fastid.auth.models import User
@@ -31,6 +29,7 @@ from fastid.notify.schemas import (
 )
 from fastid.security.crypto import generate_otp
 from fastid.security.jwt import jwt_backend
+from fastid.security.schemas import JWTPayload
 
 
 class NotificationUseCases(UseCase):
@@ -129,7 +128,8 @@ class NotificationUseCases(UseCase):
             user = await self._get_user_by_email(dto.email)
         assert user is not None
         await self.validate_otp(user, dto.code)
-        return jwt_backend.create("verify", JWTPayload(sub=str(user.id)))
+        token_data = jwt_backend.create("verify", JWTPayload(sub=str(user.id)))
+        return token_data[0]
 
     @transactional
     async def _get_user_by_email(self, email: str) -> User:

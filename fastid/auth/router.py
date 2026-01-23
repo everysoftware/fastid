@@ -18,6 +18,9 @@ from fastid.auth.schemas import (
 )
 from fastid.notify.dependencies import NotifyDep
 from fastid.notify.schemas import PushNotificationRequest
+from fastid.webhooks.dependencies import WebhooksDep
+from fastid.webhooks.models import WebhookType
+from fastid.webhooks.schemas import SendWebhookRequest
 
 router = APIRouter(tags=["Auth"])
 
@@ -26,11 +29,17 @@ router = APIRouter(tags=["Auth"])
 async def register(
     service: AuthDep,
     notify: NotifyDep,
+    webhooks: WebhooksDep,
     dto: UserCreate,
     background: BackgroundTasks,
 ) -> Any:
     user = await service.register(dto)
-    background.add_task(notify.push, user, PushNotificationRequest(template="welcome"))  # pragma: nocover
+    notification = PushNotificationRequest(template="welcome")
+    background.add_task(notify.push, user, notification)  # pragma: nocover
+    webhook = SendWebhookRequest(
+        type=WebhookType.user_registration, payload=UserDTO.model_validate(user).model_dump(mode="json")
+    )
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
     return user  # pragma: nocover
 
 
@@ -39,22 +48,28 @@ async def register(
     status_code=status.HTTP_200_OK,
     response_model=TokenResponse,
 )
-async def authorize(
+async def authorize(  # noqa: PLR0913
     form: Annotated[OAuth2TokenRequest, Form()],
     password_grant: Annotated[PasswordGrant, Depends()],
     authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
     refresh_token_grant: Annotated[RefreshTokenGrant, Depends()],
+    webhooks: WebhooksDep,
+    background: BackgroundTasks,
 ) -> Any:
     match form.grant_type:
         case OAuth2Grant.password:
-            token = await password_grant.authorize(form.as_password_grant())
+            auth_response = await password_grant.authorize(form.as_password_grant())
         case OAuth2Grant.authorization_code:
-            token = await authorization_code_grant.authorize(form.as_authorization_code_grant())
+            auth_response = await authorization_code_grant.authorize(form.as_authorization_code_grant())
         case OAuth2Grant.refresh_token:
-            token = await refresh_token_grant.authorize(form.as_refresh_token_grant())
+            auth_response = await refresh_token_grant.authorize(form.as_refresh_token_grant())
         case _:
             raise NotSupportedGrantError
-    return cookie_transport.get_login_response(token)
+    webhook = SendWebhookRequest(
+        type=WebhookType.user_login, payload={"user": auth_response.user.model_dump(mode="json")}
+    )
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
+    return cookie_transport.get_login_response(auth_response.token)
 
 
 @router.get("/userinfo", response_model=UserDTO, status_code=status.HTTP_200_OK)

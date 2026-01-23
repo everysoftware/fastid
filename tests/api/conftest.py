@@ -15,10 +15,12 @@ from fastid.core.dependencies import log_provider
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.notify.schemas import UserAction
 from fastid.security.crypto import generate_otp
+from fastid.webhooks.models import Webhook
 from tests import mocks
 from tests.dependencies import get_test_cache, get_test_uow
 from tests.utils.auth import authorize_password_grant, register_user
 from tests.utils.db import delete_all
+from tests.utils.webhooks import create_webhook
 
 logger = log_provider.logger(__name__)
 
@@ -102,3 +104,38 @@ async def oauth_app(client: AsyncClient, user_su_token: TokenResponse) -> AppDTO
     )
     assert response.status_code == status.HTTP_201_CREATED
     return AppDTO.model_validate_json(response.content)
+
+
+@pytest.fixture
+async def webhook_registration(uow: SQLAlchemyUOW, oauth_app: AppDTO) -> Webhook:
+    return await create_webhook(uow, oauth_app, mocks.WEBHOOK_REGISTRATION_RECORD)
+
+
+@pytest.fixture
+async def webhook_login(uow: SQLAlchemyUOW, oauth_app: AppDTO) -> Webhook:
+    return await create_webhook(uow, oauth_app, mocks.WEBHOOK_LOGIN_RECORD)
+
+
+@pytest.fixture
+async def webhook_delete(uow: SQLAlchemyUOW, oauth_app: AppDTO) -> Webhook:
+    return await create_webhook(uow, oauth_app, mocks.WEBHOOK_DELETE_RECORD)
+
+
+@pytest.fixture
+async def webhook_profile_update(uow: SQLAlchemyUOW, oauth_app: AppDTO) -> Webhook:
+    return await create_webhook(uow, oauth_app, mocks.WEBHOOK_UPDATE_PROFILE_RECORD)
+
+
+@pytest.fixture
+async def webhook_change_password(uow: SQLAlchemyUOW, oauth_app: AppDTO) -> Webhook:
+    return await create_webhook(uow, oauth_app, mocks.WEBHOOK_CHANGE_PASSWORD)
+
+
+@pytest.fixture
+async def webhook_change_email(uow: SQLAlchemyUOW, oauth_app: AppDTO) -> Webhook:
+    return await create_webhook(uow, oauth_app, mocks.WEBHOOK_CHANGE_EMAIL)
+
+
+@pytest.fixture
+async def webhook_wrong_url(uow: SQLAlchemyUOW, oauth_app: AppDTO) -> Webhook:
+    return await create_webhook(uow, oauth_app, mocks.WEBHOOK_WRONG_URL)

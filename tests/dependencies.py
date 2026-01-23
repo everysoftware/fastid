@@ -24,10 +24,8 @@ test_session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
 
 def get_test_uow() -> SQLAlchemyUOW:
-    logger.info("Use get_uow_raw dependency")
     return SQLAlchemyUOW(test_session_factory)
 
 
 def get_test_cache() -> CacheStorage:
-    logger.info("Use get_cache dependency")
     return RedisStorage(test_redis, key=cache_settings.redis_key)

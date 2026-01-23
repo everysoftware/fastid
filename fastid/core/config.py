@@ -1,14 +1,23 @@
 from collections.abc import Sequence
+from enum import StrEnum, auto
 
 from pydantic_settings import SettingsConfigDict
 
 from fastid.core.schemas import BaseSettings
 
 
+class Environment(StrEnum):
+    local = auto()
+    test = auto()
+    dev = auto()
+    prod = auto()
+
+
 class MainSettings(BaseSettings):
     discovery_name: str = "fastid"
     title: str = "FastID"
     version: str = "0.1.0"
+    env: Environment = Environment.local
     debug: bool = False
 
     base_url: str = "http://localhost:8012"
