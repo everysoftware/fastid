@@ -1,11 +1,18 @@
-import datetime
+from enum import StrEnum, auto
 from typing import Any
+from uuid import UUID
 
 from pydantic import Field
 
 from fastid.auth.schemas import UserDTO
 from fastid.core.schemas import BaseModel
 from fastid.webhooks.models import WebhookType
+
+
+class SignatureAlgorithm(StrEnum):
+    sha256 = auto()
+    sha512 = auto()
+    sha1 = auto()
 
 
 class SendWebhookRequest(BaseModel):
@@ -15,8 +22,8 @@ class SendWebhookRequest(BaseModel):
 
 class Event(BaseModel):
     event_type: WebhookType
-    event_id: str
-    timestamp: datetime.datetime
+    event_id: UUID
+    timestamp: int
 
 
 class WebhookPayload(BaseModel):
