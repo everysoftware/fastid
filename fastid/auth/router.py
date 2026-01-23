@@ -65,10 +65,10 @@ async def authorize(  # noqa: PLR0913
             auth_response = await refresh_token_grant.authorize(form.as_refresh_token_grant())
         case _:
             raise NotSupportedGrantError
-    background.add_task(
-        webhooks.send,
-        SendWebhookRequest(type=WebhookType.user_login, payload={"auth": auth_response.model_dump(mode="json")}),
-    )  # pragma: nocover
+    webhook = SendWebhookRequest(
+        type=WebhookType.user_login, payload={"user": auth_response.user.model_dump(mode="json")}
+    )
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
     return cookie_transport.get_login_response(auth_response.token)
 
 
