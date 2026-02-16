@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from pathlib import Path
 
 from pydantic_settings import SettingsConfigDict
@@ -15,6 +16,14 @@ class AuthSettings(BaseSettings):
 
     authorization_code_expires_in: int = 5 * 60  # 5 minutes
     verification_code_expires_in: int = 5 * 60  # 5 minutes
+
+    hash_schemas: Sequence[str] = ["argon2", "bcrypt"]  # Supports reverse compatibility
+    hash_default: str = "argon2"
+    argon2_time_cost: int = 3
+    argon2_memory_cost: int = 65536
+    argon2_parallelism: int = 4
+    argon2_salt_len: int = 16
+    argon2_hash_len: int = 32
 
     @property
     def issuer(self) -> str:

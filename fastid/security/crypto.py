@@ -2,14 +2,16 @@ import secrets
 
 from passlib.context import CryptContext
 
+from fastid.auth.config import auth_settings
+
 crypt_ctx = CryptContext(
-    schemes=["argon2", "bcrypt"],  # Supports reverse compatibility
-    default="argon2",
-    argon2__time_cost=3,
-    argon2__memory_cost=65536,
-    argon2__parallelism=4,
-    argon2__salt_len=16,
-    argon2__hash_len=32,
+    schemes=auth_settings.hash_schemas,
+    default=auth_settings.hash_default,
+    argon2__time_cost=auth_settings.argon2_time_cost,
+    argon2__memory_cost=auth_settings.argon2_memory_cost,
+    argon2__parallelism=auth_settings.argon2_parallelism,
+    argon2__salt_len=auth_settings.argon2_salt_len,
+    argon2__hash_len=auth_settings.argon2_hash_len,
 )
 
 

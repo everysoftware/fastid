@@ -11,6 +11,9 @@ from fastid.notify.schemas import PushNotificationRequest
 from fastid.oauth.config import telegram_settings
 from fastid.oauth.schemas import OpenIDBearer
 from fastid.security.crypto import crypt_ctx
+from fastid.security.webhooks import get_timestamp, get_webhook_id
+from fastid.webhooks.config import webhook_settings
+from fastid.webhooks.models import WebhookType
 from tests.utils.auth import generate_random_state
 
 faker = Faker()
@@ -109,6 +112,40 @@ TELEGRAM_WIDGET = TelegramWidget(bot_username=faker.user_name(), callback_url=fa
 
 PUSH_NOTIFICATION_REQUEST = PushNotificationRequest(template="welcome")
 PUSH_NOTIFICATION_REQUEST_FAKE_TEMPLATE = PushNotificationRequest(template="fake")
+
+
+def webhook_record_factory(webhook_type: WebhookType, **kwargs: Any) -> dict[str, Any]:
+    return {
+        "secret": faker.password(),
+        "url": "http://www.barnes.info/",
+        "type": webhook_type,
+        **kwargs,
+    }
+
+
+WEBHOOK_REGISTRATION_RECORD = webhook_record_factory(WebhookType.user_registration)
+WEBHOOK_LOGIN_RECORD = webhook_record_factory(WebhookType.user_login)
+WEBHOOK_DELETE_RECORD = webhook_record_factory(WebhookType.user_delete)
+WEBHOOK_UPDATE_PROFILE_RECORD = webhook_record_factory(WebhookType.user_update_profile)
+WEBHOOK_CHANGE_EMAIL = webhook_record_factory(WebhookType.user_change_email)
+WEBHOOK_CHANGE_PASSWORD = webhook_record_factory(WebhookType.user_change_password)
+WEBHOOK_WRONG_URL = webhook_record_factory(WebhookType.user_registration)
+WEBHOOK_WRONG_URL["url"] = "wrong url"
+
+
+WEBHOOK_PAYLOAD = {"test": {"test1": 1, "test2": "hello", "hello3": True}}
+WEBHOOK_TIMESTAMP = get_timestamp()
+WEBHOOK_ID = str(get_webhook_id())
+WEBHOOK_SECRET_KEY = faker.pystr()
+WEBHOOK_EXPIRED_TIMESTAMP = WEBHOOK_TIMESTAMP - webhook_settings.tolerance_seconds
+WEBHOOK_WRONG_SECRET_KEY = faker.pystr()
+WEBHOOK_TEST_DATA = [
+    (WEBHOOK_TIMESTAMP, WEBHOOK_ID, WEBHOOK_SECRET_KEY, WEBHOOK_SECRET_KEY, True),
+    (0, WEBHOOK_ID, WEBHOOK_SECRET_KEY, WEBHOOK_SECRET_KEY, False),
+    (WEBHOOK_TIMESTAMP, "", WEBHOOK_SECRET_KEY, WEBHOOK_SECRET_KEY, False),
+    (WEBHOOK_EXPIRED_TIMESTAMP, WEBHOOK_ID, WEBHOOK_SECRET_KEY, WEBHOOK_SECRET_KEY, False),
+    (WEBHOOK_TIMESTAMP, WEBHOOK_ID, WEBHOOK_SECRET_KEY, WEBHOOK_WRONG_SECRET_KEY, False),
+]
 
 
 class MockError(Exception):

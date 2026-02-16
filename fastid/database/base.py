@@ -3,8 +3,9 @@ from enum import Enum
 from typing import Any, Self
 from uuid import UUID
 
-from sqlalchemy import JSON, BigInteger, MetaData, Uuid, inspect
+from sqlalchemy import BigInteger, MetaData, Uuid, inspect
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -16,7 +17,7 @@ from fastid.core.schemas import BaseModel
 from fastid.database.utils import naive_utc, uuid
 
 make_versioned()
-type_map = {int: BigInteger, Enum: SAEnum(Enum, native_enum=False), UUID: Uuid(), dict[str, Any]: JSON}
+type_map = {int: BigInteger, Enum: SAEnum(Enum, native_enum=False), UUID: Uuid(), dict[str, Any]: JSONB}
 
 NAMING_CONVENTION = {
     "ix": "%(column_0_label)s_idx",

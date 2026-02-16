@@ -54,6 +54,11 @@ services:
       - redis_data:/var/lib/redis/data
     ports:
       - "6312:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - fastid-net
       - observability_net
@@ -69,14 +74,22 @@ services:
     ports:
       - "8012:8000"
     depends_on:
-      - fastid-db
-      - fastid-redis
+      fastid-db:
+        condition: service_healthy
+      fastid-redis:
+        condition: service_healthy
     logging: *default-logging
     volumes:
       - "./migrations:/opt/fastid/migrations"
       - "./fastid:/opt/fastid/fastid"
       - "./templates:/opt/fastid/templates"
       - "./static:/opt/fastid/static"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/readiness" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - fastid-net
       - observability_net

@@ -27,6 +27,8 @@ class UserAdmin(BaseView, model=User):
         BooleanFilter(User.is_verified),
         BooleanFilter(User.is_superuser),
         OperationColumnFilter(User.email),
+        OperationColumnFilter(User.first_name),
+        OperationColumnFilter(User.last_name),
     ]
 
 

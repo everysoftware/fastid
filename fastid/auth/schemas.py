@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping  # noqa: TCH003
 from enum import StrEnum, auto
 from typing import Any
 
@@ -8,6 +9,9 @@ from fastlink.schemas import (
 )
 from fastlink.schemas import (
     OAuth2TokenRequest as BaseOAuth2TokenRequest,
+)
+from fastlink.schemas import (
+    TokenResponse,
 )
 from pydantic import (
     Field,
@@ -26,6 +30,18 @@ class UserDTO(EntityDTO):
     is_active: bool | None = None
     is_superuser: bool | None = None
     is_verified: bool | None = None
+
+
+class PayloadResponse(BaseModel):
+    access_token: Mapping[str, Any] | None = None
+    refresh_token: Mapping[str, Any] | None = None
+    id_token: Mapping[str, Any] | None = None
+
+
+class AuthorizationResponse(BaseModel):
+    user: UserDTO
+    payload: PayloadResponse
+    token: TokenResponse
 
 
 class UserCreate(BaseModel):
