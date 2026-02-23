@@ -152,7 +152,7 @@ omit = [
     '*/dependencies.py',
     '*/schemas.py',
     "fastid/plugins/*",
-    "fastid/pages/*",
+    "fastid/frontend/*",
     "fastid/admin/*",
     "fastid/core/*",
     "fastid/api/*",
