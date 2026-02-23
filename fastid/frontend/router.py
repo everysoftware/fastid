@@ -8,16 +8,16 @@ from fastid.auth.dependencies import cookie_transport
 from fastid.auth.grants import AuthorizationCodeGrant
 from fastid.auth.models import User
 from fastid.auth.schemas import OAuth2ConsentRequest
-from fastid.notify.schemas import UserAction
-from fastid.oauth.dependencies import OAuthAccountsDep
-from fastid.pages.dependencies import (
+from fastid.frontend.dependencies import (
     get_user,
     get_user_or_none,
     is_action_verified,
     valid_consent,
 )
-from fastid.pages.openid import discovery_document, jwks
-from fastid.pages.templating import templates
+from fastid.frontend.openid import discovery_document, jwks
+from fastid.frontend.templating import templates
+from fastid.notify.schemas import UserAction
+from fastid.oauth.dependencies import OAuthAccountsDep
 
 router = APIRouter()
 

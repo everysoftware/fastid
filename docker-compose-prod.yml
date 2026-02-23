@@ -1,4 +1,15 @@
 services:
-  fastid-app:
+  fastid-api:
     build:
       target: prod
+    command: "gunicorn -w 1 -k fastid.core.workers.MyUvicornWorker \"fastid.api.app:api_app\" -b 0.0.0.0:8000"
+
+  fastid-frontend:
+    build:
+      target: prod
+    command: "gunicorn -w 1 -k fastid.core.workers.MyUvicornWorker \"fastid.frontend.app:frontend_app\" -b 0.0.0.0:3000"
+
+  fastid-admin:
+    build:
+      target: prod
+    command: "gunicorn -w 1 -k fastid.core.workers.MyUvicornWorker \"fastid.admin.app:admin_app\" -b 0.0.0.0:4000"

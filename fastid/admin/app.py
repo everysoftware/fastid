@@ -1,72 +1,11 @@
-from typing import Any
+from fastid.admin.config import admin_settings
+from fastid.admin.factory import AdminAppFactory
+from fastid.core.config import main_settings
+from fastid.database.dependencies import engine
 
-from fastapi import FastAPI
-from sqladmin import Admin
-from sqlalchemy import Engine
-from sqlalchemy.ext.asyncio import AsyncEngine
-
-from fastid.admin.auth import admin_auth
-from fastid.admin.views.entities import NotificationAdmin, OAuthAccountAdmin, UserAdmin
-from fastid.admin.views.settings import (
-    AppAdmin,
-    EmailTemplateAdmin,
-    TelegramTemplateAdmin,
-    WebhookAdmin,
-    WebhookEventAdmin,
-)
-from fastid.admin.views.versioning import (
-    AppVersionAdmin,
-    EmailTemplateVersionAdmin,
-    TelegramTemplateVersionAdmin,
-    TransactionAdmin,
-    UserVersionAdmin,
-    WebhookVersionAdmin,
-)
-from fastid.core.base import MiniApp
-
-
-class AdminMiniApp(MiniApp):
-    name = "admin"
-
-    def __init__(
-        self,
-        engine: Engine | AsyncEngine,
-        base_url: str = "/admin",
-        **admin_kwargs: Any,
-    ) -> None:
-        self.engine = engine
-        self.base_url = base_url
-        self.admin_kwargs = admin_kwargs
-
-    def create(self) -> FastAPI:
-        app = FastAPI()
-        admin = Admin(
-            app,
-            self.engine,
-            base_url="/",
-            authentication_backend=admin_auth,
-            **self.admin_kwargs,
-        )
-        # Users
-        admin.add_view(UserAdmin)
-        admin.add_view(OAuthAccountAdmin)
-        admin.add_view(NotificationAdmin)
-        # Settings
-        admin.add_view(AppAdmin)
-        admin.add_view(WebhookAdmin)
-        admin.add_view(WebhookEventAdmin)
-        admin.add_view(EmailTemplateAdmin)
-        admin.add_view(TelegramTemplateAdmin)
-        # Versioning
-        admin.add_view(TransactionAdmin)
-        admin.add_view(UserVersionAdmin)
-        admin.add_view(AppVersionAdmin)
-        admin.add_view(WebhookVersionAdmin)
-        admin.add_view(EmailTemplateVersionAdmin)
-        admin.add_view(TelegramTemplateVersionAdmin)
-        return app
-
-    def install(self, app: FastAPI) -> None:
-        admin_app = self.create()
-        app.mount(self.base_url, admin_app)
-        app.extra["admin_app"] = admin_app
+admin_app = AdminAppFactory(
+    engine,
+    title=f"{main_settings.title} Admin",
+    favicon_url=admin_settings.favicon_url,
+    logo_url=admin_settings.logo_url,
+).create()

@@ -5,16 +5,16 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
 from fastid.auth.config import auth_settings
-from fastid.core.base import MiniApp
+from fastid.core.base import AppFactory
+from fastid.frontend.exceptions import add_exception_handlers
+from fastid.frontend.router import router as pages_router
+from fastid.frontend.templating import templates
 from fastid.oauth.clients.dependencies import registry
-from fastid.pages.exceptions import add_exception_handlers
-from fastid.pages.router import router as pages_router
-from fastid.pages.templating import templates
 
 routers = [pages_router]
 
 
-class FrontendMiniApp(MiniApp):
+class FrontendAppFactory(AppFactory):
     name = "frontend"
 
     def __init__(
@@ -37,6 +37,7 @@ class FrontendMiniApp(MiniApp):
     def create(self) -> FastAPI:
         self._set_templates_env()
         app = FastAPI(title=self.title, **self.fastapi_kwargs)
+        app.mount(self.static_url, StaticFiles(directory="static"), name="static")
         add_exception_handlers(app)
         app.add_middleware(
             SessionMiddleware,
@@ -48,12 +49,6 @@ class FrontendMiniApp(MiniApp):
             main_router.include_router(router)
         app.include_router(main_router)
         return app
-
-    def install(self, app: FastAPI) -> None:
-        frontend_app = self.create()
-        app.mount(self.static_url, StaticFiles(directory="static"), name="static")
-        app.mount(self.base_url, frontend_app)
-        app.extra["frontend_app"] = frontend_app
 
     def _set_templates_env(self) -> None:
         templates.env.globals["app_title"] = self.title

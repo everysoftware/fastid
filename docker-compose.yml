@@ -63,11 +63,12 @@ services:
       - fastid-net
       - observability_net
 
-  fastid-app:
+  fastid-api:
     build:
       context: .
       dockerfile: docker/fastapi.Dockerfile
       target: dev
+    command: "uvicorn \"fastid.api.app:api_app\" --host 0.0.0.0 --port 8000 --reload"
     env_file:
       - .env
     restart: unless-stopped
@@ -90,6 +91,50 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - fastid-net
+      - observability_net
+
+  fastid-frontend:
+    build:
+      context: .
+      dockerfile: docker/fastapi.Dockerfile
+      target: dev
+    command: "uvicorn \"fastid.frontend.app:frontend_app\" --host 0.0.0.0 --port 3000 --reload"
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "3012:3000"
+    depends_on:
+      fastid-api:
+        condition: service_healthy
+    logging: *default-logging
+    volumes:
+      - "./fastid:/opt/fastid/fastid"
+      - "./templates:/opt/fastid/templates"
+      - "./static:/opt/fastid/static"
+    networks:
+      - fastid-net
+      - observability_net
+
+  fastid-admin:
+    build:
+      context: .
+      dockerfile: docker/fastapi.Dockerfile
+      target: dev
+    command: "uvicorn \"fastid.admin.app:admin_app\" --host 0.0.0.0 --port 4000 --reload"
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "4012:4000"
+    depends_on:
+      fastid-api:
+        condition: service_healthy
+    logging: *default-logging
+    volumes:
+      - "./fastid:/opt/fastid/fastid"
     networks:
       - fastid-net
       - observability_net
