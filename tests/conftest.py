@@ -1,5 +1,5 @@
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -8,13 +8,14 @@ from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, async_sessionmaker
 
+from fastid.api.app import api_app
 from fastid.cache.config import cache_settings
 from fastid.cache.dependencies import get_cache
 from fastid.cache.storage import CacheStorage, RedisStorage
-from fastid.core.app import app
 from fastid.core.dependencies import log_provider
 from fastid.database.dependencies import get_uow_raw
 from fastid.database.uow import SQLAlchemyUOW
+from fastid.frontend.app import frontend_app
 from fastid.notify.clients.dependencies import get_bot, get_smtp
 from tests.dependencies import (
     alembic_config,
@@ -26,9 +27,6 @@ from tests.dependencies import (
     test_session_factory,
 )
 from tests.utils.db import delete_all, get_temp_db
-
-if TYPE_CHECKING:
-    from fastapi import FastAPI
 
 logger = log_provider.logger(__name__)
 
@@ -64,7 +62,6 @@ def db_url(engine: AsyncEngine) -> str:
 
 @pytest.fixture
 async def client() -> AsyncIterator[AsyncClient]:
-    api_app: FastAPI = app.extra["api_app"]
     api_app.dependency_overrides[get_uow_raw] = get_test_uow
     api_app.dependency_overrides[get_cache] = get_test_cache
     api_app.dependency_overrides[get_smtp] = lambda: MagicMock()
@@ -83,7 +80,6 @@ async def client() -> AsyncIterator[AsyncClient]:
 
 @pytest.fixture
 async def frontend_client() -> AsyncIterator[AsyncClient]:
-    frontend_app = app.extra["frontend_app"]
     frontend_app.dependency_overrides[get_uow_raw] = get_test_uow
     frontend_app.dependency_overrides[get_cache] = get_test_cache
 
