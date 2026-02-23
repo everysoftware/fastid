@@ -10,11 +10,11 @@ deps:
 
 .PHONY: up
 up:
-	docker compose up --build --wait
+	docker compose up --build --remove-orphans --wait
 
 .PHONY: up-prod
 up-prod:
-	docker compose -f docker-compose.yml -f docker-compose-prod.yml up --build --wait
+	docker compose -f docker-compose.yml -f docker-compose-prod.yml up --build --remove-orphans --wait
 
 .PHONY: test
 test:
