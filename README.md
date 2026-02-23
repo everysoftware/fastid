@@ -75,7 +75,7 @@ FastID is available at [http://localhost:3012](http://localhost:8012):
 ![Profile](img/profile1.png)
 ![Connections](img/profile2.png)
 
-Admin panel is available at: [http://localhost:4012/admin](http://localhost:8012/admin):
+Admin panel is available at: [http://localhost:4012](http://localhost:8012/admin):
 
 ![Admin Login](img/admin_login.png)
 ![Admin Users](img/admin_users.png)
