@@ -41,7 +41,6 @@ class AdminAppFactory(AppFactory):
         admin = Admin(
             app,
             self.engine,
-            base_url="/",
             authentication_backend=admin_auth,
             **self.admin_kwargs,
         )
