@@ -31,15 +31,13 @@ class AdminAppFactory(AppFactory):
     def __init__(
         self,
         engine: Engine | AsyncEngine,
-        base_url: str = "/admin",
         **admin_kwargs: Any,
     ) -> None:
         self.engine = engine
-        self.base_url = base_url
         self.admin_kwargs = admin_kwargs
 
     def create(self) -> FastAPI:
-        app = FastAPI(root_path=self.base_url)
+        app = FastAPI()
         admin = Admin(
             app,
             self.engine,
