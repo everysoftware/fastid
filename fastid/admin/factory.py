@@ -37,7 +37,7 @@ class AdminAppFactory(AppFactory):
         self.admin_kwargs = admin_kwargs
 
     def create(self) -> FastAPI:
-        app = FastAPI()
+        app = FastAPI(root_path=self.base_url)
         admin = Admin(
             app,
             self.engine,
