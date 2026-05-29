@@ -70,6 +70,10 @@ static:
 check:
 	pre-commit run
 
+.PHONY: check-all
+check-all:
+	pre-commit run --all-files
+
 .PHONY: generate
 generate: deps
 	alembic revision -m "$(NAME)" --autogenerate
