@@ -61,8 +61,8 @@ services:
         condition: service_healthy
 
     environment:
-      DB_URL: ${DB_URL?-postgresql+asyncpg://${POSTGRES_USER:-fastid}:${POSTGRES_PASSWORD:?database password required}@postgres:5432/${POSTGRES_DB:-fastid}}
-      REDIS_URL: ${REDIS_URL?-redis://:${REDIS_PASSWORD:?redis password required}@redis:6379/0}
+      DB_URL: ${DB_URL:-postgresql+asyncpg://${POSTGRES_USER:-fastid}:${POSTGRES_PASSWORD:?database password required}@postgres:5432/${POSTGRES_DB:-fastid}}
+      REDIS_URL: ${REDIS_URL:-redis://:${REDIS_PASSWORD:?redis password required}@redis:6379/0}
       NOTIFY_SMTP_ENABLED: ${NOTIFY_SMTP_ENABLED:-true}
       NOTIFY_SMTP_HOST: ${NOTIFY_SMTP_HOST:-mailpit}
       NOTIFY_SMTP_PORT: ${NOTIFY_SMTP_PORT:-1025}

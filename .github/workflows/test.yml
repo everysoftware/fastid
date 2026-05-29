@@ -61,7 +61,7 @@ jobs:
         run: |
           touch .env
           docker compose -f docker-compose.dev.yml down -v --remove-orphans
-          docker compose -f docker-compose.dev.yml up -f docker-compose.dev.yml -d postgres redis --wait --remove-orphans
+          docker compose -f docker-compose.dev.yml up postgres redis -d --wait --remove-orphans
           poetry run make certs
 
       - name: Run tests
