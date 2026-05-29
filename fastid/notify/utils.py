@@ -11,7 +11,7 @@ def collect_email_templates() -> Iterable[EmailTemplate]:
     with Path("templates/notifications/html/code.html").open() as f:
         code = EmailTemplate(slug="code", subject="Your verification code", source=f.read())
     with Path("templates/notifications/html/welcome.html").open() as f:
-        welcome = EmailTemplate(slug="welcome", subject=f"Welcome to {notify_settings.from_name}", source=f.read())
+        welcome = EmailTemplate(slug="welcome", subject=f"Welcome to {notify_settings.app_name}", source=f.read())
     return [base, code, welcome]
 
 

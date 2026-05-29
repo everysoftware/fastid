@@ -6,15 +6,27 @@ certs:
 
 .PHONY: deps
 deps:
-	docker compose up fastid-db fastid-redis -d
+	docker compose -f docker-compose.dev.yml postgres redis up -d --build --remove-orphans --wait
 
 .PHONY: up
 up:
-	docker compose up --build --remove-orphans --wait
+	docker compose -f docker-compose.dev.yml up --build --remove-orphans --wait
+
+.PHONY: up-obs
+up-obs:
+	docker compose -f docker-compose.dev.yml -f docker-compose.observability.yml up --build --remove-orphans --wait
 
 .PHONY: up-prod
 up-prod:
-	docker compose -f docker-compose.yml -f docker-compose-prod.yml up --build --remove-orphans --wait
+	docker compose -f docker-compose.dev.yml -f docker-compose.prod.yml up --build --remove-orphans --wait
+
+.PHONY: up-prod-obs
+up-prod-obs:
+	docker compose -f docker-compose.dev.yml -f docker-compose.prod.yml -f docker-compose.observability.yml up --build --remove-orphans --wait
+
+.PHONY: up-example
+up-example:
+	docker compose -f docker-compose.example.yml up --build --remove-orphans --wait
 
 .PHONY: test
 test:
@@ -30,15 +42,15 @@ testcov:
 
 .PHONY: stop
 stop:
-	docker compose stop
+	docker compose -f docker-compose.dev.yml stop
 
 .PHONY: down
 down:
-	docker compose down
+	docker compose -f docker-compose.dev.yml down
 
 .PHONY: restart
 restart:
-	docker compose restart
+	docker compose -f docker-compose.dev.yml restart
 
 .PHONY: lint
 lint:

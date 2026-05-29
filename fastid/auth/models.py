@@ -11,7 +11,6 @@ from fastid.database.base import VersionedEntity
 from fastid.database.utils import uuid
 from fastid.notify.config import notify_settings
 from fastid.notify.schemas import SendOTPRequest, UserAction
-from fastid.oauth.config import telegram_settings
 from fastid.security.crypto import crypt_ctx
 
 if TYPE_CHECKING:
@@ -101,10 +100,10 @@ class User(VersionedEntity):
         self.is_verified = True
 
     def is_email_available(self) -> bool:
-        return self.email is not None
+        return self.email is not None and notify_settings.smtp_enabled
 
     def is_telegram_available(self) -> bool:
-        return self.telegram_id is not None and telegram_settings.notification_enabled
+        return self.telegram_id is not None and notify_settings.telegram_enabled
 
     def email_contact(self) -> Contact:
         if not self.is_email_available():
@@ -122,7 +121,7 @@ class User(VersionedEntity):
         contacts = {}
         if self.is_email_available():
             contacts[ContactType.email] = self.email_contact()
-        if self.telegram_id is not None and telegram_settings.notification_enabled:
+        if self.is_telegram_available():
             contacts[ContactType.telegram] = self.telegram_contact()
         if not contacts:
             msg = f"User id={self.id} has no available contacts"
@@ -138,6 +137,6 @@ class User(VersionedEntity):
         return self.sort_contacts()[0]
 
     def find_contact_for_otp(self, dto: SendOTPRequest) -> Contact:
-        if dto.action == UserAction.change_email:
+        if dto.action == UserAction.change_email and dto.email:
             return Contact(type=ContactType.email, recipient={"email": dto.email})
         return self.find_priority_contact()

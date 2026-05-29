@@ -11,11 +11,10 @@ class MailClient:
         self,
         client: smtplib.SMTP,
         *,
-        from_name: str,
+        mail_from: str,
     ) -> None:
         self._client = client
-        self.username = self._client.user
-        self.from_name = from_name
+        self.mail_from = mail_from
 
     async def send(self, contact: Contact, subject: str, content: str) -> None:
         await asyncio.to_thread(self._send, contact, subject, content)
@@ -23,7 +22,7 @@ class MailClient:
     def _send(self, contact: Contact, subject: str, content: str) -> None:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = f"{self.from_name} <{self.username}>"
+        msg["From"] = f"{self.mail_from}"
         msg["To"] = f"<{contact.recipient['email']}>"
         msg.attach(MIMEText(content, "html"))
 

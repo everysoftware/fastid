@@ -31,3 +31,15 @@ class InvalidContactTypeError(ClientError):
     message = "Invalid contact type"
     error_code = "invalid_contact_type"
     status_code = status.HTTP_400_BAD_REQUEST
+
+
+class MethodDisabledError(ClientError):
+    message = "Notification method is disabled. Enable it in settings to send notifications"
+    error_code = "notification_method_disabled"
+    status_code = status.HTTP_400_BAD_REQUEST
+
+
+class NotificationDisabledError(ClientError):
+    message = "Notifications are disabled. Enable at least one notification method to send notifications"
+    error_code = "notification_disabled"
+    status_code = status.HTTP_400_BAD_REQUEST

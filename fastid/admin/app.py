@@ -8,4 +8,5 @@ admin_app = AdminAppFactory(
     title=f"{main_settings.title} Admin",
     favicon_url=admin_settings.favicon_url,
     logo_url=admin_settings.logo_url,
+    base_url="",
 ).create()
