@@ -51,23 +51,37 @@
 
 ## Installation
 
-Clone the repository:
+### Download the Compose file
 
 ```bash
-git clone https://github.com/everysoftware/fastid
+wget https://raw.githubusercontent.com/everysoftware/fastid/refs/heads/master/docker-compose.example.yml
+mv docker-compose.example.yml docker-compose.yml
 ```
 
-Generate RSA keys:
+### Set environment variables
+
+Create a `.env` file with the following content:
+
+```env
+POSTGRES_PASSWORD=YOUR_POSTGRES_PASSWORD
+REDIS_PASSWORD=YOUR_REDIS_PASSWORD
+```
+
+### Generate RSA keys
 
 ```bash
-make certs
+mkdir certs
+openssl genrsa -out certs/jwt-private.pem 2048
+openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
 ```
 
-Create a `.env` file based on `.env.example` and run the server:
+### Install and start FastID
 
 ```bash
-make up
+docker compose up -d --build --wait
 ```
+
+### Access FastID
 
 FastID is available at [http://localhost:3012](http://localhost:8012):
 
@@ -79,10 +93,6 @@ Admin panel is available at: [http://localhost:4012](http://localhost:8012/admin
 
 ![Admin Login](img/admin_login.png)
 ![Admin Users](img/admin_users.png)
-
-> To set up observability, you can use [this](https://github.com/everysoftware/fastapi-obs) preset.
-
-Enjoy! 🚀
 
 ## Get Started
 
