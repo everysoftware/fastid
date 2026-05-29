@@ -1,0 +1,6 @@
+services:
+  fastid-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: prod

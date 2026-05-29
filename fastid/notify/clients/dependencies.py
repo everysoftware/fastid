@@ -12,15 +12,20 @@ from fastid.oauth.config import telegram_settings
 
 
 def get_smtp() -> smtplib.SMTP:
-    server = smtplib.SMTP_SSL(notify_settings.smtp_host, notify_settings.smtp_port)
-    server.login(notify_settings.smtp_username, notify_settings.smtp_password)
+    server: smtplib.SMTP
+    if notify_settings.smtp_ssl:
+        server = smtplib.SMTP_SSL(notify_settings.smtp_host, notify_settings.smtp_port)
+    else:
+        server = smtplib.SMTP(notify_settings.smtp_host, notify_settings.smtp_port)
+    if notify_settings.smtp_auth:
+        server.login(notify_settings.smtp_username, notify_settings.smtp_password)
     return server
 
 
 def get_mail(server: Annotated[smtplib.SMTP, Depends(get_smtp)]) -> MailClient:
     return MailClient(
         server,
-        from_name=notify_settings.from_name,
+        mail_from=notify_settings.smtp_from,
     )
 
 

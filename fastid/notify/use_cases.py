@@ -11,11 +11,13 @@ from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWRawDep, transactional
 from fastid.database.exceptions import NoResultFoundError
 from fastid.notify.clients.dependencies import MailDep, TelegramDep
-from fastid.notify.config import jinja_env
+from fastid.notify.config import jinja_env, notify_settings
 from fastid.notify.exceptions import (
     InvalidContactTypeError,
+    MethodDisabledError,
     NoEmailError,
     NoTelegramIDError,
+    NotificationDisabledError,
     TemplateNotFoundError,
     WrongCodeError,
 )
@@ -47,6 +49,8 @@ class NotificationUseCases(UseCase):
 
     @transactional
     async def push_email(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
+        if not notify_settings.smtp_enabled:
+            raise MethodDisabledError
         if contact is None:
             try:
                 contact = user.email_contact()
@@ -70,6 +74,8 @@ class NotificationUseCases(UseCase):
 
     @transactional
     async def push_telegram(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
+        if not notify_settings.telegram_enabled:
+            raise MethodDisabledError
         if contact is None:
             try:
                 contact = user.telegram_contact()
@@ -94,6 +100,8 @@ class NotificationUseCases(UseCase):
         await self.uow.notifications.add(notification)
 
     async def push(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
+        if not notify_settings.enabled:
+            raise NotificationDisabledError
         if contact is None:
             contact = user.find_priority_contact()
         match contact.type:
@@ -105,6 +113,8 @@ class NotificationUseCases(UseCase):
                 raise InvalidContactTypeError
 
     async def push_otp(self, user: User | None, dto: SendOTPRequest) -> None:
+        if not notify_settings.enabled:
+            raise NotificationDisabledError
         if dto.action == UserAction.recover_password:
             assert dto.email is not None
             user = await self._get_user_by_email(dto.email)

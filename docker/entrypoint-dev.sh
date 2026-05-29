@@ -6,4 +6,4 @@ poetry run alembic upgrade head
 
 # You can put other setup logic here
 # Evaluating passed command:
-eval "exec poetry run $@"
+exec poetry run uvicorn "fastid.core.app:core_app" --host 0.0.0.0 --port 8000 --reload "$@"

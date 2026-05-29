@@ -23,7 +23,6 @@ ENV POETRY_NO_INTERACTION=1
 
 # Set environment
 ENV APP_DIR=$APP_DIR
-ENV ENVIRONMENT_SET=1
 
 RUN pip install "poetry==$POETRY_VERSION"
 ENV PATH="$POETRY_HOME/bin:$PATH"
@@ -49,7 +48,6 @@ COPY ./migrations ./migrations
 COPY ./alembic.ini ./
 COPY ./templates ./templates
 COPY ./static ./static
-COPY ./certs ./certs
 
 COPY ./docker/entrypoint-dev.sh /entrypoint-dev.sh
 RUN chmod +x /entrypoint-dev.sh
@@ -72,7 +70,6 @@ RUN python -m pip install -r requirements.txt
 
 # Set environment
 ENV APP_DIR=$APP_DIR
-ENV ENVIRONMENT_SET=1
 
 # Copy files
 COPY ./$APP_DIR ./$APP_DIR
@@ -80,7 +77,6 @@ COPY ./migrations ./migrations
 COPY ./alembic.ini ./
 COPY ./templates ./templates
 COPY ./static ./static
-COPY ./certs ./certs
 
 # Entrypoint script
 COPY ./docker/entrypoint.sh /entrypoint.sh

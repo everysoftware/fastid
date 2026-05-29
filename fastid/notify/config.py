@@ -8,9 +8,14 @@ from fastid.core.schemas import BaseSettings
 
 
 class NotifySettings(BaseSettings):
-    from_name: str = "FastID"
-    smtp_host: str = "smtp.example.com"
-    smtp_port: int = 465
+    app_name: str = "FastID"
+
+    smtp_enabled: bool = False
+    smtp_ssl: bool = False
+    smtp_host: str = "mailpit"
+    smtp_port: int = 1025
+    smtp_from_email: str = "fastid@localhost"
+    smtp_auth: bool = False
     smtp_username: str = "user@example.com"
     smtp_password: str = "password"
 
@@ -18,10 +23,18 @@ class NotifySettings(BaseSettings):
 
     contact_priority: Mapping[ContactType, int] = {ContactType.telegram: 0, ContactType.email: 1}
 
+    @property
+    def enabled(self) -> bool:
+        return self.smtp_enabled or self.telegram_enabled
+
+    @property
+    def smtp_from(self) -> str:
+        return f"{self.app_name} <{self.smtp_from_email}>"
+
     model_config = SettingsConfigDict(env_prefix="notify_")
 
 
 notify_settings = NotifySettings()
 
 jinja_env = Environment(autoescape=True, loader=FileSystemLoader("templates"))
-jinja_env.globals["from_name"] = notify_settings.from_name
+jinja_env.globals["from_name"] = notify_settings.app_name

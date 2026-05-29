@@ -55,13 +55,13 @@ jobs:
 
       - name: Run checks
         run: |
-          poetry run make check
+          poetry run make check-all
 
       - name: Setup test environment
         run: |
           touch .env
-          docker compose down -v --remove-orphans
-          docker compose up -d fastid-db fastid-redis
+          docker compose -f docker-compose.dev.yml down -v --remove-orphans
+          docker compose -f docker-compose.dev.yml up postgres redis -d --wait --remove-orphans
           poetry run make certs
 
       - name: Run tests
@@ -71,14 +71,15 @@ jobs:
           GOOGLE_ENABLED: 1
           YANDEX_ENABLED: 1
           TELEGRAM_OAUTH_ENABLED: 1
-          TELEGRAM_NOTIFICATION_ENABLED: 1
+          NOTIFY_SMTP_ENABLED: 1
+          NOTIFY_TELEGRAM_ENABLED: 1
           TELEGRAM_BOT_TOKEN: 123456:BOT_SECRET
           DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
           REDIS_URL: redis://${{ matrix.redis-user }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
 
       - name: Teardown test environment
         run: |
-          docker compose down -v --remove-orphans
+          docker compose -f docker-compose.dev.yml down -v --remove-orphans
 
       - name: Store coverage files
         uses: actions/upload-artifact@v4

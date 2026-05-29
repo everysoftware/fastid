@@ -22,6 +22,8 @@ class MainSettings(BaseSettings):
 
     base_url: str = "http://localhost:8012"
     api_path: str = "/api/v1"
+    admin_path: str = "/admin"
+    frontend_path: str = "/"
 
     @property
     def api_url(self) -> str:
