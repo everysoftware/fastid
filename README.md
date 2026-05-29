@@ -83,13 +83,13 @@ docker compose up -d --build --wait
 
 ### Access FastID
 
-FastID is available at [http://localhost:3012](http://localhost:8012):
+FastID is available at [http://localhost:8012](http://localhost:8012):
 
 ![Sign In](img/signin.png)
 ![Profile](img/profile1.png)
 ![Connections](img/profile2.png)
 
-Admin panel is available at: [http://localhost:4012](http://localhost:8012/admin):
+Admin panel is available at: [http://localhost:8012/admin/](http://localhost:8012/admin/):
 
 ![Admin Login](img/admin_login.png)
 ![Admin Users](img/admin_users.png)
