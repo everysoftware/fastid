@@ -5,6 +5,7 @@ from typing import Any, cast
 from redis.asyncio import Redis
 
 from fastid.cache.exceptions import KeyNotFoundError
+from fastid.cache.locks import DistributedLock
 
 
 class CacheStorage(ABC):
@@ -28,6 +29,9 @@ class CacheStorage(ABC):
     @abstractmethod
     async def healthcheck(self) -> None: ...
 
+    @abstractmethod
+    def lock(self, name: str, **kwargs: Any) -> DistributedLock: ...
+
 
 class RedisStorage(CacheStorage):
     key: str
@@ -46,12 +50,12 @@ class RedisStorage(CacheStorage):
         await self.client.set(f"{self.key}:{key}", json_str, ex=expire)
         return json_str
 
-    async def get(self, key: str) -> str:
+    async def get(self, key: str) -> Any:
         value = await self.client.get(f"{self.key}:{key}")
         if value is None:
             msg = f"Key {key} not found"
             raise KeyNotFoundError(msg)
-        return str(json.loads(value))
+        return json.loads(value)
 
     async def delete(self, key: str) -> None:
         await self.client.delete(f"{self.key}:{key}")
@@ -65,3 +69,6 @@ class RedisStorage(CacheStorage):
 
     async def healthcheck(self) -> None:
         await self.client.ping()
+
+    def lock(self, name: str, **kwargs: Any) -> DistributedLock:
+        return DistributedLock(self.client, name, **kwargs)

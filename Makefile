@@ -12,6 +12,10 @@ deps:
 up:
 	docker compose -f docker-compose.dev.yml up --build --remove-orphans --wait
 
+.PHONY: build
+build:
+	docker build -t fastid:latest -f docker/Dockerfile .
+
 .PHONY: up-obs
 up-obs:
 	docker compose -f docker-compose.dev.yml -f docker-compose.observability.yml up --build --remove-orphans --wait

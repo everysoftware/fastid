@@ -1,3 +1,5 @@
+from fastid.cache.dependencies import CacheDep
+from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWRawDep, transactional
 from fastid.security.webhooks import (
@@ -6,25 +8,34 @@ from fastid.security.webhooks import (
     get_timestamp,
     get_webhook_id,
 )
-from fastid.webhooks.models import WebhookEvent
+from fastid.webhooks.models import Webhook, WebhookEvent
 from fastid.webhooks.repositories import WebhookTypeSpecification
 from fastid.webhooks.schemas import Event, SendWebhookRequest, WebhookPayload
 from fastid.webhooks.senders.dependencies import SenderDep
 
 
 class WebhookUseCases(UseCase):
-    def __init__(self, uow: UOWRawDep, sender: SenderDep) -> None:
+    def __init__(self, uow: UOWRawDep, cache: CacheDep, sender: SenderDep) -> None:
         self.uow = uow  # Due to background nature of notification use cases, use raw dependency
+        self.cache = cache
         self.sender = sender
 
     @transactional
     async def send(self, dto: SendWebhookRequest) -> None:
-        webhooks = await self.uow.webhooks.get_many(WebhookTypeSpecification(dto.type))
+        cache_key = f"webhooks:{dto.type}"
+        try:
+            cached = await self.cache.get(cache_key)
+        except KeyNotFoundError:
+            webhook_page = await self.uow.webhooks.get_many(WebhookTypeSpecification(dto.type))
+            webhooks = webhook_page.items
+            await self.cache.set(cache_key, [w.dump() for w in webhooks], expire=60)
+        else:
+            webhooks = [Webhook(**w) for w in cached]
         event_id = get_event_id()
         event_timestamp = get_timestamp()
         event_dto = Event(event_type=dto.type, event_id=event_id, timestamp=event_timestamp)
         payload = WebhookPayload(event=event_dto, data=dto.payload).model_dump(mode="json")
-        for webhook in webhooks.items:
+        for webhook in webhooks:
             webhook_id = get_webhook_id()
             timestamp = get_timestamp()
             headers = generate_headers(payload, timestamp, str(webhook_id), webhook.secret)

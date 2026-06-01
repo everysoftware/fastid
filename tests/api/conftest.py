@@ -7,11 +7,11 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine
 from starlette import status
 
-from fastid.api.lifespan import LifespanTasks
 from fastid.apps.schemas import AppDTO
 from fastid.auth.schemas import UserDTO
 from fastid.cache.storage import CacheStorage
 from fastid.core.dependencies import log_provider
+from fastid.core.lifespan import LifespanTasks
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.notify.schemas import UserAction
 from fastid.security.crypto import generate_otp

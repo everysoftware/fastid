@@ -5,6 +5,7 @@ from typing import Self
 from fastid.admin.config import admin_settings
 from fastid.auth.models import User
 from fastid.auth.repositories import EmailUserSpecification
+from fastid.cache.exceptions import LockError
 from fastid.cache.storage import CacheStorage
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
@@ -19,8 +20,12 @@ class LifespanTasks:
 
     async def on_startup(self) -> None:
         await self.healthcheck()
-        await self.create_admin()
-        await self.create_templates()
+        try:
+            async with self.cache.lock("seed", blocking=True):
+                await self.create_admin()
+                await self.create_templates()
+        except LockError:
+            pass
 
     async def healthcheck(self) -> None:
         await self.uow.healthcheck()

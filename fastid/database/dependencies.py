@@ -6,16 +6,33 @@ from typing import TYPE_CHECKING, Annotated, Any, cast
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from fastid.database.config import db_settings
+from fastid.database.config import DBSettings, db_settings
 from fastid.database.uow import SQLAlchemyUOW
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Callable, Coroutine
 
+
+def build_connect_args(settings: DBSettings) -> dict[str, Any]:
+    args: dict[str, Any] = {
+        "server_settings": settings.server_settings,
+    }
+    if settings.connect_timeout is not None:
+        args["timeout"] = settings.connect_timeout
+    if settings.command_timeout is not None:
+        args["command_timeout"] = settings.command_timeout
+    return args
+
+
 engine = create_async_engine(
     db_settings.url,
     echo=db_settings.echo,
-    pool_pre_ping=True,
+    pool_size=db_settings.pool_size,
+    max_overflow=db_settings.max_overflow,
+    pool_recycle=db_settings.pool_recycle,
+    pool_timeout=db_settings.pool_timeout,
+    pool_pre_ping=db_settings.pool_pre_ping,
+    connect_args=build_connect_args(db_settings),
 )
 session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
