@@ -10,14 +10,15 @@ from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWRawDep, transactional
 from fastid.database.exceptions import NoResultFoundError
-from fastid.notify.clients.dependencies import MailDep, TelegramDep
-from fastid.notify.config import jinja_env, notify_settings
+from fastid.email.config import email_settings
+from fastid.email.dependencies import MailDep
+from fastid.integrations.config import integration_settings
+from fastid.integrations.dependencies import TelegramNotificationsDep
 from fastid.notify.exceptions import (
     InvalidContactTypeError,
     MethodDisabledError,
     NoEmailError,
     NoTelegramIDError,
-    NotificationDisabledError,
     TemplateNotFoundError,
     WrongCodeError,
 )
@@ -29,6 +30,7 @@ from fastid.notify.schemas import (
     UserAction,
     VerifyOTPRequest,
 )
+from fastid.notify.templating import jinja_env
 from fastid.security.crypto import generate_otp
 from fastid.security.jwt import jwt_backend
 from fastid.security.schemas import JWTPayload
@@ -39,7 +41,7 @@ class NotificationUseCases(UseCase):
         self,
         uow: UOWRawDep,  # Due to background nature of notification use cases, use raw dependency
         mail: MailDep,
-        telegram: TelegramDep,
+        telegram: TelegramNotificationsDep,
         cache: CacheDep,
     ) -> None:
         self.uow = uow
@@ -49,7 +51,7 @@ class NotificationUseCases(UseCase):
 
     @transactional
     async def push_email(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
-        if not notify_settings.smtp_enabled:
+        if not email_settings.smtp_enabled:
             raise MethodDisabledError
         if contact is None:
             try:
@@ -74,7 +76,7 @@ class NotificationUseCases(UseCase):
 
     @transactional
     async def push_telegram(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
-        if not notify_settings.telegram_enabled:
+        if not integration_settings.telegram_notification_enabled:
             raise MethodDisabledError
         if contact is None:
             try:
@@ -100,8 +102,6 @@ class NotificationUseCases(UseCase):
         await self.uow.notifications.add(notification)
 
     async def push(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
-        if not notify_settings.enabled:
-            raise NotificationDisabledError
         if contact is None:
             contact = user.find_priority_contact()
         match contact.type:
@@ -113,8 +113,6 @@ class NotificationUseCases(UseCase):
                 raise InvalidContactTypeError
 
     async def push_otp(self, user: User | None, dto: SendOTPRequest) -> None:
-        if not notify_settings.enabled:
-            raise NotificationDisabledError
         if dto.action == UserAction.recover_password:
             assert dto.email is not None
             user = await self._get_user_by_email(dto.email)

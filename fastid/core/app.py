@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastid.admin.app import admin_app
 from fastid.api.app import api_app
 from fastid.cache.dependencies import get_cache
-from fastid.core.config import main_settings
+from fastid.core.config import core_settings
 from fastid.core.lifespan import LifespanTasks
 from fastid.database.dependencies import get_uow_raw
 from fastid.frontend.app import frontend_app
@@ -26,6 +26,6 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
 core_app = FastAPI(lifespan=lifespan)
 
-core_app.mount(main_settings.api_path, api_app)
-core_app.mount(main_settings.admin_path, admin_app)
-core_app.mount(main_settings.frontend_path, frontend_app)
+core_app.mount(core_settings.api_path, api_app)
+core_app.mount(core_settings.admin_path, admin_app)
+core_app.mount(core_settings.frontend_path, frontend_app)

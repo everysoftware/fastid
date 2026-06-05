@@ -1,17 +1,19 @@
 import contextlib
-
-from fastlink.schemas import OAuth2Callback, TokenResponse
-from fastlink.telegram.schemas import TelegramCallback
+from typing import Any, cast
 
 from fastid.auth.models import User
 from fastid.auth.repositories import EmailUserSpecification
+from fastid.auth.schemas import OAuth2Callback, TokenResponse
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.schemas import LimitOffset, Page, Sorting
-from fastid.oauth.clients.dependencies import RegistryDep
+from fastid.integrations.config import integration_settings
+from fastid.integrations.dependencies import OAuth2RegistryDep, TelegramWidgetDep
+from fastid.integrations.schemas import TelegramCallback
 from fastid.oauth.exceptions import (
     OAuthAccountInUseError,
+    OAuthProviderDisabledError,
 )
 from fastid.oauth.models import OAuthAccount
 from fastid.oauth.repositories import (
@@ -25,22 +27,23 @@ from fastid.security.schemas import JWTPayload
 
 
 class OAuthUseCases(UseCase):
-    def __init__(self, uow: UOWDep, registry: RegistryDep) -> None:
+    def __init__(self, uow: UOWDep, registry: OAuth2RegistryDep, telegram_widget: TelegramWidgetDep) -> None:
         self.uow = uow
         self.registry = registry
-
-    async def inspect(self, provider: str) -> InspectProviderResponse:
-        async with self.registry.get(provider) as session:
-            login_url = await session.login_url()
-            return InspectProviderResponse(
-                meta=session.meta,
-                discovery=session.discovery,
-                login_url=login_url,
-            )
+        self.telegram_widget = telegram_widget
 
     async def get_login_url(self, provider: str) -> str:
-        async with self.registry.get(provider) as session:
-            return await session.login_url()
+        async with self._get_client(provider) as client:
+            return cast(str, await client.login_url())
+
+    async def inspect(self, provider: str) -> InspectProviderResponse:
+        async with self._get_client(provider) as client:
+            login_url = await client.login_url()
+            return InspectProviderResponse(
+                meta=client.meta,
+                discovery=client.discovery,
+                login_url=login_url,
+            )
 
     async def login(self, provider: str, callback: OAuth2Callback | TelegramCallback) -> TokenResponse:
         open_id = await self._callback(provider, callback)
@@ -88,6 +91,13 @@ class OAuthUseCases(UseCase):
         await self.uow.commit()
         return account
 
+    def _get_client(self, provider: str) -> Any:
+        if provider == "telegram":
+            if not integration_settings.telegram_widget_enabled:
+                raise OAuthProviderDisabledError
+            return self.telegram_widget
+        return self.registry.get(provider)
+
     async def _callback(self, provider: str, callback: OAuth2Callback | TelegramCallback) -> OpenIDBearer:
         if provider == "telegram":
             assert isinstance(callback, TelegramCallback)
@@ -96,20 +106,20 @@ class OAuthUseCases(UseCase):
         return await self._oauth2_callback(provider, callback)
 
     async def _oauth2_callback(self, provider: str, callback: OAuth2Callback) -> OpenIDBearer:
-        async with self.registry.get(provider) as session:
-            token = await session.login(callback)
-            openid = await session.openid()
+        async with self._get_client(provider) as client:
+            token = await client.login(callback)
+            userinfo = await client.userinfo()
             return OpenIDBearer(
-                **openid.model_dump(),
-                **token.model_dump(),
+                **userinfo.userinfo.model_dump(),
+                **token.token.model_dump(),
                 provider=provider,
             )
 
     async def _telegram_callback(self, callback: TelegramCallback) -> OpenIDBearer:
-        async with self.registry.get("telegram") as session:
-            openid = await session.callback(callback)  # type: ignore[arg-type]
+        async with self._get_client("telegram") as client:
+            userinfo = await client.verify(callback)
             return OpenIDBearer(
-                **openid.model_dump(),
+                **userinfo.userinfo.model_dump(),
                 provider="telegram",
             )
 

@@ -1,8 +1,7 @@
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from fastid.auth.schemas import UserDTO
+from fastid.auth.schemas import TokenResponse, UserDTO
 from fastid.database.utils import uuid
 
 

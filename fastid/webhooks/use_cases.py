@@ -8,6 +8,7 @@ from fastid.security.webhooks import (
     get_timestamp,
     get_webhook_id,
 )
+from fastid.webhooks.config import webhook_settings
 from fastid.webhooks.models import Webhook, WebhookEvent
 from fastid.webhooks.repositories import WebhookTypeSpecification
 from fastid.webhooks.schemas import Event, SendWebhookRequest, WebhookPayload
@@ -28,7 +29,11 @@ class WebhookUseCases(UseCase):
         except KeyNotFoundError:
             webhook_page = await self.uow.webhooks.get_many(WebhookTypeSpecification(dto.type))
             webhooks = webhook_page.items
-            await self.cache.set(cache_key, [w.dump() for w in webhooks], expire=60)
+            await self.cache.set(
+                cache_key,
+                [{"id": str(w.id), "secret": w.secret, "url": w.url} for w in webhooks],
+                expire=webhook_settings.page_expires_in_seconds,
+            )
         else:
             webhooks = [Webhook(**w) for w in cached]
         event_id = get_event_id()

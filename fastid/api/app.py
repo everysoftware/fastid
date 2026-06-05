@@ -1,29 +1,31 @@
+from fastid.api.config import api_settings
 from fastid.api.factory import APIAppFactory
 from fastid.core.base import Plugin
-from fastid.core.config import cors_settings, main_settings
+from fastid.core.config import branding_settings, core_settings
 from fastid.database.dependencies import engine
-from fastid.plugins.obs.config import obs_settings
-from fastid.plugins.obs.metrics import MetricsPlugin
-from fastid.plugins.obs.tracing import TracingPlugin
+from fastid.plugins.observability.config import observability_settings
+from fastid.plugins.observability.metrics import MetricsPlugin
+from fastid.plugins.observability.tracing import TracingPlugin
 
 plugins: list[Plugin] = []
 
-# Must be last plugin
-if obs_settings.enabled:
-    metrics_plugin = MetricsPlugin(app_name=main_settings.discovery_name)
+# Must be last plugins
+if observability_settings.metrics_enabled:
+    metrics_plugin = MetricsPlugin(app_name=branding_settings.service_name)
+    plugins.append(metrics_plugin)
+if observability_settings.tracing_enabled:
     tracing_plugin = TracingPlugin(
-        app_name=main_settings.discovery_name,
-        export_url=obs_settings.tempo_url,
+        app_name=branding_settings.service_name,
+        export_url=observability_settings.tempo_url,
         instrument=["logger", "httpx", "sqlalchemy"],
         engine=engine,
     )
-    plugins += [metrics_plugin, tracing_plugin]
+    plugins.append(tracing_plugin)
 
 api_app = APIAppFactory(
-    title=main_settings.title,
-    version=main_settings.version,
-    base_url=main_settings.api_path,
-    allow_origins=cors_settings.origins,
-    allow_origin_regex=cors_settings.origin_regex,
+    title=branding_settings.api_swagger_title,
+    base_url=core_settings.api_path,
+    allow_origins=api_settings.cors_origins,
+    allow_origin_regex=api_settings.cors_origin_regex,
     plugins=plugins,
 ).create()

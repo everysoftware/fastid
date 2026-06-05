@@ -10,7 +10,7 @@ from starlette.routing import Match
 from starlette.types import ASGIApp
 
 from fastid.api.exceptions import unhandled_exception_handler
-from fastid.plugins.obs import panels
+from fastid.plugins.observability import panels
 
 
 class PrometheusMiddleware(BaseHTTPMiddleware):

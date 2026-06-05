@@ -2,7 +2,7 @@ from redis.asyncio import ConnectionPool, Redis
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from fastid.cache.config import cache_settings
+from fastid.cache.config import redis_settings
 from fastid.cache.storage import CacheStorage, RedisStorage
 from fastid.core.dependencies import log_provider
 from fastid.database.config import db_settings
@@ -16,7 +16,7 @@ test_db_url = get_test_db_url(db_settings.url)
 db_settings.url = test_db_url
 alembic_config = alembic_config_from_url(test_db_url)
 
-test_redis_pool = ConnectionPool.from_url(cache_settings.redis_url)
+test_redis_pool = ConnectionPool.from_url(redis_settings.url)
 test_redis = Redis(connection_pool=test_redis_pool)
 
 test_engine = create_async_engine(test_db_url, poolclass=pool.NullPool)
@@ -28,4 +28,4 @@ def get_test_uow() -> SQLAlchemyUOW:
 
 
 def get_test_cache() -> CacheStorage:
-    return RedisStorage(test_redis, key=cache_settings.redis_key)
+    return RedisStorage(test_redis, key=redis_settings.major_key)

@@ -1,20 +1,13 @@
 from abc import abstractmethod
 from typing import Any
 
-from fastlink.schemas import (
-    OAuth2AuthorizationCodeRequest,
-    OAuth2Callback,
-    OAuth2PasswordRequest,
-    OAuth2RefreshTokenRequest,
-    TokenResponse,
-)
-
 from fastid.apps.exceptions import (
     InvalidAuthorizationCodeError,
     InvalidClientCredentialsError,
 )
 from fastid.apps.models import App
 from fastid.apps.repositories import AppClientIDSpecification
+from fastid.apps.schemas import AppDTO
 from fastid.auth.config import auth_settings
 from fastid.auth.exceptions import (
     EmailNotFoundError,
@@ -24,11 +17,24 @@ from fastid.auth.exceptions import (
 )
 from fastid.auth.models import User
 from fastid.auth.repositories import EmailUserSpecification
-from fastid.auth.schemas import AuthorizationResponse, OAuth2ConsentRequest, PayloadResponse, UserDTO
+from fastid.auth.schemas import (
+    AuthorizationResponse,
+    OAuth2AuthorizationCodeRequest,
+    OAuth2Callback,
+    OAuth2ClientCredentialsRequest,
+    OAuth2ConsentRequest,
+    OAuth2PasswordRequest,
+    OAuth2RefreshTokenRequest,
+    PayloadResponse,
+    SubscriberType,
+    TokenResponse,
+    UserDTO,
+)
 from fastid.cache.dependencies import CacheDep
 from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
-from fastid.database.dependencies import UOWDep
+from fastid.core.timer import Timer
+from fastid.database.dependencies import UOWDep, transactional
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.utils import UUIDv7, uuid
 from fastid.security.crypto import generate_otp
@@ -51,16 +57,17 @@ class Grant(UseCase):
         except NoResultFoundError as e:
             raise InvalidClientCredentialsError from e
 
+    @transactional
     async def authenticate_client(self, client_id: str, client_secret: str) -> App:
         app = await self.validate_client(client_id)
         app.verify_secret(client_secret)
         return app
 
     def grant(self, user: User, scope: str) -> AuthorizationResponse:
-        tokens = self.issue_tokens(user, scope)
-        return self.get_auth_response(user, scope, tokens)
+        tokens = self._issue_tokens(user, scope)
+        return self._get_auth_response(scope, tokens, user)
 
-    def issue_tokens(self, user: User, scope: str) -> dict[str, dict[str, Any]]:
+    def _issue_tokens(self, user: User, scope: str) -> dict[str, dict[str, Any]]:
         self._check_scope(user, scope)
         tokens = {
             token_type: {"is_issued": False, "token": None, "payload": None}
@@ -73,16 +80,29 @@ class Grant(UseCase):
             self._issue_it(user, tokens)
         return tokens
 
-    def get_auth_response(self, user: User, scope: str, tokens: dict[str, Any]) -> AuthorizationResponse:
+    def _get_auth_response(self, scope: str, tokens: dict[str, Any], user: User) -> AuthorizationResponse:
         user_dto = UserDTO.model_validate(user)
-        payload = PayloadResponse(
+        payload = self._get_payload_response(tokens)
+        token = self._get_token_response(scope, tokens)
+        return AuthorizationResponse(user=user_dto, payload=payload, token=token)
+
+    @staticmethod
+    def _check_scope(user: User, scope: str) -> None:
+        if "admin" in scope and not user.is_superuser:
+            raise NoPermissionError
+
+    @staticmethod
+    def _get_payload_response(tokens: dict[str, Any]) -> PayloadResponse:
+        return PayloadResponse(
             access_token=tokens["access"]["payload"],
             id_token=tokens["id"]["payload"],
             refresh_token=tokens["refresh"]["payload"],
         )
+
+    def _get_token_response(self, scope: str, tokens: dict[str, Any]) -> TokenResponse:
         token_id = str(uuid())
         expires_in = self.token_backend.get_lifetime("access")
-        token = TokenResponse(
+        return TokenResponse(
             token_id=token_id,
             expires_in=expires_in,
             scope=scope,
@@ -90,12 +110,6 @@ class Grant(UseCase):
             id_token=tokens["id"]["token"],
             refresh_token=tokens["refresh"]["token"],
         )
-        return AuthorizationResponse(user=user_dto, payload=payload, token=token)
-
-    @staticmethod
-    def _check_scope(user: User, scope: str) -> None:
-        if "admin" in scope and not user.is_superuser:
-            raise NoPermissionError
 
     def _issue_at(self, user: User, scope: str, tokens: dict[str, dict[str, Any]]) -> None:
         schema = JWTPayload(sub=str(user.id), scope=scope)
@@ -128,12 +142,18 @@ class Grant(UseCase):
 
 class PasswordGrant(Grant):
     async def authorize(self, form: OAuth2PasswordRequest) -> AuthorizationResponse:
+        with Timer("user_email"):
+            user = await self._find_by_email(form.username)
+        with Timer("verify_password"):
+            await user.verify_password(form.password)
+        with Timer("grant"):
+            return self.grant(user, form.scope)
+
+    async def _find_by_email(self, email: str) -> User:
         try:
-            user = await self.uow.users.find(EmailUserSpecification(form.username))
+            return await self.uow.users.find(EmailUserSpecification(email))
         except NoResultFoundError as e:
             raise EmailNotFoundError from e
-        user.verify_password(form.password)
-        return self.grant(user, form.scope)
 
 
 class AuthorizationCodeGrant(Grant):
@@ -184,3 +204,33 @@ class RefreshTokenGrant(Grant):
         assert content.scope is not None
         user = await self.uow.users.get(UUIDv7(content.sub))
         return self.grant(user, content.scope)
+
+
+class ClientCredentialsGrant(Grant):
+    async def authorize(self, form: OAuth2ClientCredentialsRequest) -> AuthorizationResponse:
+        app = await self.authenticate_client(form.client_id, form.client_secret)
+        self._check_app_scope(app, form.scope)
+        tokens = self._issue_app_tokens(app, form.scope)
+        return self._get_app_auth_response(form.scope, tokens, app)
+
+    @staticmethod
+    def _check_app_scope(app: App, scope: str) -> None:
+        pass
+
+    def _issue_app_tokens(self, app: App, scope: str) -> dict[str, dict[str, Any]]:
+        tokens: dict[str, Any] = {
+            token_type: {"is_issued": False, "token": None, "payload": None}
+            for token_type in ["access", "refresh", "id"]
+        }
+        schema = JWTPayload(sub=str(app.id), scope=scope)
+        token, payload = self.token_backend.create("access", schema)
+        tokens["access"]["is_issued"] = True
+        tokens["access"]["token"] = token
+        tokens["access"]["payload"] = payload
+        return tokens
+
+    def _get_app_auth_response(self, scope: str, tokens: dict[str, Any], app: App) -> AuthorizationResponse:
+        app_dto = AppDTO.model_validate(app)
+        payload = self._get_payload_response(tokens)
+        token = self._get_token_response(scope, tokens)
+        return AuthorizationResponse(app=app_dto, payload=payload, token=token, sub_type=SubscriberType.app)

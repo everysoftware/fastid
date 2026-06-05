@@ -3,7 +3,7 @@ from typing import Any
 from pydantic import Field, PositiveInt
 from pydantic_settings import SettingsConfigDict
 
-from fastid.core.schemas import BaseSettings
+from fastid.core.schemas import ENV_PREFIX, BaseSettings
 
 
 class DBSettings(BaseSettings):
@@ -24,7 +24,7 @@ class DBSettings(BaseSettings):
     connect_timeout: PositiveInt | None = Field(default=10)
     command_timeout: PositiveInt | None = Field(default=30)
 
-    model_config = SettingsConfigDict(env_prefix="db_")
+    model_config = SettingsConfigDict(env_prefix=f"{ENV_PREFIX}db_")
 
 
 db_settings = DBSettings()

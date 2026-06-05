@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from fastid.core.base import Plugin
-from fastid.plugins.obs.prometheus import PrometheusMiddleware
+from fastid.plugins.observability.prometheus import PrometheusMiddleware
 
 
 class EndpointFilter(logging.Filter):

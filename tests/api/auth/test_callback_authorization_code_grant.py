@@ -1,9 +1,9 @@
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
 from fastid.apps.schemas import AppDTO
 from fastid.auth.dependencies import cookie_transport
+from fastid.auth.schemas import TokenResponse
 from tests import mocks
 from tests.mocks import faker
 from tests.utils.auth import get_ac_grant_callback

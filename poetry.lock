@@ -1327,25 +1327,6 @@ uvicorn = {version = ">=0.15.0", extras = ["standard"]}
 standard = ["uvicorn[standard] (>=0.15.0)"]
 
 [[package]]
-name = "fastlink"
-version = "0.1.6"
-description = "FastLink OAuth 2.0 client for various platforms, asynchronous, easy-to-use, extensible"
-optional = false
-python-versions = "<4.0,>=3.12"
-groups = ["main"]
-files = [
-    {file = "fastlink-0.1.6-py3-none-any.whl", hash = "sha256:77f1ceb8af24145f4dce43d24569b019305d5a76053702dc94ffdf84885fb239"},
-    {file = "fastlink-0.1.6.tar.gz", hash = "sha256:0c95a19a1042acfaf4f01d0371fd22fc291bbe323f0e320eddf6c14170d66471"},
-]
-
-[package.dependencies]
-aiogram = ">=3.20.0.post0,<4.0.0"
-fastapi = {version = ">=0.115.7,<0.116.0", extras = ["standart"]}
-httpx = ">=0.28.1,<0.29.0"
-pydantic = ">=2.11.5,<3.0.0"
-pyjwt = ">=2.10.1,<3.0.0"
-
-[[package]]
 name = "filelock"
 version = "3.20.3"
 description = "A platform independent file lock."
@@ -5094,4 +5075,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "fdf6fc122b5be5c3c943add4eb9c34b8f232a8b16d7e70af0140275ec303b825"
+content-hash = "777988509ee50bb4a267c78d450b16924ccefb1d6fe0d5f191a54a43acaea770"

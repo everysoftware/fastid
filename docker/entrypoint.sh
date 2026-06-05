@@ -32,7 +32,7 @@ echo "  Keep Alive: $KEEP_ALIVE"
 
 exec gunicorn \
     -w "$WORKERS" \
-    -k fastid.core.workers.MyUvicornWorker \
+    -k "$WORKER_CLASS" \
     "$APP" \
     -b "$BIND" \
     --backlog "$BACKLOG" \

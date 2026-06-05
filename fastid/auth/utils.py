@@ -1,9 +1,9 @@
 from collections.abc import Mapping
 
 from fastapi import Request
-from fastlink.integrations.fastapi.transport import Transport
 
 from fastid.auth.exceptions import NoTokenProvidedError
+from fastid.security.transport import Transport
 
 
 class AuthBus:

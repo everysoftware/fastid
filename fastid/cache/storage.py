@@ -47,6 +47,8 @@ class RedisStorage(CacheStorage):
 
     async def set(self, key: str, value: Any, *, expire: int | None = None) -> str:
         json_str = json.dumps(value, ensure_ascii=True)
+        if expire == 0:
+            return json_str
         await self.client.set(f"{self.key}:{key}", json_str, ex=expire)
         return json_str
 

@@ -1,9 +1,8 @@
 import pytest
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from fastid.auth.schemas import UserDTO
+from fastid.auth.schemas import TokenResponse, UserDTO
 from fastid.cache.storage import CacheStorage
 from fastid.notify.schemas import UserAction
 from tests.mocks import faker

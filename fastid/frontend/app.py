@@ -1,4 +1,4 @@
-from fastid.core.config import main_settings
+from fastid.core.config import branding_settings
 from fastid.frontend.factory import FrontendAppFactory
 
-frontend_app = FrontendAppFactory(title=main_settings.title).create()
+frontend_app = FrontendAppFactory(title=branding_settings.frontend_swagger_title).create()

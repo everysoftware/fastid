@@ -1,8 +1,8 @@
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
 from fastid.auth.dependencies import cookie_transport
+from fastid.auth.schemas import TokenResponse
 
 
 async def test_logout(client: AsyncClient, user_token: TokenResponse) -> None:

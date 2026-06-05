@@ -6,10 +6,11 @@ from starlette.staticfiles import StaticFiles
 
 from fastid.auth.config import auth_settings
 from fastid.core.base import AppFactory
+from fastid.core.config import branding_settings
 from fastid.frontend.exceptions import add_exception_handlers
 from fastid.frontend.router import router as pages_router
 from fastid.frontend.templating import templates
-from fastid.oauth.clients.dependencies import registry
+from fastid.oauth.metadata import UI_META
 
 routers = [pages_router]
 
@@ -51,7 +52,7 @@ class FrontendAppFactory(AppFactory):
         return app
 
     def _set_templates_env(self) -> None:
-        templates.env.globals["app_title"] = self.title
+        templates.env.globals["app_title"] = branding_settings.title
         templates.env.globals["favicon_url"] = self.favicon_url
         templates.env.globals["logo_url"] = self.logo_url
-        templates.env.globals["providers_meta"] = registry.metadata
+        templates.env.globals["providers_meta"] = UI_META

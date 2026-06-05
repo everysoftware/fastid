@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-from enum import StrEnum, auto
+from enum import auto
 from typing import TYPE_CHECKING, Any
 from uuid import UUID  # noqa: TCH003
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from fastid.core.schemas import BaseEnum
 from fastid.database.base import Entity, VersionedEntity
 
 if TYPE_CHECKING:
     from fastid.apps.models import App
 
 
-class WebhookType(StrEnum):
+class WebhookType(BaseEnum):
     user_registration = auto()
     user_login = auto()
     user_update_profile = auto()

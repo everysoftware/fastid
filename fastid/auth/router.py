@@ -1,18 +1,25 @@
 from typing import Annotated, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, status
-from fastlink.schemas import OAuth2Grant, TokenResponse
 from starlette.responses import Response
 
 from fastid.auth.dependencies import AuthDep, UserDep, cookie_transport, vt_transport
 from fastid.auth.exceptions import NotSupportedGrantError
 from fastid.auth.grants import (
     AuthorizationCodeGrant,
+    ClientCredentialsGrant,
     PasswordGrant,
     RefreshTokenGrant,
 )
 from fastid.auth.schemas import (
+    OAuth2AuthorizationCodeRequest,
+    OAuth2ClientCredentialsRequest,
+    OAuth2Grant,
+    OAuth2PasswordRequest,
+    OAuth2RefreshTokenRequest,
     OAuth2TokenRequest,
+    SubscriberType,
+    TokenResponse,
     UserCreate,
     UserDTO,
 )
@@ -53,23 +60,27 @@ async def authorize(  # noqa: PLR0913
     password_grant: Annotated[PasswordGrant, Depends()],
     authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
     refresh_token_grant: Annotated[RefreshTokenGrant, Depends()],
+    client_credentials_grant: Annotated[ClientCredentialsGrant, Depends()],
     webhooks: WebhooksDep,
     background: BackgroundTasks,
 ) -> Any:
     match form.grant_type:
         case OAuth2Grant.password:
-            auth_response = await password_grant.authorize(form.as_password_grant())
+            response = await password_grant.authorize(OAuth2PasswordRequest.model_validate(form))
         case OAuth2Grant.authorization_code:
-            auth_response = await authorization_code_grant.authorize(form.as_authorization_code_grant())
+            response = await authorization_code_grant.authorize(OAuth2AuthorizationCodeRequest.model_validate(form))
         case OAuth2Grant.refresh_token:
-            auth_response = await refresh_token_grant.authorize(form.as_refresh_token_grant())
+            response = await refresh_token_grant.authorize(OAuth2RefreshTokenRequest.model_validate(form))
+        case OAuth2Grant.client_credentials:
+            response = await client_credentials_grant.authorize(OAuth2ClientCredentialsRequest.model_validate(form))
         case _:
             raise NotSupportedGrantError
-    webhook = SendWebhookRequest(
-        type=WebhookType.user_login, payload={"user": auth_response.user.model_dump(mode="json")}
-    )
-    background.add_task(webhooks.send, webhook)  # pragma: nocover
-    return cookie_transport.get_login_response(auth_response.token)
+    if response.sub_type == SubscriberType.user and response.user is not None:
+        webhook = SendWebhookRequest(
+            type=WebhookType.user_login, payload={"user": response.user.model_dump(mode="json")}
+        )
+        background.add_task(webhooks.send, webhook)  # pragma: nocover
+    return cookie_transport.get_login_response(response.token)
 
 
 @router.get("/userinfo", response_model=UserDTO, status_code=status.HTTP_200_OK)
