@@ -10,6 +10,12 @@ x-logging: &default-logging
           expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},d{3}) (?P<message>(?s:.*))$$'
 
 services:
+  postgres:
+    logging: *default-logging
+  redis:
+    logging: *default-logging
+  mailpit:
+    logging: *default-logging
   fastid-app:
     logging: *default-logging
 
