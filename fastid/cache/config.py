@@ -8,7 +8,7 @@ class RedisSettings(BaseSettings):
     url: str = "redis://default+changethis@localhost:6379/0"
     major_key: str = branding_settings.service_name
     decode_responses: bool = True
-    pool_size: int = 50
+    pool_size: int = 20
     socket_timeout: float = 5.0
     socket_connect_timeout: float = 5.0
     socket_keepalive: bool = True
