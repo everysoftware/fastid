@@ -54,25 +54,34 @@
 ### Download the Compose file
 
 ```bash
-wget https://raw.githubusercontent.com/everysoftware/fastid/refs/heads/master/docker-compose.example.yml
-mv docker-compose.example.yml docker-compose.yml
+wget https://raw.githubusercontent.com/everysoftware/fastid/refs/heads/master/docker-compose.yml
+```
+
+### Generate keys
+
+```bash
+mkdir certs
+openssl rand -base64 32 > certs/secret.key
+openssl genrsa -out certs/jwt-private.pem 2048
+openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
 ```
 
 ### Set environment variables
 
 Create a `.env` file with the following content:
 
-```env
+```text
 POSTGRES_PASSWORD=YOUR_POSTGRES_PASSWORD
 REDIS_PASSWORD=YOUR_REDIS_PASSWORD
 ```
 
-### Generate RSA keys
+You can generate strong random passwords using the following command:
 
 ```bash
-mkdir certs
-openssl genrsa -out certs/jwt-private.pem 2048
-openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
+cat > .env << EOF
+POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d '\n')
+REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d '\n')
+EOF
 ```
 
 ### Install and start FastID

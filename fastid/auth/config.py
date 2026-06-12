@@ -6,6 +6,9 @@ from fastid.core.schemas import BaseSettings
 
 
 class AuthSettings(BaseSettings):
+    jwt_algorithm: str = "HS256"
+    jwt_id_algorithm: str = "RS256"
+    jwt_key: Path = Path("certs") / "secret.key"
     jwt_private_key: Path = Path("certs") / "jwt-private.pem"
     jwt_public_key: Path = Path("certs") / "jwt-public.pem"
     jwt_access_expires_in: int = 60 * 60  # 1 hour
@@ -22,6 +25,8 @@ class AuthSettings(BaseSettings):
     argon2_parallelism: int = 1
     argon2_salt_len: int = 16
     argon2_hash_len: int = 32
+
+    app_expires_in_seconds: int = 60
 
     @property
     def issuer(self) -> str:

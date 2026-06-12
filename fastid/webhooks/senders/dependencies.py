@@ -5,12 +5,10 @@ from fastapi import Depends
 
 from fastid.webhooks.senders.httpx import WebhookSender
 
-
-def get_client() -> httpx.AsyncClient:
-    return httpx.AsyncClient()
+client = httpx.AsyncClient()
 
 
-def get_sender(client: Annotated[httpx.AsyncClient, Depends(get_client)]) -> WebhookSender:
+def get_sender() -> WebhookSender:
     return WebhookSender(client)
 
 

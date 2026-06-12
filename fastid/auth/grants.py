@@ -33,8 +33,7 @@ from fastid.auth.schemas import (
 from fastid.cache.dependencies import CacheDep
 from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
-from fastid.core.timer import Timer
-from fastid.database.dependencies import UOWDep, transactional
+from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.utils import UUIDv7, uuid
 from fastid.security.crypto import generate_otp
@@ -44,20 +43,33 @@ from fastid.security.schemas import JWTPayload
 
 
 class Grant(UseCase):
-    def __init__(self, uow: UOWDep) -> None:
+    def __init__(self, uow: UOWDep, cache: CacheDep) -> None:
         self.uow = uow
+        self.cache = cache
         self.token_backend = jwt_backend
 
     @abstractmethod
     async def authorize(self, form: Any) -> AuthorizationResponse: ...
 
     async def validate_client(self, client_id: str) -> App:
+        cache_key = f"apps:{client_id}"
         try:
-            return await self.uow.apps.find(AppClientIDSpecification(client_id))
-        except NoResultFoundError as e:
-            raise InvalidClientCredentialsError from e
+            cached = await self.cache.get(cache_key)
+        except KeyNotFoundError:
+            try:
+                app = await self.uow.apps.find(AppClientIDSpecification(client_id))
+            except NoResultFoundError as e:
+                raise InvalidClientCredentialsError from e
+            app_dict = app.dump()
+            await self.cache.set(
+                cache_key,
+                app_dict,
+                expire=auth_settings.app_expires_in_seconds,
+            )
+        else:
+            app = App(**cached)
+        return app
 
-    @transactional
     async def authenticate_client(self, client_id: str, client_secret: str) -> App:
         app = await self.validate_client(client_id)
         app.verify_secret(client_secret)
@@ -142,12 +154,9 @@ class Grant(UseCase):
 
 class PasswordGrant(Grant):
     async def authorize(self, form: OAuth2PasswordRequest) -> AuthorizationResponse:
-        with Timer("user_email"):
-            user = await self._find_by_email(form.username)
-        with Timer("verify_password"):
-            await user.verify_password(form.password)
-        with Timer("grant"):
-            return self.grant(user, form.scope)
+        user = await self._find_by_email(form.username)
+        await user.verify_password(form.password)
+        return self.grant(user, form.scope)
 
     async def _find_by_email(self, email: str) -> User:
         try:
@@ -157,10 +166,6 @@ class PasswordGrant(Grant):
 
 
 class AuthorizationCodeGrant(Grant):
-    def __init__(self, uow: UOWDep, cache: CacheDep) -> None:
-        super().__init__(uow)
-        self.cache = cache
-
     async def validate_consent(self, consent: OAuth2ConsentRequest) -> OAuth2ConsentRequest:
         if consent.response_type != "code":
             raise NotSupportedResponseTypeError
@@ -210,20 +215,20 @@ class ClientCredentialsGrant(Grant):
     async def authorize(self, form: OAuth2ClientCredentialsRequest) -> AuthorizationResponse:
         app = await self.authenticate_client(form.client_id, form.client_secret)
         self._check_app_scope(app, form.scope)
-        tokens = self._issue_app_tokens(app, form.scope)
+        tokens = await self._issue_app_tokens(app, form.scope)
         return self._get_app_auth_response(form.scope, tokens, app)
 
     @staticmethod
     def _check_app_scope(app: App, scope: str) -> None:
         pass
 
-    def _issue_app_tokens(self, app: App, scope: str) -> dict[str, dict[str, Any]]:
+    async def _issue_app_tokens(self, app: App, scope: str) -> dict[str, dict[str, Any]]:
         tokens: dict[str, Any] = {
             token_type: {"is_issued": False, "token": None, "payload": None}
             for token_type in ["access", "refresh", "id"]
         }
         schema = JWTPayload(sub=str(app.id), scope=scope)
-        token, payload = self.token_backend.create("access", schema)
+        token, payload = await self.token_backend.create_async("access", schema)
         tokens["access"]["is_issued"] = True
         tokens["access"]["token"] = token
         tokens["access"]["payload"] = payload

@@ -42,7 +42,7 @@ class FrontendAppFactory(AppFactory):
         add_exception_handlers(app)
         app.add_middleware(
             SessionMiddleware,
-            secret_key=str(auth_settings.jwt_private_key),
+            secret_key=str(auth_settings.jwt_key.read_text()),
             session_cookie="fastidsession",
         )
         main_router = APIRouter()

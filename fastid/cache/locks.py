@@ -22,13 +22,13 @@ class DistributedLock:
         redis: Redis,
         name: str,
         *,
-        lock_timeout: int = 30,
+        timeout: int = 30,
         blocking: bool = False,
         blocking_timeout: float | None = None,
     ) -> None:
         self._redis = redis
         self._name = f"lock:{name}"
-        self._lock_timeout = lock_timeout
+        self._lock_timeout = timeout
         self._blocking = blocking
         self._blocking_timeout = blocking_timeout
         self._token: str = ""

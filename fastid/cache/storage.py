@@ -1,7 +1,7 @@
-import json
 from abc import ABC, abstractmethod
 from typing import Any, cast
 
+import orjson
 from redis.asyncio import Redis
 
 from fastid.cache.exceptions import KeyNotFoundError
@@ -46,7 +46,7 @@ class RedisStorage(CacheStorage):
         return {key.decode().split(":")[-1] for key in keys}
 
     async def set(self, key: str, value: Any, *, expire: int | None = None) -> str:
-        json_str = json.dumps(value, ensure_ascii=True)
+        json_str = orjson.dumps(value).decode()
         if expire == 0:
             return json_str
         await self.client.set(f"{self.key}:{key}", json_str, ex=expire)
@@ -57,7 +57,7 @@ class RedisStorage(CacheStorage):
         if value is None:
             msg = f"Key {key} not found"
             raise KeyNotFoundError(msg)
-        return json.loads(value)
+        return orjson.loads(value)
 
     async def delete(self, key: str) -> None:
         await self.client.delete(f"{self.key}:{key}")
@@ -67,7 +67,7 @@ class RedisStorage(CacheStorage):
         if value is None:
             msg = f"Key {key} not found"
             raise KeyNotFoundError(msg)
-        return cast(str, json.loads(value))
+        return cast(str, orjson.loads(value))
 
     async def healthcheck(self) -> None:
         await self.client.ping()

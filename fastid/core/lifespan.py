@@ -11,6 +11,7 @@ from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.notify.repositories import EmailTemplateSlugSpecification, TelegramTemplateSlugSpecification
 from fastid.notify.utils import collect_email_templates, collect_telegram_templates
+from fastid.webhooks.senders.dependencies import client as webhooks_client
 
 
 class LifespanTasks:
@@ -56,6 +57,7 @@ class LifespanTasks:
 
     async def on_shutdown(self) -> None:
         await self.cache.client.aclose()
+        await webhooks_client.aclose()
 
     async def __aenter__(self) -> Self:
         await self.uow.__aenter__()

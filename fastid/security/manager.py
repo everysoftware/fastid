@@ -1,6 +1,7 @@
 import datetime
 from typing import TYPE_CHECKING, Any
 
+import anyio.to_thread
 import jwt
 from jwt import InvalidTokenError as JWTInvalidTokenError
 
@@ -14,6 +15,26 @@ if TYPE_CHECKING:
 class JWTManager:  # pragma: nocover
     def __init__(self, *config: JWTConfig) -> None:
         self.config: MutableMapping[str, JWTConfig] = {t.type: t for t in config}
+
+    async def create_async(self, token_type: str, payload: JWTPayload) -> tuple[str, dict[str, Any]]:
+        config = self.config[token_type]
+        now = datetime.datetime.now(datetime.UTC)
+        claims = dict(
+            iss=config.issuer,
+            typ=token_type,
+            iat=now,
+            **payload.model_dump(exclude_none=True),
+        )
+        if config.expires_in is not None:
+            claims["exp"] = now + config.expires_in
+        assert config.private_key is not None
+        token = await anyio.to_thread.run_sync(
+            jwt.encode,
+            claims,
+            config.private_key,
+            config.algorithm,
+        )
+        return token, claims
 
     def create(self, token_type: str, payload: JWTPayload) -> tuple[str, dict[str, Any]]:
         config = self.config[token_type]

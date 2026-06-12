@@ -1,6 +1,6 @@
 import datetime
 from collections.abc import Sequence
-from typing import Literal, Self
+from typing import Self
 
 from pydantic import ConfigDict, EmailStr, field_serializer, model_validator
 
@@ -43,7 +43,7 @@ class JWTPayload(BaseModel):
 
 class JWTConfig(BaseModel):
     type: str
-    algorithm: Literal["HS256", "RS256"] = "HS256"
+    algorithm: str = "HS256"
     expires_in: datetime.timedelta = datetime.timedelta(hours=1)
     key: str | None = None
     issuer: str | None = None
@@ -52,9 +52,9 @@ class JWTConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_key(self) -> Self:
-        if self.algorithm == "HS256":
+        if self.algorithm.startswith("HS"):
             if not self.key:
-                msg = "Key is required for HS256 algorithm"
+                msg = "Key is required for HMAC algorithms"
                 raise ValueError(msg)
             self.private_key = self.key
             self.public_key = self.key
@@ -63,6 +63,6 @@ class JWTConfig(BaseModel):
                 msg = "Private key is required for RS256 algorithm"
                 raise ValueError(msg)
             if not self.public_key:
-                msg = "Public key is required for RS256 algorithm"
+                msg = "Public key is required for RSA algorithms"
                 raise ValueError(msg)
         return self
