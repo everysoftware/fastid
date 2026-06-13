@@ -51,6 +51,28 @@ async def register(
 
 
 @router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    response_model=TokenResponse,
+)
+async def login(
+    form: Annotated[OAuth2PasswordRequest, Form()],
+    password_grant: Annotated[PasswordGrant, Depends()],
+    webhooks: WebhooksDep,
+    background: BackgroundTasks,
+) -> Any:
+    match form.grant_type:
+        case OAuth2Grant.password:
+            auth_data = await password_grant.authorize(OAuth2PasswordRequest.model_validate(form))
+        case _:
+            raise NotSupportedGrantError
+    assert auth_data.user is not None
+    webhook = SendWebhookRequest(type=WebhookType.user_login, payload={"user": auth_data.user.model_dump(mode="json")})
+    background.add_task(webhooks.send, webhook)  # pragma: nocover
+    return cookie_transport.get_login_response(auth_data.token)
+
+
+@router.post(
     "/token",
     status_code=status.HTTP_200_OK,
     response_model=TokenResponse,
@@ -66,21 +88,21 @@ async def authorize(  # noqa: PLR0913
 ) -> Any:
     match form.grant_type:
         case OAuth2Grant.password:
-            response = await password_grant.authorize(OAuth2PasswordRequest.model_validate(form))
+            auth_data = await password_grant.authorize(OAuth2PasswordRequest.model_validate(form))
         case OAuth2Grant.authorization_code:
-            response = await authorization_code_grant.authorize(OAuth2AuthorizationCodeRequest.model_validate(form))
+            auth_data = await authorization_code_grant.authorize(OAuth2AuthorizationCodeRequest.model_validate(form))
         case OAuth2Grant.refresh_token:
-            response = await refresh_token_grant.authorize(OAuth2RefreshTokenRequest.model_validate(form))
+            auth_data = await refresh_token_grant.authorize(OAuth2RefreshTokenRequest.model_validate(form))
         case OAuth2Grant.client_credentials:
-            response = await client_credentials_grant.authorize(OAuth2ClientCredentialsRequest.model_validate(form))
+            auth_data = await client_credentials_grant.authorize(OAuth2ClientCredentialsRequest.model_validate(form))
         case _:
             raise NotSupportedGrantError
-    if response.sub_type == SubscriberType.user and response.user is not None:
+    if auth_data.sub_type == SubscriberType.user and auth_data.user is not None:
         webhook = SendWebhookRequest(
-            type=WebhookType.user_login, payload={"user": response.user.model_dump(mode="json")}
+            type=WebhookType.user_login, payload={"user": auth_data.user.model_dump(mode="json")}
         )
         background.add_task(webhooks.send, webhook)  # pragma: nocover
-    return cookie_transport.get_login_response(response.token)
+    return auth_data.token
 
 
 @router.get("/userinfo", response_model=UserDTO, status_code=status.HTTP_200_OK)
