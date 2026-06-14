@@ -29,5 +29,7 @@ async def test_oauth_revoke(  # noqa: PLR0913
     await uow.oauth_accounts.add(oauth_account)
     await uow.commit()
 
-    response = await client.get(f"/oauth/revoke/{provider}")
+    response = await client.get(
+        f"/oauth/revoke/{provider}", headers={"Authorization": f"Bearer {user_token.access_token}"}
+    )
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT

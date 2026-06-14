@@ -30,7 +30,7 @@ async def test_oauth_get_many(  # noqa: PLR0913
     await uow.oauth_accounts.add(oauth_account)
     await uow.commit()
 
-    response = await client.get("/oauth/accounts")
+    response = await client.get("/oauth/accounts", headers={"Authorization": f"Bearer {user_token.access_token}"})
     page = PageDTO[OAuthAccountDTO].model_validate_json(response.content)
     assert page.total == 1
     assert page.items[0] == OAuthAccountDTO.model_validate(oauth_account)
