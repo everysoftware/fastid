@@ -3,14 +3,13 @@ import os
 import urllib.parse
 from typing import Any
 
-from fastlink.schemas import OAuth2Callback, TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
 from fastid.apps.schemas import AppDTO
 from fastid.auth.dependencies import cookie_transport
 from fastid.auth.models import User
-from fastid.auth.schemas import UserDTO
+from fastid.auth.schemas import OAuth2Callback, TokenResponse, UserDTO
 from fastid.database.uow import SQLAlchemyUOW
 from tests import mocks
 

@@ -43,7 +43,10 @@ class BaseOrm(DeclarativeBase):
         return self
 
     def dump(self) -> dict[str, Any]:  # pragma: nocover
-        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        attrs = {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
+        if "id" in attrs:
+            attrs["id"] = str(attrs["id"])
+        return attrs
 
 
 class Mixin:

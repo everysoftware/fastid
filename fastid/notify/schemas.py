@@ -1,12 +1,11 @@
-from enum import StrEnum
 from typing import Any
 
 from pydantic import Field
 
-from fastid.core.schemas import BaseModel
+from fastid.core.schemas import BaseEnum, BaseModel
 
 
-class UserAction(StrEnum):
+class UserAction(BaseEnum):
     change_email = "change-email"
     change_password = "change-password"  # noqa: S105  # pragma: allowlist secret
     delete_account = "delete-account"

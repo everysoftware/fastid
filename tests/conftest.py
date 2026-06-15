@@ -9,14 +9,15 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, async_sessionmaker
 
 from fastid.api.app import api_app
-from fastid.cache.config import cache_settings
+from fastid.cache.config import redis_settings
 from fastid.cache.dependencies import get_cache
 from fastid.cache.storage import CacheStorage, RedisStorage
 from fastid.core.dependencies import log_provider
 from fastid.database.dependencies import get_uow_raw
 from fastid.database.uow import SQLAlchemyUOW
+from fastid.email.dependencies import get_smtp
 from fastid.frontend.app import frontend_app
-from fastid.notify.clients.dependencies import get_bot, get_smtp
+from fastid.integrations.dependencies import get_bot
 from tests.dependencies import (
     alembic_config,
     get_test_cache,
@@ -126,12 +127,12 @@ async def uow(uow_raw: SQLAlchemyUOW, engine: AsyncEngine) -> AsyncIterator[SQLA
 
 @pytest.fixture
 async def redis_client() -> AsyncIterator[Redis]:
-    logger.info("Test redis URL: %s", cache_settings.redis_url)
+    logger.info("Test redis URL: %s", redis_settings.url)
     yield test_redis
     await test_redis.aclose(close_connection_pool=True)
 
 
 @pytest.fixture
 async def cache(redis_client: Redis) -> AsyncIterator[CacheStorage]:
-    yield RedisStorage(redis_client, key=cache_settings.redis_key)
+    yield RedisStorage(redis_client, key=redis_settings.major_key)
     await test_redis.flushdb()

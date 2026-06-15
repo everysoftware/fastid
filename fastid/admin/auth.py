@@ -32,4 +32,4 @@ class AdminAuth(AuthenticationBackend):
         return bool(request.session.get("authenticated"))
 
 
-admin_auth = AdminAuth(secret_key=auth_settings.jwt_private_key.read_text())
+admin_auth = AdminAuth(secret_key=auth_settings.jwt_key.read_text())

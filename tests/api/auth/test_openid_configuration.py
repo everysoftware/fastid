@@ -1,6 +1,7 @@
-from fastlink.schemas import JWKS, DiscoveryDocument
 from httpx import AsyncClient
 from starlette import status
+
+from fastid.auth.schemas import JWKS, DiscoveryDocument
 
 
 async def test_openid_configuration(frontend_client: AsyncClient) -> None:

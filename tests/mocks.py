@@ -1,14 +1,13 @@
 from typing import Any
 
 from faker import Faker
-from fastlink.schemas import OAuth2Callback, OpenID, TokenResponse
-from fastlink.telegram.schemas import TelegramCallback, TelegramWidget
-from fastlink.telegram.utils import compute_hmac_sha256
 
 from fastid.apps.schemas import AppCreate, AppUpdate
-from fastid.auth.schemas import UserCreate, UserUpdate
+from fastid.auth.schemas import OAuth2Callback, OpenID, TokenResponse, UserCreate, UserUpdate
+from fastid.integrations.config import integration_settings
+from fastid.integrations.schemas import LoginResponse, TelegramCallback, TelegramWidget, UserinfoResponse
+from fastid.integrations.utils import compute_hmac_sha256
 from fastid.notify.schemas import PushNotificationRequest
-from fastid.oauth.config import telegram_settings
 from fastid.oauth.schemas import OpenIDBearer
 from fastid.security.crypto import crypt_ctx
 from fastid.security.webhooks import get_timestamp, get_webhook_id
@@ -68,45 +67,51 @@ TELEGRAM_CALLBACK_PAYLOAD = {
     "picture": faker.image_url(),
     "auth_date": int(faker.date_time().timestamp()),
 }
-TELEGRAM_CALLBACK_PAYLOAD["hash"] = compute_hmac_sha256(TELEGRAM_CALLBACK_PAYLOAD, telegram_settings.bot_token)
+TELEGRAM_CALLBACK_PAYLOAD["hash"] = compute_hmac_sha256(
+    TELEGRAM_CALLBACK_PAYLOAD, integration_settings.telegram_bot_token
+)
 TELEGRAM_CALLBACK = TelegramCallback(**TELEGRAM_CALLBACK_PAYLOAD)
-OAUTH_TOKEN_RESPONSE = TokenResponse(
+TOKEN_RESPONSE = TokenResponse(
     access_token=faker.pystr(min_chars=8, max_chars=256),
     expires_in=3600,
     refresh_token=faker.pystr(min_chars=8, max_chars=256),
     scope="openid email profile",
 )
+LOGIN_RESPONSE = LoginResponse(token=TOKEN_RESPONSE, token_raw={})
 
 
-def openid_factory() -> OpenID:
-    return OpenID(
-        id=str(faker.random_number(digits=10)),
-        first_name=faker.first_name(),
-        last_name=faker.last_name(),
-        email=faker.email(),
-        picture=faker.image_url(),
+def userinfo_response_factory() -> UserinfoResponse:
+    return UserinfoResponse(
+        userinfo=OpenID(
+            id=str(faker.random_number(digits=10)),
+            first_name=faker.first_name(),
+            last_name=faker.last_name(),
+            email=faker.email(),
+            picture=faker.image_url(),
+        ),
+        userinfo_raw={},
     )
 
 
-GOOGLE_OPENID = openid_factory()
-YANDEX_OPENID = openid_factory()
-TELEGRAM_OPENID = openid_factory()
-TELEGRAM_OPENID.email = None
+GOOGLE_OPENID = userinfo_response_factory()
+YANDEX_OPENID = userinfo_response_factory()
+TELEGRAM_OPENID = userinfo_response_factory()
+TELEGRAM_OPENID.userinfo.email = None
 
 GOOGLE_OPENID_BEARER = OpenIDBearer(
     provider="google",
-    **GOOGLE_OPENID.model_dump(),
-    **OAUTH_TOKEN_RESPONSE.model_dump(),
+    **GOOGLE_OPENID.userinfo.model_dump(),
+    **TOKEN_RESPONSE.model_dump(),
 )
 YANDEX_OPENID_BEARER = OpenIDBearer(
     provider="yandex",
-    **YANDEX_OPENID.model_dump(),
-    **OAUTH_TOKEN_RESPONSE.model_dump(),
+    **YANDEX_OPENID.userinfo.model_dump(),
+    **TOKEN_RESPONSE.model_dump(),
 )
 TELEGRAM_OPENID_BEARER = OpenIDBearer(
     provider="telegram",
-    **TELEGRAM_OPENID.model_dump(),
-    **OAUTH_TOKEN_RESPONSE.model_dump(),
+    **TELEGRAM_OPENID.userinfo.model_dump(),
+    **TOKEN_RESPONSE.model_dump(),
 )
 TELEGRAM_WIDGET = TelegramWidget(bot_username=faker.user_name(), callback_url=faker.url())
 
@@ -131,7 +136,6 @@ WEBHOOK_CHANGE_EMAIL = webhook_record_factory(WebhookType.user_change_email)
 WEBHOOK_CHANGE_PASSWORD = webhook_record_factory(WebhookType.user_change_password)
 WEBHOOK_WRONG_URL = webhook_record_factory(WebhookType.user_registration)
 WEBHOOK_WRONG_URL["url"] = "wrong url"
-
 
 WEBHOOK_PAYLOAD = {"test": {"test1": 1, "test2": "hello", "hello3": True}}
 WEBHOOK_TIMESTAMP = get_timestamp()

@@ -1,9 +1,8 @@
 import pytest
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
-from fastid.auth.schemas import UserDTO
+from fastid.auth.schemas import TokenResponse, UserDTO
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.oauth.models import OAuthAccount
 from fastid.oauth.schemas import OpenIDBearer
@@ -30,5 +29,7 @@ async def test_oauth_revoke(  # noqa: PLR0913
     await uow.oauth_accounts.add(oauth_account)
     await uow.commit()
 
-    response = await client.get(f"/oauth/revoke/{provider}")
+    response = await client.get(
+        f"/oauth/revoke/{provider}", headers={"Authorization": f"Bearer {user_token.access_token}"}
+    )
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT

@@ -1327,25 +1327,6 @@ uvicorn = {version = ">=0.15.0", extras = ["standard"]}
 standard = ["uvicorn[standard] (>=0.15.0)"]
 
 [[package]]
-name = "fastlink"
-version = "0.1.6"
-description = "FastLink OAuth 2.0 client for various platforms, asynchronous, easy-to-use, extensible"
-optional = false
-python-versions = "<4.0,>=3.12"
-groups = ["main"]
-files = [
-    {file = "fastlink-0.1.6-py3-none-any.whl", hash = "sha256:77f1ceb8af24145f4dce43d24569b019305d5a76053702dc94ffdf84885fb239"},
-    {file = "fastlink-0.1.6.tar.gz", hash = "sha256:0c95a19a1042acfaf4f01d0371fd22fc291bbe323f0e320eddf6c14170d66471"},
-]
-
-[package.dependencies]
-aiogram = ">=3.20.0.post0,<4.0.0"
-fastapi = {version = ">=0.115.7,<0.116.0", extras = ["standart"]}
-httpx = ">=0.28.1,<0.29.0"
-pydantic = ">=2.11.5,<3.0.0"
-pyjwt = ">=2.10.1,<3.0.0"
-
-[[package]]
 name = "filelock"
 version = "3.20.3"
 description = "A platform independent file lock."
@@ -1675,25 +1656,42 @@ protobuf = ["grpcio-tools (>=1.76.0)"]
 
 [[package]]
 name = "gunicorn"
-version = "22.0.0"
+version = "26.0.0"
 description = "WSGI HTTP Server for UNIX"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "gunicorn-22.0.0-py3-none-any.whl", hash = "sha256:350679f91b24062c86e386e198a15438d53a7a8207235a78ba1b53df4c4378d9"},
-    {file = "gunicorn-22.0.0.tar.gz", hash = "sha256:4a0b436239ff76fb33f11c07a16482c521a7e09c1ce3cc293c2330afe01bec63"},
+    {file = "gunicorn-26.0.0-py3-none-any.whl", hash = "sha256:40233d26a5f0d1872916188c276e21641155111c2853f0c2cd55260aec0d24fc"},
+    {file = "gunicorn-26.0.0.tar.gz", hash = "sha256:ca9346f85e3a4aeeb64d491045c16b9a35647abd37ea15efe53080eb8b090baf"},
 ]
 
 [package.dependencies]
 packaging = "*"
 
 [package.extras]
-eventlet = ["eventlet (>=0.24.1,!=0.36.0)"]
-gevent = ["gevent (>=1.4.0)"]
+fast = ["gunicorn_h1c (>=0.6.5)"]
+gevent = ["gevent (>=24.10.1)"]
+http2 = ["h2 (>=4.1.0)"]
 setproctitle = ["setproctitle"]
-testing = ["coverage", "eventlet", "gevent", "pytest", "pytest-cov"]
-tornado = ["tornado (>=0.2)"]
+testing = ["coverage", "gevent (>=24.10.1)", "h2 (>=4.1.0)", "httpx[http2]", "pytest", "pytest-asyncio", "pytest-cov", "uvloop (>=0.19.0)"]
+tornado = ["tornado (>=6.5.0)"]
+
+[[package]]
+name = "gunicorn-h1c"
+version = "0.6.5"
+description = "Fast HTTP/1.1 parser for Gunicorn using picohttpparser"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+markers = "sys_platform != \"win32\""
+files = [
+    {file = "gunicorn_h1c-0.6.5-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:84fa8667a6557a03e21b2c02415a86bd00a98778436cea0ab2f737f1e22c872e"},
+    {file = "gunicorn_h1c-0.6.5.tar.gz", hash = "sha256:80f348f7f528f157af5bf357ed8d39fd6907efee573bf5be857d5808617e7c39"},
+]
+
+[package.extras]
+test = ["pytest (>=7.0)", "pytest-benchmark"]
 
 [[package]]
 name = "h11"
@@ -5094,4 +5092,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "fdf6fc122b5be5c3c943add4eb9c34b8f232a8b16d7e70af0140275ec303b825"
+content-hash = "fa80bf6e895f0cd2634cb92ed54fd55663d9784095221cadd79a35b03750eb84"

@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import Depends
-from fastlink.exceptions import FastLinkError
 from starlette.requests import Request
 
 from fastid.api.exceptions import ClientError, UnauthorizedError
@@ -9,6 +8,7 @@ from fastid.auth.dependencies import AuthDep, cookie_transport, vt_transport
 from fastid.auth.grants import AuthorizationCodeGrant
 from fastid.auth.models import User
 from fastid.auth.schemas import OAuth2ConsentRequest
+from fastid.security.exceptions import JWTError
 from fastid.security.jwt import (
     jwt_backend,
 )
@@ -48,7 +48,7 @@ def is_action_verified(
         return False
     try:
         jwt_backend.validate("verify", token)
-    except FastLinkError:
+    except JWTError:
         return False
     return True
 

@@ -2,18 +2,17 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Response
 from fastapi.responses import RedirectResponse
-from fastlink import TelegramSSO
-from fastlink.schemas import OAuth2Callback
-from fastlink.telegram.schemas import TelegramCallback
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 
 from fastid.auth.config import auth_settings
 from fastid.auth.dependencies import UserDep, UserOrNoneDep, cookie_transport
+from fastid.auth.schemas import OAuth2Callback
 from fastid.core.dependencies import log
 from fastid.database.schemas import PageDTO
-from fastid.oauth.clients.dependencies import get_telegram_sso
+from fastid.integrations.dependencies import TelegramWidgetDep
+from fastid.integrations.schemas import TelegramCallback
 from fastid.oauth.dependencies import OAuthAccountsDep
 from fastid.oauth.schemas import InspectProviderResponse, OAuthAccountDTO
 
@@ -106,9 +105,9 @@ async def oauth_revoke(
     "/redirect/telegram",
     status_code=status.HTTP_200_OK,
 )
-async def telegram_redirect(sso: Annotated[TelegramSSO, Depends(get_telegram_sso)]) -> Any:
-    async with sso:
-        content = await sso.widget()
+async def telegram_redirect(widget: TelegramWidgetDep) -> Any:
+    async with widget:
+        content = await widget.widget_html()
         return HTMLResponse(content=content)
 
 

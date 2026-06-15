@@ -1,13 +1,14 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from pydantic_settings import SettingsConfigDict
-
-from fastid.core.config import main_settings
+from fastid.core.config import core_settings
 from fastid.core.schemas import BaseSettings
 
 
 class AuthSettings(BaseSettings):
+    jwt_algorithm: str = "HS256"
+    jwt_id_algorithm: str = "RS256"
+    jwt_key: Path = Path("certs") / "secret.key"
     jwt_private_key: Path = Path("certs") / "jwt-private.pem"
     jwt_public_key: Path = Path("certs") / "jwt-public.pem"
     jwt_access_expires_in: int = 60 * 60  # 1 hour
@@ -19,33 +20,33 @@ class AuthSettings(BaseSettings):
 
     hash_schemas: Sequence[str] = ["argon2", "bcrypt"]  # Supports reverse compatibility
     hash_default: str = "argon2"
-    argon2_time_cost: int = 3
-    argon2_memory_cost: int = 65536
-    argon2_parallelism: int = 4
+    argon2_time_cost: int = 2
+    argon2_memory_cost: int = 19456
+    argon2_parallelism: int = 1
     argon2_salt_len: int = 16
     argon2_hash_len: int = 32
 
+    app_expires_in_seconds: int = 60
+
     @property
     def issuer(self) -> str:
-        return main_settings.base_url
+        return core_settings.frontend_url
 
     @property
     def authorization_endpoint(self) -> str:
-        return f"{main_settings.base_url}/authorize"
+        return f"{core_settings.frontend_url}/authorize"
 
     @property
     def token_endpoint(self) -> str:
-        return f"{main_settings.api_url}/token"
+        return f"{core_settings.api_url}/token"
 
     @property
     def userinfo_endpoint(self) -> str:
-        return f"{main_settings.api_url}/userinfo"
+        return f"{core_settings.api_url}/userinfo"
 
     @property
     def jwks_uri(self) -> str:
-        return f"{main_settings.base_url}/.well-known/jwks.json"
-
-    model_config = SettingsConfigDict(env_prefix="auth_")
+        return f"{core_settings.frontend_url}/.well-known/jwks.json"
 
 
 auth_settings = AuthSettings()

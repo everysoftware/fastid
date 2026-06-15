@@ -1,16 +1,21 @@
 .PHONY: certs
 certs:
 	mkdir certs
+	openssl rand -hex 32 > certs/secret.key
 	openssl genrsa -out certs/jwt-private.pem 2048
 	openssl rsa -in certs/jwt-private.pem -pubout -out certs/jwt-public.pem
 
 .PHONY: deps
 deps:
-	docker compose -f docker-compose.dev.yml postgres redis up -d --build --remove-orphans --wait
+	docker compose -f docker-compose.dev.yml up postgres redis -d --build --remove-orphans --wait
 
 .PHONY: up
 up:
 	docker compose -f docker-compose.dev.yml up --build --remove-orphans --wait
+
+.PHONY: build
+build:
+	docker build -t fastid:latest -f docker/Dockerfile .
 
 .PHONY: up-obs
 up-obs:

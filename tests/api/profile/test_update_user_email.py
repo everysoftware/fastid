@@ -1,10 +1,9 @@
 import pytest
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
 from fastid.auth.dependencies import vt_transport
-from fastid.auth.schemas import UserDTO
+from fastid.auth.schemas import TokenResponse, UserDTO
 from fastid.cache.storage import CacheStorage
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW

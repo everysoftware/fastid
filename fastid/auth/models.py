@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Self
 
+import anyio.to_thread
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -9,6 +10,8 @@ from fastid.auth.exceptions import WrongPasswordError
 from fastid.auth.schemas import Contact, ContactType
 from fastid.database.base import VersionedEntity
 from fastid.database.utils import uuid
+from fastid.email.config import email_settings
+from fastid.integrations.config import integration_settings
 from fastid.notify.config import notify_settings
 from fastid.notify.schemas import SendOTPRequest, UserAction
 from fastid.security.crypto import crypt_ctx
@@ -86,8 +89,13 @@ class User(VersionedEntity):
     def change_email(self, new_email: str) -> None:
         self.email = new_email
 
-    def verify_password(self, password: str) -> None:
-        if not crypt_ctx.verify(password, self.hashed_password):
+    async def verify_password(self, password: str) -> None:
+        valid = await anyio.to_thread.run_sync(
+            crypt_ctx.verify,
+            password,
+            self.hashed_password,
+        )
+        if not valid:
             raise WrongPasswordError
 
     def grant_superuser(self) -> None:
@@ -100,10 +108,10 @@ class User(VersionedEntity):
         self.is_verified = True
 
     def is_email_available(self) -> bool:
-        return self.email is not None and notify_settings.smtp_enabled
+        return self.email is not None and email_settings.smtp_enabled
 
     def is_telegram_available(self) -> bool:
-        return self.telegram_id is not None and notify_settings.telegram_enabled
+        return self.telegram_id is not None and integration_settings.telegram_notification_enabled
 
     def email_contact(self) -> Contact:
         if not self.is_email_available():

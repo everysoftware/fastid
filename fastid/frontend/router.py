@@ -2,12 +2,11 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
-from fastlink.schemas import JWKS, DiscoveryDocument
 
 from fastid.auth.dependencies import cookie_transport
 from fastid.auth.grants import AuthorizationCodeGrant
 from fastid.auth.models import User
-from fastid.auth.schemas import OAuth2ConsentRequest
+from fastid.auth.schemas import JWKS, DiscoveryDocument, OAuth2ConsentRequest
 from fastid.frontend.dependencies import (
     get_user,
     get_user_or_none,

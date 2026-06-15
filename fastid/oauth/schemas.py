@@ -1,8 +1,8 @@
 from collections.abc import MutableMapping, Sequence
 
-from fastlink.schemas import DiscoveryDocument, OpenID, ProviderMeta, TokenResponse
 from pydantic import Field
 
+from fastid.auth.schemas import DiscoveryDocument, OpenID, ProviderMeta, TokenResponse
 from fastid.core.schemas import BaseModel
 from fastid.database.schemas import EntityDTO
 from fastid.database.utils import UUIDv7
@@ -40,7 +40,7 @@ class InspectProviderResponse(BaseModel):
     login_url: str
 
 
-class SSOMeta(BaseModel):
+class UIProviderMetaEntry(BaseModel):
     name: str
     title: str
     icon: str
@@ -50,11 +50,11 @@ class SSOMeta(BaseModel):
     enabled: bool = True
 
 
-class SSORegistryMeta(BaseModel):
-    providers: MutableMapping[str, SSOMeta] = Field(default_factory=dict)
+class UIProviderMeta(BaseModel):
+    providers: MutableMapping[str, UIProviderMetaEntry] = Field(default_factory=dict)
 
     @property
-    def enabled_providers(self) -> Sequence[SSOMeta]:
+    def enabled_providers(self) -> Sequence[UIProviderMetaEntry]:
         return list(self.providers.values())
 
     @property

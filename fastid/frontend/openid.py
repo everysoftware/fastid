@@ -2,10 +2,10 @@ import base64
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from fastlink.jwt.schemas import JWTPayload
-from fastlink.schemas import JWK, JWKS, DiscoveryDocument
 
 from fastid.auth.config import auth_settings
+from fastid.auth.schemas import JWK, JWKS, DiscoveryDocument
+from fastid.security.schemas import JWTPayload
 
 discovery_document = DiscoveryDocument(
     issuer=auth_settings.issuer,

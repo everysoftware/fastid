@@ -3,13 +3,13 @@ from typing import Annotated, Any
 
 from fastapi import Depends, Request
 from fastapi.security import APIKeyCookie, APIKeyHeader, OAuth2PasswordBearer
-from fastlink.integrations.fastapi.transport import CookieTransport, HeaderTransport
 
 from fastid.api.exceptions import ClientError
 from fastid.auth.config import auth_settings
 from fastid.auth.models import User
 from fastid.auth.use_cases import AuthUseCases
 from fastid.auth.utils import AuthBus
+from fastid.security.transport import CookieTransport, HeaderTransport
 
 auth_flows: Iterable[Callable[..., Any]] = [
     APIKeyHeader(name="Authorization", scheme_name="BearerToken", auto_error=False),

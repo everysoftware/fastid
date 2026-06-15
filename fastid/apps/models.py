@@ -13,7 +13,7 @@ class App(VersionedEntity):
 
     name: Mapped[str]
     slug: Mapped[str] = mapped_column(unique=True)
-    client_id: Mapped[str] = mapped_column(default=uuid_hex)
+    client_id: Mapped[str] = mapped_column(default=uuid_hex, index=True)
     client_secret: Mapped[str] = mapped_column(default=uuid_hex)
     redirect_uris: Mapped[str] = mapped_column(default="")
     is_active: Mapped[bool] = mapped_column(default=True)

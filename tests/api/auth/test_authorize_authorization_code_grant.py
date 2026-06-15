@@ -1,8 +1,8 @@
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
 from fastid.apps.schemas import AppDTO
+from fastid.auth.schemas import TokenResponse
 from fastid.security.crypto import generate_otp
 from tests.utils.auth import authorize_authorization_code_grant, get_ac_grant_callback
 

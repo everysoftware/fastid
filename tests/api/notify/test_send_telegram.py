@@ -1,8 +1,8 @@
 import pytest
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
 
+from fastid.auth.schemas import TokenResponse
 from tests.mocks import PUSH_NOTIFICATION_REQUEST, PUSH_NOTIFICATION_REQUEST_FAKE_TEMPLATE
 
 

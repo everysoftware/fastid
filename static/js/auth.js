@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             form.append('password', document.getElementById("password").value);
             form.append('scope', '*');
             form.append('client_id', '');
-            const response = await authClient.post('/token', {}, form);
+            const response = await authClient.post('/login', {}, form);
             if (response.ok) {
                 location.reload();
             }

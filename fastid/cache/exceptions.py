@@ -4,3 +4,7 @@ class CacheError(Exception):
 
 class KeyNotFoundError(CacheError):
     pass
+
+
+class LockError(CacheError):
+    pass

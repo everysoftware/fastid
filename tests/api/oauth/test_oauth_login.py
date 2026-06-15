@@ -1,7 +1,8 @@
 import pytest
-from fastlink.schemas import TokenResponse
 from httpx import AsyncClient
 from starlette import status
+
+from fastid.auth.schemas import TokenResponse
 
 
 @pytest.mark.parametrize("provider", ["google", "yandex", "telegram"])
