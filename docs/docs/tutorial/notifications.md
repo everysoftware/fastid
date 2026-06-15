@@ -10,11 +10,13 @@ You can use any SMTP server to send emails. The following example uses Gmail's S
 Add the following lines to your `.env` file:
 
 ```
-NOTIFY_FROM_NAME="FastID"
-NOTIFY_SMTP_HOST="smtp.gmail.com"
-NOTIFY_SMTP_PORT=465
-NOTIFY_SMTP_USERNAME=...
-NOTIFY_SMTP_PASSWORD=...
+FASTID_SMTP_ENABLED=1
+FASTID_SMTP_SSL=1
+FASTID_SMTP_HOST=...
+FASTID_SMTP_PORT=465
+FASTID_SMTP_AUTH=1
+FASTID_SMTP_USERNAME=...
+FASTID_SMTP_PASSWORD=...
 ```
 
 ![img.png](../img/email_code.png)
@@ -26,8 +28,8 @@ Visit [https://t.me/BotFather](https://t.me/BotFather) to create a new bot and o
 Add the following to your `.env` file:
 
 ```
-TELEGRAM_ENABLED=1
-TELEGRAM_BOT_TOKEN=...
+FASTID_TELEGRAM_NOTIFICATION_ENABLED=1
+FASTID_TELEGRAM_BOT_TOKEN=...
 ```
 
 ![img_3.png](../img/telegram_code.png)

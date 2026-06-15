@@ -15,9 +15,9 @@ client credentials.
 Add the following to your `.env` file:
 
 ```
-GOOGLE_ENABLED=1
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
+FASTID_GOOGLE_OAUTH_ENABLED=1
+FASTID_GOOGLE_CLIENT_ID=...
+FASTID_GOOGLE_CLIENT_SECRET=...
 ```
 
 ![google_consent.png](../img/google_consent.png)
@@ -29,9 +29,9 @@ Visit [https://oauth.yandex.ru](https://oauth.yandex.ru) to obtain client creden
 Add the following to your `.env` file:
 
 ```
-YANDEX_ENABLED=1
-YANDEX_CLIENT_ID=...
-YANDEX_CLIENT_SECRET=...
+FASTID_YANDEX_OAUTH_ENABLED=1
+FASTID_YANDEX_CLIENT_ID=...
+FASTID_YANDEX_CLIENT_SECRET=...
 ```
 
 ![yandex_consent.png](../img/yandex_consent.png)
@@ -45,13 +45,8 @@ settings.
 Add the following to your `.env` file:
 
 ```
-TELEGRAM_ENABLED=1
-TELEGRAM_BOT_TOKEN=...
+FASTID_TELEGRAM_OAUTH_ENABLED=1
+FASTID_TELEGRAM_BOT_TOKEN=...
 ```
 
 ![telegram_consent.png](../img/telegram_consent.png)
-
-## Other Providers
-
-FastID uses [FastLink](https://github.com/everysoftware/fastlink) for social login. You can implement any provider
-using the FastLink API. The process is similar to the ones described above.
