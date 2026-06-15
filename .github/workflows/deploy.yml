@@ -22,5 +22,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_IP_ADDRESS }} <<EOF
             cd home/fastid
             git pull
-            make up-prod
+            make up-prod-obs
           EOF
