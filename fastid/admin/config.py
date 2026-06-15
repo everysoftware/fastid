@@ -4,7 +4,6 @@ from fastid.core.schemas import ENV_PREFIX, BaseSettings
 
 
 class AdminSettings(BaseSettings):
-    enabled: bool = True
     email: str = "admin@fastid.com"
     password: str = "admin"
 
