@@ -10,6 +10,7 @@ from fastid.integrations.google.oauth import GoogleSSO
 from fastid.integrations.registries import OAuth2Registry
 from fastid.integrations.telegram.login import TelegramLoginWidget
 from fastid.integrations.telegram.notifications import TelegramNotificationClient
+from fastid.integrations.vk.oauth import VKSSO
 from fastid.integrations.yandex.oauth import YandexSSO
 from fastid.oauth.exceptions import OAuthProviderDisabledError
 
@@ -35,6 +36,17 @@ def get_yandex_sso() -> YandexSSO:
         integration_settings.yandex_client_id,
         integration_settings.yandex_client_secret,
         f"{integration_settings.base_redirect_url}/yandex",
+    )
+
+
+@registry.provider("vk")
+def get_vk_sso() -> VKSSO:
+    if not integration_settings.vk_oauth_enabled:
+        raise OAuthProviderDisabledError
+    return VKSSO(
+        integration_settings.vk_client_id,
+        integration_settings.vk_client_secret,
+        f"{integration_settings.base_redirect_url}/vk",
     )
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import (
     Mapping,  # noqa: TCH003
     Sequence,  # noqa: TCH003
@@ -169,10 +170,20 @@ class OAuth2ConsentRequest(BaseModel):
 
 
 class OAuth2Callback(BaseModel):
+    @model_validator(mode="before")
+    @classmethod
+    def unpack_payload(cls, values: Any) -> Any:
+        if isinstance(values, dict) and isinstance(values.get("payload"), str):
+            values = {**values, **json.loads(values["payload"])}
+        return values
+
     """
     Callback is sent by the authorization server to the client after the resource owner grants permissions.
     """
 
+    payload: str | None = Field(None, exclude=True)
+    device_id: str | None = None
+    """VK ID device identifier returned with the authorization code."""
     code: str | None = None
     """
     The authorization code is used to obtain an access token.
@@ -309,8 +320,6 @@ class TokenResponse(BaseModel):
         None,
         description="Token expiration time in seconds",
     )
-
-    model_config = ConfigDict(extra="allow")
 
 
 class DiscoveryDocument(BaseModel):
