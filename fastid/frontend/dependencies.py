@@ -8,6 +8,7 @@ from fastid.auth.dependencies import AuthDep, cookie_transport, vt_transport
 from fastid.auth.grants import AuthorizationCodeGrant
 from fastid.auth.models import User
 from fastid.auth.schemas import OAuth2ConsentRequest
+from fastid.auth.server import ServerURLDep
 from fastid.security.exceptions import JWTError
 from fastid.security.jwt import (
     jwt_backend,
@@ -42,12 +43,13 @@ async def get_user(
 
 def is_action_verified(
     request: Request,
+    server_url: ServerURLDep,
 ) -> bool:
     token = vt_transport.get_token(request)
     if token is None:
         return False
     try:
-        jwt_backend.validate("verify", token)
+        jwt_backend.validate("verify", token, issuer=server_url)
     except JWTError:
         return False
     return True

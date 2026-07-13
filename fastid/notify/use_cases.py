@@ -5,6 +5,7 @@ from fastid.auth.exceptions import EmailNotFoundError
 from fastid.auth.models import User
 from fastid.auth.repositories import EmailUserSpecification
 from fastid.auth.schemas import Contact, ContactType
+from fastid.auth.server import ServerURLDep
 from fastid.cache.dependencies import CacheDep
 from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
@@ -43,11 +44,13 @@ class NotificationUseCases(UseCase):
         mail: MailDep,
         telegram: TelegramNotificationsDep,
         cache: CacheDep,
+        server_url: ServerURLDep,
     ) -> None:
         self.uow = uow
         self.mail = mail
         self.telegram = telegram
         self.cache = cache
+        self.server_url = server_url
 
     @transactional
     async def push_email(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
@@ -136,7 +139,7 @@ class NotificationUseCases(UseCase):
             user = await self._get_user_by_email(dto.email)
         assert user is not None
         await self.validate_otp(user, dto.code)
-        token_data = jwt_backend.create("verify", JWTPayload(sub=str(user.id)))
+        token_data = jwt_backend.create("verify", JWTPayload(sub=str(user.id)), issuer=self.server_url)
         return token_data[0]
 
     @transactional

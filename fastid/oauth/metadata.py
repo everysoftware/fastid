@@ -1,3 +1,5 @@
+from fastid.core.config import core_settings
+from fastid.core.urls import join_url_path
 from fastid.integrations.config import (
     integration_settings,
 )
@@ -5,8 +7,9 @@ from fastid.oauth.schemas import UIProviderMeta, UIProviderMetaEntry
 
 UI_META = UIProviderMeta()
 
-BASE_AUTHORIZATION_URL = integration_settings.base_authorization_url
-BASE_REVOKE_URL = integration_settings.base_revoke_url
+BASE_OAUTH_URL = join_url_path(core_settings.api_path, "oauth")
+BASE_AUTHORIZATION_URL = f"{BASE_OAUTH_URL}/login"
+BASE_REVOKE_URL = f"{BASE_OAUTH_URL}/revoke"
 
 UI_META.providers["google"] = UIProviderMetaEntry(
     name="google",

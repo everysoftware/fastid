@@ -4,6 +4,7 @@ from typing import Any, cast
 from fastid.auth.models import User
 from fastid.auth.repositories import EmailUserSpecification
 from fastid.auth.schemas import OAuth2Callback, TokenResponse
+from fastid.auth.server import ServerURLDep
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
@@ -27,10 +28,17 @@ from fastid.security.schemas import JWTPayload
 
 
 class OAuthUseCases(UseCase):
-    def __init__(self, uow: UOWDep, registry: OAuth2RegistryDep, telegram_widget: TelegramWidgetDep) -> None:
+    def __init__(
+        self,
+        uow: UOWDep,
+        registry: OAuth2RegistryDep,
+        telegram_widget: TelegramWidgetDep,
+        server_url: ServerURLDep,
+    ) -> None:
         self.uow = uow
         self.registry = registry
         self.telegram_widget = telegram_widget
+        self.server_url = server_url
 
     async def get_login_url(self, provider: str) -> str:
         async with self._get_client(provider) as client:
@@ -53,7 +61,7 @@ class OAuthUseCases(UseCase):
             account = await self._register(open_id)
         user = await self.uow.users.get(account.user_id)
         await self.uow.commit()
-        token_data = jwt_backend.create("access", JWTPayload(sub=str(user.id)))
+        token_data = jwt_backend.create("access", JWTPayload(sub=str(user.id)), issuer=self.server_url)
         return TokenResponse(access_token=token_data[0])
 
     async def connect(

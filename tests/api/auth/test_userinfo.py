@@ -16,7 +16,7 @@ async def test_userinfo(client: AsyncClient, user: UserDTO, user_token: TokenRes
 
 
 async def test_userinfo_user_not_exists(client: AsyncClient, user: UserDTO) -> None:
-    token, _ = jwt_backend.create("access", JWTPayload(sub=uuid_hex()))
+    token, _ = jwt_backend.create("access", JWTPayload(sub=uuid_hex()), issuer="http://testserver")
     response = await client.get("/userinfo", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == status.HTTP_404_NOT_FOUND
 

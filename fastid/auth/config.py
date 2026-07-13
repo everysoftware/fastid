@@ -29,24 +29,10 @@ class AuthSettings(BaseSettings):
     app_expires_in_seconds: int = 60
 
     @property
-    def issuer(self) -> str:
-        return core_settings.frontend_url
-
-    @property
-    def authorization_endpoint(self) -> str:
-        return f"{core_settings.frontend_url}/authorize"
-
-    @property
-    def token_endpoint(self) -> str:
-        return f"{core_settings.api_url}/token"
-
-    @property
-    def userinfo_endpoint(self) -> str:
-        return f"{core_settings.api_url}/userinfo"
-
-    @property
-    def jwks_uri(self) -> str:
-        return f"{core_settings.frontend_url}/.well-known/jwks.json"
+    def server_url(self) -> str | None:
+        if core_settings.public_url is None:
+            return None
+        return core_settings.public_url.rstrip("/")
 
 
 auth_settings = AuthSettings()
