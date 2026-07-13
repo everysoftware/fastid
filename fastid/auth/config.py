@@ -1,11 +1,11 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from fastid.core.config import core_settings
 from fastid.core.schemas import BaseSettings
 
 
 class AuthSettings(BaseSettings):
+    server_url: str | None = None
     jwt_algorithm: str = "HS256"
     jwt_id_algorithm: str = "RS256"
     jwt_key: Path = Path("certs") / "secret.key"
@@ -27,26 +27,6 @@ class AuthSettings(BaseSettings):
     argon2_hash_len: int = 32
 
     app_expires_in_seconds: int = 60
-
-    @property
-    def issuer(self) -> str:
-        return core_settings.frontend_url
-
-    @property
-    def authorization_endpoint(self) -> str:
-        return f"{core_settings.frontend_url}/authorize"
-
-    @property
-    def token_endpoint(self) -> str:
-        return f"{core_settings.api_url}/token"
-
-    @property
-    def userinfo_endpoint(self) -> str:
-        return f"{core_settings.api_url}/userinfo"
-
-    @property
-    def jwks_uri(self) -> str:
-        return f"{core_settings.frontend_url}/.well-known/jwks.json"
 
 
 auth_settings = AuthSettings()

@@ -16,15 +16,23 @@ class JWTManager:  # pragma: nocover
     def __init__(self, *config: JWTConfig) -> None:
         self.config: MutableMapping[str, JWTConfig] = {t.type: t for t in config}
 
-    async def create_async(self, token_type: str, payload: JWTPayload) -> tuple[str, dict[str, Any]]:
+    async def create_async(
+        self,
+        token_type: str,
+        payload: JWTPayload,
+        *,
+        issuer: str | None = None,
+    ) -> tuple[str, dict[str, Any]]:
         config = self.config[token_type]
         now = datetime.datetime.now(datetime.UTC)
         claims = dict(
-            iss=config.issuer,
             typ=token_type,
             iat=now,
             **payload.model_dump(exclude_none=True),
         )
+        resolved_issuer = issuer if issuer is not None else config.issuer
+        if resolved_issuer is not None:
+            claims["iss"] = resolved_issuer
         if config.expires_in is not None:
             claims["exp"] = now + config.expires_in
         assert config.private_key is not None
@@ -36,15 +44,23 @@ class JWTManager:  # pragma: nocover
         )
         return token, claims
 
-    def create(self, token_type: str, payload: JWTPayload) -> tuple[str, dict[str, Any]]:
+    def create(
+        self,
+        token_type: str,
+        payload: JWTPayload,
+        *,
+        issuer: str | None = None,
+    ) -> tuple[str, dict[str, Any]]:
         config = self.config[token_type]
         now = datetime.datetime.now(datetime.UTC)
         claims = dict(
-            iss=config.issuer,
             typ=token_type,
             iat=now,
             **payload.model_dump(exclude_none=True),
         )
+        resolved_issuer = issuer if issuer is not None else config.issuer
+        if resolved_issuer is not None:
+            claims["iss"] = resolved_issuer
         if config.expires_in is not None:
             claims["exp"] = now + config.expires_in
         assert config.private_key is not None
@@ -59,6 +75,8 @@ class JWTManager:  # pragma: nocover
         self,
         token_type: str,
         token: str,
+        *,
+        issuer: str | None = None,
     ) -> JWTPayload:
         config = self.config[token_type]
         assert config.public_key is not None
@@ -67,7 +85,7 @@ class JWTManager:  # pragma: nocover
                 token,
                 config.public_key,
                 algorithms=[config.algorithm],
-                issuer=config.issuer,
+                issuer=issuer if issuer is not None else config.issuer,
             )
         except JWTInvalidTokenError as e:
             raise TokenError from e

@@ -4,6 +4,7 @@ from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
 from fastid.core.schemas import ENV_PREFIX, BaseEnum, BaseSettings
+from fastid.core.urls import join_url_path
 
 
 class Environment(BaseEnum):
@@ -14,23 +15,13 @@ class Environment(BaseEnum):
 
 
 class CoreSettings(BaseSettings):
-    env: Environment = Environment.local
+    env: Environment = Environment.prod
     debug: bool = False
+    behind_proxy: bool = True
 
-    base_url: str = "http://localhost:8012"
     api_path: str = "/api/v1"
     admin_path: str = "/admin"
     frontend_path: str = ""
-
-    @property
-    def api_url(self) -> str:
-        return f"{self.base_url}/{self.api_path[1:]}"
-
-    @property
-    def frontend_url(self) -> str:
-        if self.frontend_path == "":
-            return self.base_url
-        return f"{self.base_url}/{self.frontend_path[1:]}"
 
 
 core_settings = CoreSettings()
@@ -42,8 +33,8 @@ class BrandingSettings(BaseSettings):
     api_swagger_title: str = Field(default_factory=lambda data: f"{data['title']} API")
     frontend_swagger_title: str = Field(default_factory=lambda data: f"{data['title']} Frontend")
     admin_swagger_title: str = Field(default_factory=lambda data: f"{data['title']} Admin")
-    admin_favicon_url: str = f"{core_settings.frontend_url}/static/assets/favicon.png"
-    admin_logo_url: str = f"{core_settings.frontend_url}/static/assets/logo_text.png"
+    admin_favicon_url: str = join_url_path(core_settings.frontend_path, "static/assets/favicon.png")
+    admin_logo_url: str = join_url_path(core_settings.frontend_path, "static/assets/logo_text.png")
     notify_from: str = Field(default_factory=lambda data: data["title"])
 
     model_config = SettingsConfigDict(env_prefix=f"{ENV_PREFIX}branding_")

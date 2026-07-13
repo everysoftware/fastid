@@ -5,21 +5,25 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from fastid.auth.config import auth_settings
 from fastid.auth.schemas import JWK, JWKS, DiscoveryDocument
+from fastid.core.config import core_settings
+from fastid.core.urls import join_url_path
 from fastid.security.schemas import JWTPayload
 
-discovery_document = DiscoveryDocument(
-    issuer=auth_settings.issuer,
-    authorization_endpoint=auth_settings.authorization_endpoint,
-    token_endpoint=auth_settings.token_endpoint,
-    userinfo_endpoint=auth_settings.userinfo_endpoint,
-    jwks_uri=auth_settings.jwks_uri,
-    scopes_supported=["openid", "email", "name", "offline_access"],
-    response_types_supported=["code"],
-    grant_types_supported=["authorization_code", "refresh_token"],
-    subject_types_supported=["public"],
-    id_token_signing_alg_values_supported=["RS256"],
-    claims_supported=list(JWTPayload.model_fields),
-)
+
+def get_discovery_document(server_url: str) -> DiscoveryDocument:
+    return DiscoveryDocument(
+        issuer=server_url,
+        authorization_endpoint=f"{server_url}{join_url_path(core_settings.frontend_path, 'authorize')}",
+        token_endpoint=f"{server_url}{join_url_path(core_settings.api_path, 'token')}",
+        userinfo_endpoint=f"{server_url}{join_url_path(core_settings.api_path, 'userinfo')}",
+        jwks_uri=f"{server_url}{join_url_path(core_settings.frontend_path, '.well-known/jwks.json')}",
+        scopes_supported=["openid", "email", "name", "offline_access"],
+        response_types_supported=["code"],
+        grant_types_supported=["authorization_code", "refresh_token"],
+        subject_types_supported=["public"],
+        id_token_signing_alg_values_supported=["RS256"],
+        claims_supported=list(JWTPayload.model_fields),
+    )
 
 
 def get_jwks() -> JWKS:

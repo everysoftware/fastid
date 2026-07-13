@@ -7,13 +7,14 @@ from fastid.auth.dependencies import cookie_transport
 from fastid.auth.grants import AuthorizationCodeGrant
 from fastid.auth.models import User
 from fastid.auth.schemas import JWKS, DiscoveryDocument, OAuth2ConsentRequest
+from fastid.auth.server import ServerURLDep
 from fastid.frontend.dependencies import (
     get_user,
     get_user_or_none,
     is_action_verified,
     valid_consent,
 )
-from fastid.frontend.openid import discovery_document, jwks
+from fastid.frontend.openid import get_discovery_document, jwks
 from fastid.frontend.templating import templates
 from fastid.notify.schemas import UserAction
 from fastid.oauth.dependencies import OAuthAccountsDep
@@ -155,10 +156,10 @@ def logout() -> Any:
 
 
 @router.get("/.well-known/openid-configuration")
-def openid_configuration() -> DiscoveryDocument:
-    return discovery_document
+def openid_configuration(server_url: ServerURLDep) -> DiscoveryDocument:
+    return get_discovery_document(server_url)
 
 
-@router.get("/.well-known/jwks.json")
+@router.get("/.well-known/jwks.json", name="openid_jwks")
 def get_jwks() -> JWKS:
     return jwks

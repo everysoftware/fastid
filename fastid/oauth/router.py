@@ -6,10 +6,11 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 
-from fastid.auth.config import auth_settings
 from fastid.auth.dependencies import UserDep, UserOrNoneDep, cookie_transport
 from fastid.auth.schemas import OAuth2Callback
+from fastid.core.config import core_settings
 from fastid.core.dependencies import log
+from fastid.core.urls import join_url_path
 from fastid.database.schemas import PageDTO
 from fastid.integrations.dependencies import TelegramWidgetDep
 from fastid.integrations.schemas import TelegramCallback
@@ -56,7 +57,7 @@ async def telegram_callback(
     callback: Annotated[TelegramCallback, Depends()],
 ) -> Any:
     log.info("OAuth callback received: request_url=%s", str(request.url))
-    response: Response = RedirectResponse(url=auth_settings.authorization_endpoint)
+    response: Response = RedirectResponse(url=join_url_path(core_settings.frontend_path, "authorize"))
     if user is not None:
         await service.connect(user, "telegram", callback)
         return response
@@ -78,7 +79,7 @@ async def oauth_get_callback(
     callback: Annotated[OAuth2Callback, Depends()],
 ) -> Any:
     log.info("OAuth callback received: request_url=%s", str(request.url))
-    response: Response = RedirectResponse(url=auth_settings.authorization_endpoint)
+    response: Response = RedirectResponse(url=join_url_path(core_settings.frontend_path, "authorize"))
     if user is not None:
         await service.connect(user, provider, callback)
         return response
@@ -98,7 +99,7 @@ async def oauth_revoke(
     provider: str,
 ) -> Any:
     await service.revoke(user, provider)
-    return RedirectResponse(url=auth_settings.authorization_endpoint)
+    return RedirectResponse(url=join_url_path(core_settings.frontend_path, "authorize"))
 
 
 @router.get(

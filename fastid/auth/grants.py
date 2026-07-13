@@ -30,6 +30,7 @@ from fastid.auth.schemas import (
     TokenResponse,
     UserDTO,
 )
+from fastid.auth.server import ServerURLDep
 from fastid.cache.dependencies import CacheDep
 from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
@@ -43,9 +44,10 @@ from fastid.security.schemas import JWTPayload
 
 
 class Grant(UseCase):
-    def __init__(self, uow: UOWDep, cache: CacheDep) -> None:
+    def __init__(self, uow: UOWDep, cache: CacheDep, server_url: ServerURLDep) -> None:
         self.uow = uow
         self.cache = cache
+        self.server_url = server_url
         self.token_backend = jwt_backend
 
     @abstractmethod
@@ -125,14 +127,14 @@ class Grant(UseCase):
 
     def _issue_at(self, user: User, scope: str, tokens: dict[str, dict[str, Any]]) -> None:
         schema = JWTPayload(sub=str(user.id), scope=scope)
-        token, payload = self.token_backend.create("access", schema)
+        token, payload = self.token_backend.create("access", schema, issuer=self.server_url)
         tokens["access"]["is_issued"] = True
         tokens["access"]["token"] = token
         tokens["access"]["payload"] = payload
 
     def _issue_rt(self, user: User, scope: str, tokens: dict[str, dict[str, Any]]) -> None:
         schema = JWTPayload(sub=str(user.id), scope=scope)
-        token, payload = self.token_backend.create("refresh", schema)
+        token, payload = self.token_backend.create("refresh", schema, issuer=self.server_url)
         tokens["refresh"]["is_issued"] = True
         tokens["refresh"]["token"] = token
         tokens["refresh"]["payload"] = payload
@@ -146,7 +148,7 @@ class Grant(UseCase):
             email=user.email,
             email_verified=user.is_verified,
         )
-        token, payload = self.token_backend.create("id", schema)
+        token, payload = self.token_backend.create("id", schema, issuer=self.server_url)
         tokens["id"]["is_issued"] = True
         tokens["id"]["token"] = token
         tokens["id"]["payload"] = payload
@@ -203,7 +205,7 @@ class RefreshTokenGrant(Grant):
     ) -> AuthorizationResponse:
         await self.authenticate_client(form.client_id, form.client_secret)
         try:
-            content = self.token_backend.validate("refresh", form.refresh_token)
+            content = self.token_backend.validate("refresh", form.refresh_token, issuer=self.server_url)
         except JWTError as e:
             raise InvalidTokenError from e
         assert content.scope is not None
@@ -228,7 +230,7 @@ class ClientCredentialsGrant(Grant):
             for token_type in ["access", "refresh", "id"]
         }
         schema = JWTPayload(sub=str(app.id), scope=scope)
-        token, payload = await self.token_backend.create_async("access", schema)
+        token, payload = await self.token_backend.create_async("access", schema, issuer=self.server_url)
         tokens["access"]["is_issued"] = True
         tokens["access"]["token"] = token
         tokens["access"]["payload"] = payload
