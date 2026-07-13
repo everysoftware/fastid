@@ -35,3 +35,12 @@ UI_META.providers["yandex"] = UIProviderMetaEntry(
     revoke_url=f"{BASE_REVOKE_URL}/yandex",
     enabled=integration_settings.yandex_oauth_enabled,
 )
+UI_META.providers["vk"] = UIProviderMetaEntry(
+    name="vk",
+    title="VK",
+    icon="fa-vk",
+    color="#0077FF",
+    authorization_url=f"{BASE_AUTHORIZATION_URL}/vk",
+    revoke_url=f"{BASE_REVOKE_URL}/vk",
+    enabled=integration_settings.vk_oauth_enabled,
+)

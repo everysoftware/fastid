@@ -6,7 +6,7 @@ from fastid.auth.schemas import TokenResponse
 from fastid.oauth.schemas import InspectProviderResponse
 
 
-@pytest.mark.parametrize("provider", ["google", "yandex", "telegram"])
+@pytest.mark.parametrize("provider", ["google", "yandex", "vk", "telegram"])
 async def test_oauth_inspect(client: AsyncClient, user_token: TokenResponse, provider: str) -> None:
     response = await client.get(
         f"/oauth/inspect/{provider}",

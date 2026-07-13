@@ -95,6 +95,7 @@ def userinfo_response_factory() -> UserinfoResponse:
 
 GOOGLE_OPENID = userinfo_response_factory()
 YANDEX_OPENID = userinfo_response_factory()
+VK_OPENID = userinfo_response_factory()
 TELEGRAM_OPENID = userinfo_response_factory()
 TELEGRAM_OPENID.userinfo.email = None
 

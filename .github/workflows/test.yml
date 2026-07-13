@@ -72,6 +72,7 @@ jobs:
           FASTID_REDIS_URL: redis://${{ matrix.redis-user }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
           FASTID_GOOGLE_OAUTH_ENABLED: 1
           FASTID_YANDEX_OAUTH_ENABLED: 1
+          FASTID_VK_OAUTH_ENABLED: 1
           FASTID_SMTP_ENABLED: 1
           FASTID_TELEGRAM_WIDGET_ENABLED: 1
           FASTID_TELEGRAM_NOTIFICATION_ENABLED: 1

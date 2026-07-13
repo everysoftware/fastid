@@ -9,7 +9,10 @@ from fastid.integrations.schemas import UserinfoResponse
 from tests import mocks
 
 
-@pytest.mark.parametrize(("provider", "openid"), [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID)])
+@pytest.mark.parametrize(
+    ("provider", "openid"),
+    [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID), ("vk", mocks.VK_OPENID)],
+)
 async def test_oauth_callback_authorize(client: AsyncClient, provider: str, openid: OpenID) -> None:
     params = mocks.OAUTH_CALLBACK.model_dump(mode="json", exclude_unset=True)
     authorize_mock = AsyncMock(return_value=mocks.LOGIN_RESPONSE)
@@ -17,12 +20,16 @@ async def test_oauth_callback_authorize(client: AsyncClient, provider: str, open
     with (
         patch("fastid.integrations.base.oauth.OAuth2Client.login", new=authorize_mock),
         patch("fastid.integrations.base.oauth.OAuth2Client.userinfo", new=userinfo_mock),
+        patch("fastid.integrations.vk.oauth.VKSSO.userinfo", new=userinfo_mock),
     ):
         response = await client.get(f"/oauth/callback/{provider}", params=params)
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
 
-@pytest.mark.parametrize(("provider", "openid"), [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID)])
+@pytest.mark.parametrize(
+    ("provider", "openid"),
+    [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID), ("vk", mocks.VK_OPENID)],
+)
 async def test_oauth_callback_authorize_email_exists(
     client: AsyncClient,
     user: UserDTO,
@@ -37,12 +44,16 @@ async def test_oauth_callback_authorize_email_exists(
     with (
         patch("fastid.integrations.base.oauth.OAuth2Client.login", new=authorize_mock),
         patch("fastid.integrations.base.oauth.OAuth2Client.userinfo", new=userinfo_mock),
+        patch("fastid.integrations.vk.oauth.VKSSO.userinfo", new=userinfo_mock),
     ):
         response = await client.get(f"/oauth/callback/{provider}", params=params)
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
 
-@pytest.mark.parametrize(("provider", "openid"), [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID)])
+@pytest.mark.parametrize(
+    ("provider", "openid"),
+    [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID), ("vk", mocks.VK_OPENID)],
+)
 async def test_oauth_callback_connect(
     client: AsyncClient,
     user_token: TokenResponse,
@@ -55,6 +66,7 @@ async def test_oauth_callback_connect(
     with (
         patch("fastid.integrations.base.oauth.OAuth2Client.login", new=authorize_mock),
         patch("fastid.integrations.base.oauth.OAuth2Client.userinfo", new=userinfo_mock),
+        patch("fastid.integrations.vk.oauth.VKSSO.userinfo", new=userinfo_mock),
     ):
         response = await client.get(
             f"/oauth/callback/{provider}",
@@ -64,7 +76,10 @@ async def test_oauth_callback_connect(
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
 
-@pytest.mark.parametrize(("provider", "openid"), [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID)])
+@pytest.mark.parametrize(
+    ("provider", "openid"),
+    [("google", mocks.GOOGLE_OPENID), ("yandex", mocks.YANDEX_OPENID), ("vk", mocks.VK_OPENID)],
+)
 async def test_oauth_callback_double_connect(
     client: AsyncClient,
     user_token: TokenResponse,
@@ -77,6 +92,7 @@ async def test_oauth_callback_double_connect(
     with (
         patch("fastid.integrations.base.oauth.OAuth2Client.login", new=authorize_mock),
         patch("fastid.integrations.base.oauth.OAuth2Client.userinfo", new=userinfo_mock),
+        patch("fastid.integrations.vk.oauth.VKSSO.userinfo", new=userinfo_mock),
     ):
         response = await client.get(
             f"/oauth/callback/{provider}",

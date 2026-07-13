@@ -21,25 +21,30 @@ from fastid.integrations.exceptions import (
     UserinfoError,
 )
 from fastid.integrations.schemas import LoginResponse, UserinfoResponse
-from fastid.integrations.utils import generate_random_state
+from fastid.integrations.utils import generate_pkce_challenge, generate_pkce_verifier, generate_random_state
 
 
 class OAuth2Client:
     default_meta: ClassVar[ProviderMeta]
+    default_use_pkce: ClassVar[bool] = False
+    pkce_challenge_method: ClassVar[str] = "S256"
+    use_client_secret: ClassVar[bool] = True
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         client_id: str,
         client_secret: str,
         redirect_uri: str | None = None,
         scope: Sequence[str] | None = None,
         meta: ProviderMeta | None = None,
+        use_pkce: bool | None = None,
     ) -> None:
         self.meta = meta or self.default_meta
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.use_state = self.meta.use_state
+        self.use_pkce = self.default_use_pkce if use_pkce is None else use_pkce
         self.discovery_url = self.meta.discovery_url
         self._discovery = None
 
@@ -96,8 +101,15 @@ class OAuth2Client:
         params: dict[str, Any] | None = None,
     ) -> str:
         params = params or {}
-        if self.use_state:
-            params |= {"state": state or generate_random_state()}
+        if self.use_state or self.use_pkce:
+            state = state or generate_random_state()
+            params |= {"state": state}
+        if self.use_pkce:
+            assert state is not None
+            params |= {
+                "code_challenge": generate_pkce_challenge(generate_pkce_verifier(state, self.client_secret)),
+                "code_challenge_method": self.pkce_challenge_method,
+            }
         redirect_uri = redirect_uri or self.redirect_uri
         if redirect_uri is None:
             msg = "redirect_uri must be provided, either at construction or request time"
@@ -119,7 +131,7 @@ class OAuth2Client:
         headers: dict[str, str] | None = None,
     ) -> LoginResponse:
         request = self._prepare_token_request(callback, body=body, headers=headers)
-        auth = httpx.BasicAuth(self.client_id, self.client_secret)
+        auth = httpx.BasicAuth(self.client_id, self.client_secret) if self.use_client_secret else None
         response = await self.client.send(
             request,
             auth=auth,
@@ -165,14 +177,20 @@ class OAuth2Client:
                 msg = "State was not found in the callback"
                 raise StateError(msg)
             body |= {"state": callback.state}
+        if self.use_pkce:
+            if not callback.state:
+                msg = "PKCE code verifier was not found in the callback state"
+                raise StateError(msg)
+            body |= {"code_verifier": generate_pkce_verifier(callback.state, self.client_secret)}
         body = {
             "grant_type": "authorization_code",
             "code": callback.code,
             "redirect_uri": callback.redirect_uri or self.redirect_uri,
             "client_id": self.client_id,
-            "client_secret": self.client_secret,
             **body,
         }
+        if self.use_client_secret:
+            body["client_secret"] = self.client_secret
         return httpx.Request(
             "post",
             self.discovery.token_endpoint,

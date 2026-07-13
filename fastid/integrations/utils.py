@@ -13,6 +13,16 @@ def generate_random_state(length: int = 64) -> str:
     return base64.urlsafe_b64encode(os.urandom(bytes_length)).decode("utf-8")
 
 
+def generate_pkce_verifier(state: str, secret: str) -> str:
+    digest = hmac.new(secret.encode(), state.encode(), hashlib.sha256).digest()
+    return base64.urlsafe_b64encode(digest).decode().rstrip("=")
+
+
+def generate_pkce_challenge(code_verifier: str) -> str:
+    digest = hashlib.sha256(code_verifier.encode()).digest()
+    return base64.urlsafe_b64encode(digest).decode().rstrip("=")
+
+
 def replace_localhost(url: Any) -> str:
     return str(url).replace("localhost", "127.0.0.1", 1)
 
