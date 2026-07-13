@@ -1,11 +1,11 @@
 from collections.abc import Sequence
 from pathlib import Path
 
+from fastid.core.config import core_settings
 from fastid.core.schemas import BaseSettings
 
 
 class AuthSettings(BaseSettings):
-    server_url: str | None = None
     jwt_algorithm: str = "HS256"
     jwt_id_algorithm: str = "RS256"
     jwt_key: Path = Path("certs") / "secret.key"
@@ -27,6 +27,12 @@ class AuthSettings(BaseSettings):
     argon2_hash_len: int = 32
 
     app_expires_in_seconds: int = 60
+
+    @property
+    def server_url(self) -> str | None:
+        if core_settings.public_url is None:
+            return None
+        return core_settings.public_url.rstrip("/")
 
 
 auth_settings = AuthSettings()

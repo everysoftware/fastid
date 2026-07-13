@@ -3,8 +3,8 @@ import pytest
 from httpx import AsyncClient
 from starlette import status
 
-from fastid.auth.config import auth_settings
 from fastid.auth.schemas import UserDTO
+from fastid.core.config import core_settings
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.webhooks.models import Webhook
@@ -35,7 +35,7 @@ async def test_dynamic_server_url_is_used_as_jwt_issuer(
     user: UserDTO,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(auth_settings, "server_url", None)
+    monkeypatch.setattr(core_settings, "public_url", None)
     assert user.email is not None
 
     token = await authorize_password_grant(client, user.email, mocks.USER_CREATE.password)
@@ -45,13 +45,13 @@ async def test_dynamic_server_url_is_used_as_jwt_issuer(
     assert claims["iss"] == "http://testserver"
 
 
-async def test_configured_server_url_is_used_as_jwt_issuer(
+async def test_configured_public_url_is_used_as_jwt_issuer(
     client: AsyncClient,
     user: UserDTO,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     server_url = "https://configured.example.com"
-    monkeypatch.setattr(auth_settings, "server_url", server_url)
+    monkeypatch.setattr(core_settings, "public_url", server_url)
     assert user.email is not None
 
     token = await authorize_password_grant(client, user.email, mocks.USER_CREATE.password)

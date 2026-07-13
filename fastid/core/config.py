@@ -1,6 +1,7 @@
 from enum import auto
+from urllib.parse import urlsplit
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from fastid.core.schemas import ENV_PREFIX, BaseEnum, BaseSettings
@@ -18,10 +19,25 @@ class CoreSettings(BaseSettings):
     env: Environment = Environment.prod
     debug: bool = False
     behind_proxy: bool = True
+    public_url: str | None = None
 
     api_path: str = "/api/v1"
     admin_path: str = "/admin"
     frontend_path: str = ""
+
+    @field_validator("public_url")
+    @classmethod
+    def validate_public_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            msg = "public_url must be an absolute HTTP(S) URL"
+            raise ValueError(msg)
+        if parsed.query or parsed.fragment:
+            msg = "public_url must not contain a query or fragment"
+            raise ValueError(msg)
+        return value.rstrip("/")
 
 
 core_settings = CoreSettings()

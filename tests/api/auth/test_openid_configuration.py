@@ -11,7 +11,7 @@ async def test_openid_configuration(
     frontend_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(auth_settings, "server_url", None)
+    monkeypatch.setattr(core_settings, "public_url", None)
     monkeypatch.setattr(core_settings, "behind_proxy", False)
     response = await frontend_client.get(
         "/.well-known/openid-configuration",
@@ -34,7 +34,7 @@ async def test_openid_configuration_behind_proxy(
     frontend_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(auth_settings, "server_url", None)
+    monkeypatch.setattr(core_settings, "public_url", None)
     monkeypatch.setattr(core_settings, "behind_proxy", True)
     response = await frontend_client.get(
         "/.well-known/openid-configuration",
@@ -54,12 +54,12 @@ async def test_openid_configuration_behind_proxy(
     assert document.jwks_uri == f"{proxy_origin}/.well-known/jwks.json"
 
 
-async def test_openid_configuration_with_configured_server_url(
+async def test_openid_configuration_with_configured_public_url(
     frontend_client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     server_url = "https://configured.example.com"
-    monkeypatch.setattr(auth_settings, "server_url", f"{server_url}/")
+    monkeypatch.setattr(core_settings, "public_url", f"{server_url}/")
     monkeypatch.setattr(core_settings, "behind_proxy", True)
 
     response = await frontend_client.get(
@@ -72,6 +72,7 @@ async def test_openid_configuration_with_configured_server_url(
 
     assert response.status_code == status.HTTP_200_OK
     document = DiscoveryDocument.model_validate_json(response.content)
+    assert auth_settings.server_url == server_url
     assert document.issuer == server_url
     assert document.authorization_endpoint == f"{server_url}/authorize"
     assert document.token_endpoint == f"{server_url}/api/v1/token"
