@@ -5,6 +5,8 @@ from fastid.admin.views.utils import operation_type_format, time_format
 from fastid.database.versioning import (
     AppVersion,
     EmailTemplateVersion,
+    OAuthAccountVersion,
+    OAuthProviderVersion,
     TelegramTemplateVersion,
     Transaction,
     UserVersion,
@@ -66,9 +68,19 @@ class UserVersionAdmin(BaseVersionView, model=UserVersion):
     name_plural = "User Versions"
 
 
+class OAuthAccountVersionAdmin(BaseVersionView, model=OAuthAccountVersion):
+    name = "OAuth Account Version"
+    name_plural = "OAuth Account Versions"
+
+
 class AppVersionAdmin(BaseVersionView, model=AppVersion):
     name = "App Version"
     name_plural = "App Versions"
+
+
+class OAuthProviderVersionAdmin(BaseVersionView, model=OAuthProviderVersion):
+    name = "OAuth Provider Version"
+    name_plural = "OAuth Provider Versions"
 
 
 class EmailTemplateVersionAdmin(BaseVersionView, model=EmailTemplateVersion):

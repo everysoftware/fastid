@@ -10,6 +10,7 @@ from fastid.admin.views.entities import NotificationAdmin, OAuthAccountAdmin, Us
 from fastid.admin.views.settings import (
     AppAdmin,
     EmailTemplateAdmin,
+    OAuthProviderAdmin,
     TelegramTemplateAdmin,
     WebhookAdmin,
     WebhookEventAdmin,
@@ -50,6 +51,7 @@ class AdminAppFactory(AppFactory):
         admin.add_view(NotificationAdmin)
         # Settings
         admin.add_view(AppAdmin)
+        admin.add_view(OAuthProviderAdmin)
         admin.add_view(WebhookAdmin)
         admin.add_view(WebhookEventAdmin)
         admin.add_view(EmailTemplateAdmin)

@@ -18,6 +18,7 @@ from fastid.frontend.openid import get_discovery_document, jwks
 from fastid.frontend.templating import templates
 from fastid.notify.schemas import UserAction
 from fastid.oauth.dependencies import OAuthAccountsDep
+from fastid.oauth.metadata import ProvidersMetaDep
 
 router = APIRouter()
 
@@ -30,26 +31,29 @@ def index() -> Response:
 @router.get("/register")
 def register(
     request: Request,
+    providers_meta: ProvidersMetaDep,
     user: Annotated[User | None, Depends(get_user_or_none)],
 ) -> Response:
     if user:
         return RedirectResponse(url="/profile")
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse("register.html", {"request": request, "providers_meta": providers_meta})
 
 
 @router.get("/login")
 def login(
     request: Request,
+    providers_meta: ProvidersMetaDep,
     user: Annotated[User | None, Depends(get_user_or_none)],
 ) -> Response:
     if user:
         return RedirectResponse(url="/profile")
-    return templates.TemplateResponse("authorize.html", {"request": request})
+    return templates.TemplateResponse("authorize.html", {"request": request, "providers_meta": providers_meta})
 
 
 @router.get("/authorize")
 async def authorize(
     request: Request,
+    providers_meta: ProvidersMetaDep,
     user: Annotated[User | None, Depends(get_user_or_none)],
     consent: Annotated[OAuth2ConsentRequest, Depends(valid_consent)],
     authorization_code_grant: Annotated[AuthorizationCodeGrant, Depends()],
@@ -58,7 +62,10 @@ async def authorize(
         assert consent.client_id is not None
         app = await authorization_code_grant.validate_client(consent.client_id)
         request.session["consent"] = consent.model_dump(mode="json")
-        return templates.TemplateResponse("authorize.html", {"request": request, "app": app})
+        return templates.TemplateResponse(
+            "authorize.html",
+            {"request": request, "app": app, "providers_meta": providers_meta},
+        )
     # User is authenticated, redirect to specified redirect URI with code
     request.session.clear()
     redirect_uri = await authorization_code_grant.approve_consent(consent, user)
@@ -68,6 +75,7 @@ async def authorize(
 @router.get("/profile")
 async def profile(
     request: Request,
+    providers_meta: ProvidersMetaDep,
     oauth_accounts: OAuthAccountsDep,
     user: Annotated[User, Depends(get_user)],
 ) -> Response:
@@ -75,7 +83,12 @@ async def profile(
     connected = {a.provider for a in page.items}
     return templates.TemplateResponse(
         "profile.html",
-        {"request": request, "user": user, "connected_providers": connected},
+        {
+            "request": request,
+            "user": user,
+            "connected_providers": connected,
+            "providers_meta": providers_meta,
+        },
     )
 
 
