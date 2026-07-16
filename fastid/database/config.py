@@ -1,13 +1,18 @@
 from typing import Any
 
-from pydantic import Field, PositiveInt
+from pydantic import AliasChoices, Field, PositiveInt
 from pydantic_settings import SettingsConfigDict
 
 from fastid.core.schemas import ENV_PREFIX, BaseSettings
 
 
 class DBSettings(BaseSettings):
-    url: str
+    url: str = Field(
+        validation_alias=AliasChoices(
+            f"{ENV_PREFIX}db_url",
+            f"{ENV_PREFIX}test_db_url",
+        ),
+    )
     echo: bool = False
 
     # --- pool settings ---

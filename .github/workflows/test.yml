@@ -68,13 +68,9 @@ jobs:
         run: |
           poetry run make testcov
         env:
-          FASTID_DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
-          FASTID_REDIS_URL: redis://${{ matrix.redis-user }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
-          FASTID_GOOGLE_OAUTH_ENABLED: 1
-          FASTID_YANDEX_OAUTH_ENABLED: 1
-          FASTID_VK_OAUTH_ENABLED: 1
+          FASTID_TEST_DB_URL: postgresql+asyncpg://${{ matrix.database-user }}:${{ matrix.database-password }}@${{ matrix.database-host }}:${{ matrix.database-port }}/${{ matrix.database-name }}
+          FASTID_TEST_REDIS_URL: redis://${{ matrix.redis-username }}:${{ matrix.redis-password }}@${{ matrix.redis-host }}:${{ matrix.redis-port }}
           FASTID_SMTP_ENABLED: 1
-          FASTID_TELEGRAM_WIDGET_ENABLED: 1
           FASTID_TELEGRAM_NOTIFICATION_ENABLED: 1
           FASTID_TELEGRAM_BOT_TOKEN: 123456:BOT_SECRET
           FASTID_WEBHOOK_PAGE_EXPIRES_IN_SECONDS: 0
