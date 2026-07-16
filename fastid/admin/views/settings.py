@@ -2,7 +2,7 @@ from sqladmin.filters import AllUniqueStringValuesFilter, BooleanFilter, Operati
 
 from fastid.admin.views.base import BaseView
 from fastid.admin.views.utils import json_format
-from fastid.database.models import App, EmailTemplate, TelegramTemplate, Webhook, WebhookEvent
+from fastid.database.models import App, EmailTemplate, OAuthProvider, TelegramTemplate, Webhook, WebhookEvent
 
 
 class AppAdmin(BaseView, model=App):
@@ -23,6 +23,34 @@ class AppAdmin(BaseView, model=App):
         BooleanFilter(App.is_active),
         OperationColumnFilter(App.client_id),
         OperationColumnFilter(App.redirect_uris),
+    ]
+
+
+class OAuthProviderAdmin(BaseView, model=OAuthProvider):
+    can_create = False
+    can_delete = False
+
+    name = "OAuth Provider"
+    name_plural = "OAuth Providers"
+    icon = "fa-solid fa-right-to-bracket"
+    category = "Settings"
+
+    column_list = [
+        OAuthProvider.id,
+        OAuthProvider.name,
+        OAuthProvider.enabled,
+        OAuthProvider.client_id,
+        OAuthProvider.created_at,
+        OAuthProvider.updated_at,
+    ]
+    column_filters = [
+        BooleanFilter(OAuthProvider.enabled),
+        AllUniqueStringValuesFilter(OAuthProvider.name),
+    ]
+    form_columns = [
+        OAuthProvider.enabled,
+        OAuthProvider.client_id,
+        OAuthProvider.client_secret,
     ]
 
 

@@ -18,6 +18,7 @@ from fastid.database.uow import SQLAlchemyUOW
 from fastid.email.dependencies import get_smtp
 from fastid.frontend.app import frontend_app
 from fastid.integrations.dependencies import get_bot
+from tests.config import test_settings
 from tests.dependencies import (
     alembic_config,
     get_test_cache,
@@ -127,7 +128,7 @@ async def uow(uow_raw: SQLAlchemyUOW, engine: AsyncEngine) -> AsyncIterator[SQLA
 
 @pytest.fixture
 async def redis_client() -> AsyncIterator[Redis]:
-    logger.info("Test redis URL: %s", redis_settings.url)
+    logger.info("Test redis URL: %s", test_settings.redis_url)
     yield test_redis
     await test_redis.aclose(close_connection_pool=True)
 

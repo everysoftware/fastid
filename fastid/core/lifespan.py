@@ -11,6 +11,8 @@ from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.notify.repositories import EmailTemplateSlugSpecification, TelegramTemplateSlugSpecification
 from fastid.notify.utils import collect_email_templates, collect_telegram_templates
+from fastid.oauth.models import OAUTH_PROVIDER_NAMES, OAuthProvider
+from fastid.oauth.repositories import OAuthProviderNameSpecification
 from fastid.webhooks.senders.dependencies import client as webhooks_client
 
 
@@ -25,6 +27,7 @@ class LifespanTasks:
             async with self.cache.lock("seed", blocking=True):
                 await self.create_admin()
                 await self.create_templates()
+                await self.create_oauth_providers()
         except LockError:
             pass
 
@@ -54,6 +57,15 @@ class LifespanTasks:
                 await self.uow.telegram_templates.find(TelegramTemplateSlugSpecification(telegram_t.slug))
             except NoResultFoundError:
                 await self.uow.telegram_templates.add(telegram_t)
+
+    async def create_oauth_providers(self) -> None:
+        for name in OAUTH_PROVIDER_NAMES:
+            try:
+                await self.uow.oauth_providers.find(OAuthProviderNameSpecification(name))
+            except NoResultFoundError:
+                await self.uow.oauth_providers.add(
+                    OAuthProvider(name=name, enabled=False, client_id="", client_secret=""),
+                )
 
     async def on_shutdown(self) -> None:
         await self.cache.client.aclose()

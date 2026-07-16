@@ -9,12 +9,10 @@ from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.schemas import LimitOffset, Page, Sorting
-from fastid.integrations.config import integration_settings
-from fastid.integrations.dependencies import OAuth2RegistryDep, TelegramWidgetDep
+from fastid.integrations.dependencies import OAuth2RegistryDep, TelegramProviderDep, build_telegram_widget
 from fastid.integrations.schemas import TelegramCallback
 from fastid.oauth.exceptions import (
     OAuthAccountInUseError,
-    OAuthProviderDisabledError,
 )
 from fastid.oauth.models import OAuthAccount
 from fastid.oauth.repositories import (
@@ -32,12 +30,12 @@ class OAuthUseCases(UseCase):
         self,
         uow: UOWDep,
         registry: OAuth2RegistryDep,
-        telegram_widget: TelegramWidgetDep,
+        telegram_provider: TelegramProviderDep,
         server_url: ServerURLDep,
     ) -> None:
         self.uow = uow
         self.registry = registry
-        self.telegram_widget = telegram_widget
+        self.telegram_provider = telegram_provider
         self.server_url = server_url
 
     async def get_login_url(self, provider: str) -> str:
@@ -101,9 +99,7 @@ class OAuthUseCases(UseCase):
 
     def _get_client(self, provider: str) -> Any:
         if provider == "telegram":
-            if not integration_settings.telegram_widget_enabled:
-                raise OAuthProviderDisabledError
-            return self.telegram_widget
+            return build_telegram_widget(self.server_url, self.telegram_provider)
         return self.registry.get(provider)
 
     async def _callback(self, provider: str, callback: OAuth2Callback | TelegramCallback) -> OpenIDBearer:

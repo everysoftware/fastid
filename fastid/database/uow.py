@@ -8,7 +8,7 @@ from sqlalchemy import select
 from fastid.apps.repositories import AppRepository
 from fastid.auth.repositories import UserRepository
 from fastid.notify.repositories import EmailTemplateRepository, NotificationRepository, TelegramTemplateRepository
-from fastid.oauth.repositories import OAuthAccountRepository
+from fastid.oauth.repositories import OAuthAccountRepository, OAuthProviderRepository
 from fastid.webhooks.repositories import WebhookEventRepository, WebhookRepository
 
 if TYPE_CHECKING:
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 class SQLAlchemyUOW:
     users: UserRepository
     oauth_accounts: OAuthAccountRepository
+    oauth_providers: OAuthProviderRepository
     apps: AppRepository
     email_templates: EmailTemplateRepository
     telegram_templates: TelegramTemplateRepository
@@ -40,6 +41,7 @@ class SQLAlchemyUOW:
         self.session = self.session_factory()
         self.users = UserRepository(self.session)
         self.oauth_accounts = OAuthAccountRepository(self.session)
+        self.oauth_providers = OAuthProviderRepository(self.session)
         self.apps = AppRepository(self.session)
         self.email_templates = EmailTemplateRepository(self.session)
         self.telegram_templates = TelegramTemplateRepository(self.session)

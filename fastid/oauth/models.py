@@ -6,7 +6,9 @@ from uuid import UUID  # noqa: TCH003
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fastid.database.base import Entity
+from fastid.database.base import VersionedEntity
+
+OAUTH_PROVIDER_NAMES = ("google", "telegram", "yandex", "vk")
 
 if TYPE_CHECKING:
     from fastid.auth.models import User
@@ -14,7 +16,7 @@ if TYPE_CHECKING:
     from fastid.oauth.schemas import OpenIDBearer
 
 
-class OAuthAccount(Entity):
+class OAuthAccount(VersionedEntity):
     __tablename__ = "oauth_accounts"
 
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
@@ -42,3 +44,12 @@ class OAuthAccount(Entity):
             account_id=open_id.id,
             user_id=user_id,
         )
+
+
+class OAuthProvider(VersionedEntity):
+    __tablename__ = "oauth_providers"
+
+    name: Mapped[str] = mapped_column(unique=True)
+    enabled: Mapped[bool] = mapped_column(default=False)
+    client_id: Mapped[str] = mapped_column(default="")
+    client_secret: Mapped[str] = mapped_column(default="")

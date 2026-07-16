@@ -3,11 +3,23 @@ from typing import Any
 from fastid.database.repository import SQLAlchemyRepository
 from fastid.database.specification import Specification
 from fastid.database.utils import UUIDv7
-from fastid.oauth.models import OAuthAccount
+from fastid.oauth.models import OAuthAccount, OAuthProvider
 
 
 class OAuthAccountRepository(SQLAlchemyRepository[OAuthAccount]):
     model_type = OAuthAccount
+
+
+class OAuthProviderRepository(SQLAlchemyRepository[OAuthProvider]):
+    model_type = OAuthProvider
+
+
+class OAuthProviderNameSpecification(Specification):
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def apply(self, stmt: Any) -> Any:
+        return stmt.where(OAuthProvider.name == self.name)
 
 
 class UserAccountSpecification(Specification):

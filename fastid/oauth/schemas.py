@@ -55,7 +55,7 @@ class UIProviderMeta(BaseModel):
 
     @property
     def enabled_providers(self) -> Sequence[UIProviderMetaEntry]:
-        return list(self.providers.values())
+        return [meta for meta in self.providers.values() if meta.enabled]
 
     @property
     def any_enabled(self) -> bool:
