@@ -67,5 +67,18 @@ services:
       retries: 3
       start_period: 40s
 
+  fastid-webhook-worker:
+    env_file:
+      - .env
+    image: everysoftware/fastid:latest
+    entrypoint: ["python", "-m", "fastid.webhooks.worker"]
+    depends_on:
+      fastid-app:
+        condition: service_healthy
+    environment:
+      FASTID_DB_URL: ${FASTID_DB_URL:-postgresql+asyncpg://${POSTGRES_USER:-fastid}:${POSTGRES_PASSWORD:?database password required}@postgres:5432/${POSTGRES_DB:-fastid}}
+      FASTID_WEBHOOK_ALLOW_INSECURE_URLS: ${FASTID_WEBHOOK_ALLOW_INSECURE_URLS:-false}
+    restart: unless-stopped
+
 volumes:
   pg_data:

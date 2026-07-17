@@ -9,7 +9,7 @@ from fastid.apps.repositories import AppRepository
 from fastid.auth.repositories import UserRepository
 from fastid.notify.repositories import EmailTemplateRepository, NotificationRepository, TelegramTemplateRepository
 from fastid.oauth.repositories import OAuthAccountRepository, OAuthProviderRepository
-from fastid.webhooks.repositories import WebhookEventRepository, WebhookRepository
+from fastid.webhooks.repositories import WebhookAttemptRepository, WebhookEventRepository, WebhookRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -30,6 +30,7 @@ class SQLAlchemyUOW:
     notifications: NotificationRepository
     webhooks: WebhookRepository
     webhook_events: WebhookEventRepository
+    webhook_attempts: WebhookAttemptRepository
 
     session_factory: async_sessionmaker[AsyncSession]
     session: AsyncSession
@@ -48,6 +49,7 @@ class SQLAlchemyUOW:
         self.notifications = NotificationRepository(self.session)
         self.webhooks = WebhookRepository(self.session)
         self.webhook_events = WebhookEventRepository(self.session)
+        self.webhook_attempts = WebhookAttemptRepository(self.session)
 
     @property
     def is_active(self) -> bool:

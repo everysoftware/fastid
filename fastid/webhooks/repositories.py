@@ -3,7 +3,7 @@ from typing import Any
 from fastid.database.repository import SQLAlchemyRepository
 from fastid.database.specification import Specification
 from fastid.database.utils import UUIDv7
-from fastid.webhooks.models import Webhook, WebhookEvent, WebhookType
+from fastid.webhooks.models import Webhook, WebhookAttempt, WebhookEvent, WebhookType
 
 
 class WebhookRepository(SQLAlchemyRepository[Webhook]):
@@ -15,11 +15,15 @@ class WebhookTypeSpecification(Specification):
         self.type = webhook_type
 
     def apply(self, stmt: Any) -> Any:
-        return stmt.where(Webhook.type == self.type)
+        return stmt.where(Webhook.type == self.type, Webhook.is_active.is_(True))
 
 
 class WebhookEventRepository(SQLAlchemyRepository[WebhookEvent]):
     model_type = WebhookEvent
+
+
+class WebhookAttemptRepository(SQLAlchemyRepository[WebhookAttempt]):
+    model_type = WebhookAttempt
 
 
 class WebhookEventWebhookIDSpecification(Specification):

@@ -43,10 +43,9 @@ async def register(
     user = await service.register(dto)
     notification = PushNotificationRequest(template="welcome")
     background.add_task(notify.push, user, notification)  # pragma: nocover
-    webhook = SendWebhookRequest(
-        type=WebhookType.user_registration, payload=UserDTO.model_validate(user).model_dump(mode="json")
-    )
-    background.add_task(webhooks.send, webhook)  # pragma: nocover
+    user_data = UserDTO.model_validate(user).model_dump(mode="json")
+    webhook = SendWebhookRequest(type=WebhookType.user_registration, payload=user_data | {"user": user_data})
+    await webhooks.enqueue(webhook)
     return user  # pragma: nocover
 
 
@@ -59,7 +58,6 @@ async def login(
     form: Annotated[OAuth2PasswordRequest, Form()],
     password_grant: Annotated[PasswordGrant, Depends()],
     webhooks: WebhooksDep,
-    background: BackgroundTasks,
 ) -> Any:
     match form.grant_type:
         case OAuth2Grant.password:
@@ -68,7 +66,7 @@ async def login(
             raise NotSupportedGrantError
     assert auth_data.user is not None
     webhook = SendWebhookRequest(type=WebhookType.user_login, payload={"user": auth_data.user.model_dump(mode="json")})
-    background.add_task(webhooks.send, webhook)  # pragma: nocover
+    await webhooks.enqueue(webhook)
     return cookie_transport.get_login_response(auth_data.token)
 
 
@@ -84,7 +82,6 @@ async def authorize(  # noqa: PLR0913
     refresh_token_grant: Annotated[RefreshTokenGrant, Depends()],
     client_credentials_grant: Annotated[ClientCredentialsGrant, Depends()],
     webhooks: WebhooksDep,
-    background: BackgroundTasks,
 ) -> Any:
     match form.grant_type:
         case OAuth2Grant.password:
@@ -101,7 +98,7 @@ async def authorize(  # noqa: PLR0913
         webhook = SendWebhookRequest(
             type=WebhookType.user_login, payload={"user": auth_data.user.model_dump(mode="json")}
         )
-        background.add_task(webhooks.send, webhook)  # pragma: nocover
+        await webhooks.enqueue(webhook)
     return auth_data.token
 
 

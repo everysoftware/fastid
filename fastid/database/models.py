@@ -6,7 +6,7 @@ from fastid.auth.models import User
 from fastid.database.base import BaseOrm
 from fastid.notify.models import EmailTemplate, Notification, TelegramTemplate
 from fastid.oauth.models import OAuthAccount, OAuthProvider
-from fastid.webhooks.models import Webhook, WebhookEvent
+from fastid.webhooks.models import Webhook, WebhookAttempt, WebhookEvent
 
 configure_mappers()
 
@@ -38,6 +38,7 @@ __all__ = [
     "Transaction",
     "WebhookVersion",
     "Webhook",
+    "WebhookAttempt",
     "WebhookEvent",
     "OAuthAccountVersion",
     "OAuthProviderVersion",

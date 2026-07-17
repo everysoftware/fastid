@@ -13,6 +13,7 @@ from fastid.admin.views.settings import (
     OAuthProviderAdmin,
     TelegramTemplateAdmin,
     WebhookAdmin,
+    WebhookAttemptAdmin,
     WebhookEventAdmin,
 )
 from fastid.admin.views.versioning import (
@@ -56,6 +57,7 @@ class AdminAppFactory(AppFactory):
         admin.add_view(OAuthProviderAdmin)
         admin.add_view(WebhookAdmin)
         admin.add_view(WebhookEventAdmin)
+        admin.add_view(WebhookAttemptAdmin)
         admin.add_view(EmailTemplateAdmin)
         admin.add_view(TelegramTemplateAdmin)
         # Versioning

@@ -2,7 +2,15 @@ from sqladmin.filters import AllUniqueStringValuesFilter, BooleanFilter, Operati
 
 from fastid.admin.views.base import BaseView
 from fastid.admin.views.utils import json_format
-from fastid.database.models import App, EmailTemplate, OAuthProvider, TelegramTemplate, Webhook, WebhookEvent
+from fastid.database.models import (
+    App,
+    EmailTemplate,
+    OAuthProvider,
+    TelegramTemplate,
+    Webhook,
+    WebhookAttempt,
+    WebhookEvent,
+)
 
 
 class AppAdmin(BaseView, model=App):
@@ -99,6 +107,8 @@ class WebhookAdmin(BaseView, model=Webhook):
         Webhook.id,
         Webhook.app,
         Webhook.url,
+        Webhook.is_active,
+        Webhook.disabled_reason,
         Webhook.created_at,
         Webhook.updated_at,
     ]
@@ -106,6 +116,7 @@ class WebhookAdmin(BaseView, model=Webhook):
         OperationColumnFilter(Webhook.app_id),
         AllUniqueStringValuesFilter(Webhook.type),
         OperationColumnFilter(Webhook.url),
+        BooleanFilter(Webhook.is_active),
     ]
 
 
@@ -114,23 +125,50 @@ class WebhookEventAdmin(BaseView, model=WebhookEvent):
     can_edit = False
     can_delete = False
 
-    name = "Webhook Event"
-    name_plural = "Webhook Events"
+    name = "Webhook Delivery"
+    name_plural = "Webhook Deliveries"
     icon = "fa-solid fa-book-atlas"
     category = "Settings"
 
     column_list = [
         WebhookEvent.id,
+        WebhookEvent.event_id,
         WebhookEvent.webhook,
         "webhook.type",
+        WebhookEvent.status,
+        WebhookEvent.attempt_count,
         WebhookEvent.status_code,
-        WebhookEvent.request,
         WebhookEvent.response,
+        WebhookEvent.next_attempt_at,
+        WebhookEvent.completed_at,
         WebhookEvent.created_at,
-        WebhookEvent.updated_at,
     ]
     column_filters = [
         OperationColumnFilter(WebhookEvent.webhook_id),
         OperationColumnFilter(WebhookEvent.status_code),
+        AllUniqueStringValuesFilter(WebhookEvent.status),
     ]
     column_formatters = {WebhookEvent.response: json_format, WebhookEvent.request: json_format}
+
+
+class WebhookAttemptAdmin(BaseView, model=WebhookAttempt):
+    can_create = False
+    can_edit = False
+    can_delete = False
+
+    name = "Webhook Attempt"
+    name_plural = "Webhook Attempts"
+    icon = "fa-solid fa-clock-rotate-left"
+    category = "Settings"
+
+    column_list = [
+        WebhookAttempt.id,
+        WebhookAttempt.delivery,
+        WebhookAttempt.attempt_number,
+        WebhookAttempt.status_code,
+        WebhookAttempt.error,
+        WebhookAttempt.duration_ms,
+        WebhookAttempt.created_at,
+    ]
+    column_filters = [OperationColumnFilter(WebhookAttempt.delivery_id)]
+    column_formatters = {WebhookAttempt.response: json_format, WebhookAttempt.request: json_format}
