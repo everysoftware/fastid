@@ -61,7 +61,7 @@ repos:
         args: [
           '--exclude-files', 'docs',
           '--exclude-files', 'migrations',
-          '--baseline', '.secrets.baseline',
+          '--exclude-files', 'alembic.ini',
         ]
         exclude: package.lock.json
         stages: [ pre-commit, pre-merge-commit, manual ]
