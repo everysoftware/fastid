@@ -16,7 +16,7 @@ from fastid.database.utils import naive_utc
 from fastid.security.webhooks import generate_delivery_headers, get_timestamp, serialize_payload
 from fastid.webhooks.config import webhook_settings
 from fastid.webhooks.metrics import ATTEMPT_DURATION, ATTEMPTS, DISABLED_ENDPOINTS, DUE_DELIVERIES
-from fastid.webhooks.models import Webhook, WebhookAttempt, WebhookDeliveryStatus, WebhookEvent
+from fastid.webhooks.models import Webhook, WebhookAttempt, WebhookDelivery, WebhookDeliveryStatus
 from fastid.webhooks.senders.dependencies import client
 from fastid.webhooks.senders.httpx import WebhookResponse, WebhookSender
 
@@ -74,28 +74,30 @@ class WebhookWorker:
         uow = get_uow_raw()
         async with uow:
             stmt = (
-                select(WebhookEvent)
-                .options(joinedload(WebhookEvent.webhook))
+                select(WebhookDelivery)
+                .options(joinedload(WebhookDelivery.webhook))
                 .where(
-                    WebhookEvent.next_attempt_at <= now,
+                    WebhookDelivery.next_attempt_at <= now,
                     or_(
-                        WebhookEvent.status == WebhookDeliveryStatus.pending,
-                        (WebhookEvent.status == WebhookDeliveryStatus.processing) & (WebhookEvent.leased_until <= now),
+                        WebhookDelivery.status == WebhookDeliveryStatus.pending,
+                        (WebhookDelivery.status == WebhookDeliveryStatus.processing)
+                        & (WebhookDelivery.leased_until <= now),
                     ),
                 )
-                .order_by(WebhookEvent.next_attempt_at, WebhookEvent.created_at)
+                .order_by(WebhookDelivery.next_attempt_at, WebhookDelivery.created_at)
                 .limit(webhook_settings.worker_batch_size)
-                .with_for_update(skip_locked=True, of=WebhookEvent)
+                .with_for_update(skip_locked=True, of=WebhookDelivery)
             )
             rows = list((await uow.session.scalars(stmt)).all())
             due_count = await uow.session.scalar(
                 select(func.count())
-                .select_from(WebhookEvent)
+                .select_from(WebhookDelivery)
                 .where(
-                    WebhookEvent.next_attempt_at <= now,
+                    WebhookDelivery.next_attempt_at <= now,
                     or_(
-                        WebhookEvent.status == WebhookDeliveryStatus.pending,
-                        (WebhookEvent.status == WebhookDeliveryStatus.processing) & (WebhookEvent.leased_until <= now),
+                        WebhookDelivery.status == WebhookDeliveryStatus.pending,
+                        (WebhookDelivery.status == WebhookDeliveryStatus.processing)
+                        & (WebhookDelivery.leased_until <= now),
                     ),
                 )
             )
@@ -151,7 +153,7 @@ class WebhookWorker:
         now = naive_utc()
         uow = get_uow_raw()
         async with uow:
-            delivery = await uow.webhook_events.get(delivery_id)
+            delivery = await uow.webhook_deliveries.get(delivery_id)
             endpoint = await uow.webhooks.get(delivery.webhook_id)
             attempt_number = delivery.attempt_count + 1
             stored_headers = {
@@ -207,7 +209,7 @@ class WebhookWorker:
 
     @staticmethod
     async def _disable(
-        uow: SQLAlchemyUOW, endpoint: Webhook, delivery: WebhookEvent, now: datetime, reason: str
+        uow: SQLAlchemyUOW, endpoint: Webhook, delivery: WebhookDelivery, now: datetime, reason: str
     ) -> None:
         delivery.status = (
             WebhookDeliveryStatus.exhausted if delivery.status_code != HTTP_GONE else WebhookDeliveryStatus.cancelled
@@ -217,11 +219,11 @@ class WebhookWorker:
         endpoint.disabled_at = now
         endpoint.disabled_reason = reason
         await uow.session.execute(
-            update(WebhookEvent)
+            update(WebhookDelivery)
             .where(
-                WebhookEvent.webhook_id == endpoint.id,
-                WebhookEvent.id != delivery.id,
-                WebhookEvent.status.in_((WebhookDeliveryStatus.pending, WebhookDeliveryStatus.processing)),
+                WebhookDelivery.webhook_id == endpoint.id,
+                WebhookDelivery.id != delivery.id,
+                WebhookDelivery.status.in_((WebhookDeliveryStatus.pending, WebhookDeliveryStatus.processing)),
             )
             .values(status=WebhookDeliveryStatus.cancelled, completed_at=now, error="endpoint disabled")
         )

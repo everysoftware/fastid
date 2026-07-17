@@ -6,7 +6,7 @@ from fastid.auth.schemas import TokenResponse, UserDTO
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.webhooks.models import Webhook
-from fastid.webhooks.repositories import WebhookEventWebhookIDSpecification
+from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
 from tests import mocks
 
 
@@ -24,6 +24,6 @@ async def test_update_user_profile(
     assert user.last_name == mocks.USER_UPDATE.last_name
 
     try:
-        await uow.webhook_events.find(WebhookEventWebhookIDSpecification(webhook_profile_update.id))
+        await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_profile_update.id))
     except NoResultFoundError:
-        pytest.fail("No webhook event created")
+        pytest.fail("No webhook delivery created")

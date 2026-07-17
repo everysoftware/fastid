@@ -50,11 +50,11 @@ class Webhook(VersionedEntity):
     disabled_reason: Mapped[str | None]
 
     app: Mapped[App] = relationship(back_populates="webhooks")
-    webhook_events: Mapped[list[WebhookEvent]] = relationship(back_populates="webhook", cascade="delete")
+    deliveries: Mapped[list[WebhookDelivery]] = relationship(back_populates="webhook", cascade="delete")
 
 
-class WebhookEvent(Entity):
-    __tablename__ = "webhook_events"
+class WebhookDelivery(Entity):
+    __tablename__ = "webhook_deliveries"
 
     webhook_id: Mapped[UUID] = mapped_column(ForeignKey("webhooks.id"), index=True)
     event_id: Mapped[UUID] = mapped_column(index=True)
@@ -70,7 +70,7 @@ class WebhookEvent(Entity):
     response: Mapped[dict[str, Any] | None]
     error: Mapped[str | None]
 
-    webhook: Mapped[Webhook] = relationship(back_populates="webhook_events")
+    webhook: Mapped[Webhook] = relationship(back_populates="deliveries")
     attempts: Mapped[list[WebhookAttempt]] = relationship(back_populates="delivery", cascade="delete")
 
 
@@ -78,7 +78,7 @@ class WebhookAttempt(Entity):
     __tablename__ = "webhook_attempts"
     __table_args__ = (UniqueConstraint("delivery_id", "attempt_number"),)
 
-    delivery_id: Mapped[UUID] = mapped_column(ForeignKey("webhook_events.id"), index=True)
+    delivery_id: Mapped[UUID] = mapped_column(ForeignKey("webhook_deliveries.id"), index=True)
     attempt_number: Mapped[int]
     timestamp: Mapped[int]
     request: Mapped[dict[str, Any]]
@@ -87,4 +87,4 @@ class WebhookAttempt(Entity):
     error: Mapped[str | None]
     duration_ms: Mapped[int]
 
-    delivery: Mapped[WebhookEvent] = relationship(back_populates="attempts")
+    delivery: Mapped[WebhookDelivery] = relationship(back_populates="attempts")

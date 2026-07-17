@@ -6,7 +6,7 @@ from fastid.auth.schemas import UserDTO
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.webhooks.models import Webhook
-from fastid.webhooks.repositories import WebhookEventWebhookIDSpecification
+from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
 from tests.mocks import USER_CREATE
 
 
@@ -20,9 +20,9 @@ async def test_register(client: AsyncClient, webhook_registration: Webhook, uow:
     assert user.email == USER_CREATE.email
 
     try:
-        await uow.webhook_events.find(WebhookEventWebhookIDSpecification(webhook_registration.id))
+        await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_registration.id))
     except NoResultFoundError:
-        pytest.fail("No webhook event created")
+        pytest.fail("No webhook delivery created")
 
 
 async def test_register_existent(client: AsyncClient, user: UserDTO) -> None:

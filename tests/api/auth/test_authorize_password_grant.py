@@ -8,7 +8,7 @@ from fastid.core.config import core_settings
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.webhooks.models import Webhook
-from fastid.webhooks.repositories import WebhookEventWebhookIDSpecification
+from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
 from tests import mocks
 from tests.mocks import faker
 from tests.utils.auth import (
@@ -25,9 +25,9 @@ async def test_authorize_password_grant(
     assert token.refresh_token is not None
 
     try:
-        await uow.webhook_events.find(WebhookEventWebhookIDSpecification(webhook_login.id))
+        await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_login.id))
     except NoResultFoundError:
-        pytest.fail("No webhook event created")
+        pytest.fail("No webhook delivery created")
 
 
 async def test_dynamic_server_url_is_used_as_jwt_issuer(

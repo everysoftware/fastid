@@ -9,7 +9,7 @@ from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.security.crypto import generate_otp
 from fastid.webhooks.models import Webhook
-from fastid.webhooks.repositories import WebhookEventWebhookIDSpecification
+from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
 from tests.mocks import faker
 
 
@@ -38,9 +38,9 @@ async def test_update_user_email(  # noqa: PLR0913
     assert user.email == new_email
 
     try:
-        await uow.webhook_events.find(WebhookEventWebhookIDSpecification(webhook_change_email.id))
+        await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_change_email.id))
     except NoResultFoundError:
-        pytest.fail("No webhook event created")
+        pytest.fail("No webhook delivery created")
 
 
 async def test_update_user_email_already_exists(  # noqa: PLR0913

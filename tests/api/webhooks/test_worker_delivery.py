@@ -10,7 +10,7 @@ from fastid.database.uow import SQLAlchemyUOW
 from fastid.database.utils import naive_utc
 from fastid.security.webhooks import verify_standard_headers
 from fastid.webhooks.models import Webhook, WebhookDeliveryStatus
-from fastid.webhooks.repositories import WebhookEventWebhookIDSpecification
+from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
 from fastid.webhooks.senders.httpx import WebhookResponse, WebhookSender
 from fastid.webhooks.worker import WebhookWorker
 from tests.dependencies import get_test_uow
@@ -61,7 +61,7 @@ async def test_worker_records_delivery_outcome(  # noqa: PLR0913
 
     assert await WebhookWorker(sender=sender).run_once() == 1
 
-    delivery = await uow.webhook_events.find(WebhookEventWebhookIDSpecification(webhook_registration.id))
+    delivery = await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_registration.id))
     assert delivery.status == expected_status
     assert delivery.attempt_count == 1
     assert delivery.status_code == status_code
@@ -97,7 +97,7 @@ async def test_worker_recovers_an_expired_lease(
 ) -> None:
     response = await client.post("/register", json=USER_CREATE.model_dump(mode="json"))
     assert response.status_code == status.HTTP_201_CREATED
-    delivery = await uow.webhook_events.find(WebhookEventWebhookIDSpecification(webhook_registration.id))
+    delivery = await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_registration.id))
     delivery.status = WebhookDeliveryStatus.processing
     delivery.leased_until = naive_utc() - timedelta(seconds=1)
     await uow.commit()

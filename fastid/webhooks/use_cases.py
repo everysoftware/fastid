@@ -2,7 +2,7 @@ from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.utils import naive_utc
 from fastid.security.webhooks import get_event_id, get_timestamp, get_webhook_id
-from fastid.webhooks.models import WebhookDeliveryStatus, WebhookEvent
+from fastid.webhooks.models import WebhookDelivery, WebhookDeliveryStatus
 from fastid.webhooks.repositories import WebhookTypeSpecification
 from fastid.webhooks.schemas import Event, SendWebhookRequest, WebhookPayload
 
@@ -19,7 +19,7 @@ class WebhookUseCases(UseCase):
         payload = WebhookPayload(event=event_dto, data=dto.payload).model_dump(mode="json")
         now = naive_utc()
         for webhook in webhook_page.items:
-            delivery = WebhookEvent(
+            delivery = WebhookDelivery(
                 id=get_webhook_id(),
                 webhook_id=webhook.id,
                 event_id=event_id,
@@ -28,7 +28,7 @@ class WebhookUseCases(UseCase):
                 status=WebhookDeliveryStatus.pending,
                 next_attempt_at=now,
             )
-            await self.uow.webhook_events.add(delivery)
+            await self.uow.webhook_deliveries.add(delivery)
 
     async def send(self, dto: SendWebhookRequest) -> None:
         """Backward-compatible alias for enqueueing a durable delivery."""

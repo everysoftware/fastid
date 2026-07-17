@@ -9,7 +9,7 @@ from fastid.database.models import (
     TelegramTemplate,
     Webhook,
     WebhookAttempt,
-    WebhookEvent,
+    WebhookDelivery,
 )
 
 
@@ -120,7 +120,7 @@ class WebhookAdmin(BaseView, model=Webhook):
     ]
 
 
-class WebhookEventAdmin(BaseView, model=WebhookEvent):
+class WebhookDeliveryAdmin(BaseView, model=WebhookDelivery):
     can_create = False
     can_edit = False
     can_delete = False
@@ -131,24 +131,24 @@ class WebhookEventAdmin(BaseView, model=WebhookEvent):
     category = "Settings"
 
     column_list = [
-        WebhookEvent.id,
-        WebhookEvent.event_id,
-        WebhookEvent.webhook,
+        WebhookDelivery.id,
+        WebhookDelivery.event_id,
+        WebhookDelivery.webhook,
         "webhook.type",
-        WebhookEvent.status,
-        WebhookEvent.attempt_count,
-        WebhookEvent.status_code,
-        WebhookEvent.response,
-        WebhookEvent.next_attempt_at,
-        WebhookEvent.completed_at,
-        WebhookEvent.created_at,
+        WebhookDelivery.status,
+        WebhookDelivery.attempt_count,
+        WebhookDelivery.status_code,
+        WebhookDelivery.response,
+        WebhookDelivery.next_attempt_at,
+        WebhookDelivery.completed_at,
+        WebhookDelivery.created_at,
     ]
     column_filters = [
-        OperationColumnFilter(WebhookEvent.webhook_id),
-        OperationColumnFilter(WebhookEvent.status_code),
-        AllUniqueStringValuesFilter(WebhookEvent.status),
+        OperationColumnFilter(WebhookDelivery.webhook_id),
+        OperationColumnFilter(WebhookDelivery.status_code),
+        AllUniqueStringValuesFilter(WebhookDelivery.status),
     ]
-    column_formatters = {WebhookEvent.response: json_format, WebhookEvent.request: json_format}
+    column_formatters = {WebhookDelivery.response: json_format, WebhookDelivery.request: json_format}
 
 
 class WebhookAttemptAdmin(BaseView, model=WebhookAttempt):
