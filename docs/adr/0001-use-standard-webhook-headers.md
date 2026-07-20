@@ -20,7 +20,7 @@ will be removed.
 ## Consequences
 
 - New examples and integrations have one authentication contract.
-- The stable event ID is unambiguously the idempotency key.
+- The stable Webhook ID is unambiguously the consumer idempotency key.
 - Verification authenticates the exact transmitted body.
 - Existing consumers of `X-Webhook-*` must migrate to Standard Webhooks headers.
 - Supporting a future signing change will require a new version in `webhook-signature`, not a second header family.

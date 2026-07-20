@@ -17,8 +17,9 @@ The quick-start application is the shortest safe receiver. It requires `FASTID_W
 exact raw body, validates the three Standard Webhooks headers and timestamp, parses JSON only after authentication,
 logs the generic event, and returns `204 No Content`.
 
-It demonstrates authentication but not idempotency. A comment warns that production consumers must atomically record
-`webhook-id` before applying non-idempotent side effects.
+It demonstrates authentication but not replay protection or idempotency. It reads `webhook-id` and
+`webhook-timestamp` only because they are signature inputs, without checking timestamp freshness or interpreting the
+Webhook ID. A comment directs production consumers to the advanced examples before applying side effects.
 
 ### `examples/webhook_advanced.py`
 
@@ -33,7 +34,7 @@ setup into this example.
 ### `examples/webhook_sqlalchemy.py`
 
 The SQLAlchemy application is a standalone alternative to the advanced example. It implements an equivalent claim,
-complete, and release lifecycle with a table whose event ID is unique. A duplicate insert is the atomic concurrency
+complete, and release lifecycle with a table whose Webhook ID is unique. A duplicate insert is the atomic concurrency
 boundary.
 
 `WEBHOOK_DATABASE_URL` configures the database and defaults to a local SQLite file so the example is runnable without
@@ -59,7 +60,7 @@ The SQLAlchemy application additionally accepts `WEBHOOK_DATABASE_URL`, defaulti
 
 Each receiver reads:
 
-- `webhook-id` as the stable event and idempotency identifier;
+- `webhook-id` as the stable Webhook ID and idempotency identifier;
 - `webhook-timestamp` as an integer Unix timestamp;
 - `webhook-signature` as one or more space-separated versioned signatures.
 
@@ -68,13 +69,14 @@ The expected `v1` signature is base64-encoded HMAC-SHA256 over the exact byte se
 parsed or re-serialized before verification.
 
 Unknown signature versions are ignored so a future FastID rotation can send old and new signatures together. A request
-is authenticated when any supplied `v1` signature matches.
+is authenticated when any supplied `v1` signature matches. The quick-start stops at this authentication check. The
+advanced examples additionally parse the timestamp as an integer and reject messages outside the tolerance.
 
 ## Payload model
 
 The examples are event-type agnostic. After signature verification, they require a JSON object with:
 
-- `event.event_id`: a UUID string equal to `webhook-id`;
+- `event.event_id`: the logical domain event UUID, independent of `webhook-id`;
 - `event.event_type`: a non-empty string;
 - `event.timestamp`: an integer;
 - `data`: a JSON object.
@@ -90,11 +92,10 @@ envelope before claiming the event.
 2. Read the raw body and reject an actual body greater than 1 MiB.
 3. Validate required headers, integer timestamp, timestamp tolerance, secret encoding, and HMAC.
 4. Parse and validate the generic JSON envelope.
-5. Require `event.event_id` to equal `webhook-id`.
-6. Atomically claim the event ID.
-7. If already claimed or completed, return `204` without processing it again.
-8. Log receipt and mark the claim complete.
-9. If processing raises, release the claim and return `500` so FastID retries.
+5. Atomically claim the Webhook ID from `webhook-id`.
+6. If already claimed or completed, return `204` without processing it again.
+7. Log receipt and mark the claim complete.
+8. If processing raises, release the claim and return `500` so FastID retries.
 
 The claim lifecycle prevents simultaneous duplicate processing in the demonstrated execution model. It does not promise
 exactly-once side effects across a crash between the side effect and completion; production applications must make the
@@ -102,8 +103,8 @@ business change idempotent or commit an inbox record and business state in one t
 
 ## Error responses
 
-- `400 Bad Request`: missing or malformed webhook headers, stale timestamp, malformed JSON, invalid event envelope, or
-  header/payload event-ID mismatch;
+- `400 Bad Request`: missing or malformed webhook headers, stale timestamp in advanced examples, malformed JSON, or an
+  invalid event envelope;
 - `401 Unauthorized`: a well-formed request with no matching signature;
 - `413 Content Too Large`: declared or actual body exceeds 1 MiB;
 - `500 Internal Server Error`: processing or idempotency storage fails, allowing FastID to retry;
@@ -124,7 +125,6 @@ Coverage includes:
 - missing, malformed, and non-matching signatures;
 - stale timestamps;
 - malformed JSON and invalid envelope fields;
-- header/payload event-ID mismatch;
 - declared and actual oversized bodies in advanced applications;
 - repeated delivery acknowledgement without repeated processing;
 - concurrent claims against the in-memory adapter;

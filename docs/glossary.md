@@ -6,14 +6,14 @@
 : One HTTP request made for a webhook event. Retries are separate attempts with a new timestamp and signature.
 
 **Claim**
-: An atomic operation that reserves an event ID for processing. Only the request that creates the claim may apply the
+: An atomic operation that reserves a Webhook ID for processing. Only the request that creates the claim may apply the
 event's side effects.
 
 **Complete**
 : Mark a claimed event as successfully processed so later deliveries are acknowledged without repeating work.
 
 **Duplicate delivery**
-: A delivery whose event ID has already been claimed or completed. Consumers acknowledge it without applying the event
+: A delivery whose Webhook ID has already been claimed or completed. Consumers acknowledge it without applying the event
 again.
 
 **Endpoint**
@@ -23,15 +23,24 @@ again.
 : A logical user-lifecycle occurrence emitted by FastID. One event can have multiple delivery attempts.
 
 **Event ID**
-: The stable UUID sent in `webhook-id` and in `event.event_id`. Consumers use it as the idempotency key.
+: The logical domain event UUID sent in `event.event_id`. One event can create separate messages for multiple webhook
+endpoints.
 
 **Idempotency key**
 : A stable identifier atomically recorded by a consumer to prevent repeated side effects when an event is delivered
 more than once.
 
 **Idempotency store**
-: A component that atomically claims event IDs and records their processing state. A production implementation must be
+: A component that atomically claims Webhook IDs and records their processing state. A production implementation must be
 shared by all receiver processes and survive restarts.
+
+**Webhook Endpoint**
+: A configured webhook destination containing its URL, secret, event type, and activation state. FastID represents it
+as `WebhookEndpoint`; a delivery refers to it through `endpoint_id`.
+
+**Webhook ID**
+: The delivery identifier sent in `webhook-id`. It is stable across retries of that delivery and is the consumer's
+idempotency key. FastID stores it as `WebhookDelivery.id`.
 
 **Release**
 : Remove or expire an incomplete claim after processing fails, allowing a later FastID retry to claim the event again.

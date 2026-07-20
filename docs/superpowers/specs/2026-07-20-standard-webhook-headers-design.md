@@ -7,9 +7,10 @@ FastID currently sends two independent webhook authentication protocols on every
 - legacy configurable `X-Webhook-*` headers, whose signature covers a re-serialized JSON payload;
 - fixed Standard Webhooks headers, whose signature covers the exact raw request body.
 
-The legacy `X-Webhook-Id` identifies a delivery, while the standard `webhook-id` identifies the logical event and remains
-stable across retries. Keeping both protocols makes the consumer contract ambiguous and complicates the webhook
-examples.
+Both the legacy `X-Webhook-Id` and standard `webhook-id` identify one endpoint delivery and remain stable across its
+retries. The payload's `event.event_id` separately identifies the logical domain event, which can produce deliveries to
+multiple endpoints. Keeping both authentication protocols makes the consumer contract ambiguous and complicates the
+webhook examples.
 
 The repository has no production caller of the legacy signing or verification functions. The legacy protocol remains
 only in the delivery-header composition, configuration, tests, and a compatibility note in the webhook tutorial. There
@@ -19,7 +20,7 @@ are no tagged releases establishing a published compatibility requirement.
 
 FastID will expose only the Standard Webhooks header family:
 
-- `webhook-id`: stable logical event ID;
+- `webhook-id`: stable Webhook ID, represented by `WebhookDelivery.id`;
 - `webhook-timestamp`: Unix timestamp for the delivery attempt;
 - `webhook-signature`: one or more space-separated `v1,<base64 HMAC-SHA256>` signatures.
 
@@ -29,7 +30,7 @@ The signed content remains the exact byte sequence
 ## Code changes
 
 `generate_delivery_headers()` will directly construct the standard headers plus `Content-Type` and `User-Agent`. It
-will no longer accept or use a separately generated delivery ID for authentication.
+will sign `WebhookDelivery.id` as the Webhook ID.
 
 The following legacy API will be removed:
 
@@ -47,8 +48,9 @@ internal identifier and is not sent as an authentication header.
 
 ## Request flow
 
-For each delivery attempt, the worker serializes the payload once, generates a timestamp, and signs the stable event ID,
-timestamp, and exact serialized bytes. The sender transmits those same bytes and the generated standard headers.
+For each delivery attempt, the worker serializes the payload once, generates a timestamp, and signs the stable Webhook
+ID, timestamp, and exact serialized bytes. The sender transmits those same bytes and the generated standard
+headers. The payload retains its separate logical event ID.
 
 Consumers read the raw body, validate timestamp freshness, calculate the expected HMAC over the raw bytes, compare the
 signature in constant time, and only then parse JSON. Consumers use `webhook-id` as the idempotency key.

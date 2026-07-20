@@ -14,8 +14,8 @@ code would reduce duplication but make each example harder to copy into another 
 FastID will provide three standalone FastAPI receiver applications:
 
 - a quick-start authentication example;
-- an advanced in-memory idempotency reference;
-- an advanced SQLAlchemy idempotency reference.
+- an advanced in-memory Webhook-ID idempotency reference;
+- an advanced SQLAlchemy Webhook-ID idempotency reference.
 
 Each application will independently implement Standard Webhooks verification using Python's standard library. Advanced
 examples will share the same conceptual claim, complete, and release lifecycle but will not import each other.
