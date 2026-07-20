@@ -35,11 +35,11 @@ class WebhookEnvelope(BaseModel):
 
 
 class IdempotencyStore(Protocol):
-    async def claim(self, event_id: str) -> bool: ...
+    async def claim(self, webhook_id: str) -> bool: ...
 
-    async def complete(self, event_id: str) -> None: ...
+    async def complete(self, webhook_id: str) -> None: ...
 
-    async def release(self, event_id: str) -> None: ...
+    async def release(self, webhook_id: str) -> None: ...
 
 
 class InMemoryIdempotencyStore:
@@ -49,22 +49,22 @@ class InMemoryIdempotencyStore:
         self._claims: dict[str, ClaimStatus] = {}
         self._lock = asyncio.Lock()
 
-    async def claim(self, event_id: str) -> bool:
+    async def claim(self, webhook_id: str) -> bool:
         async with self._lock:
-            if event_id in self._claims:
+            if webhook_id in self._claims:
                 return False
-            self._claims[event_id] = "processing"
+            self._claims[webhook_id] = "processing"
             return True
 
-    async def complete(self, event_id: str) -> None:
+    async def complete(self, webhook_id: str) -> None:
         async with self._lock:
-            if event_id in self._claims:
-                self._claims[event_id] = "completed"
+            if webhook_id in self._claims:
+                self._claims[webhook_id] = "completed"
 
-    async def release(self, event_id: str) -> None:
+    async def release(self, webhook_id: str) -> None:
         async with self._lock:
-            if self._claims.get(event_id) == "processing":
-                del self._claims[event_id]
+            if self._claims.get(webhook_id) == "processing":
+                del self._claims[webhook_id]
 
 
 def _secret_bytes(secret: str) -> bytes:
@@ -113,7 +113,7 @@ async def process_event(event: WebhookEnvelope) -> None:
     )
 
 
-async def _validated_event(request: Request) -> WebhookEnvelope:
+async def _validated_event(request: Request) -> tuple[WebhookEnvelope, str]:
     declared_length = _content_length(request)
     if declared_length is not None and declared_length > MAX_BODY_BYTES:
         raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Webhook body is too large")
@@ -137,9 +137,7 @@ async def _validated_event(request: Request) -> WebhookEnvelope:
         event = WebhookEnvelope.model_validate_json(body)
     except ValidationError as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid webhook payload") from exc
-    if str(event.event.event_id) != webhook_id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "webhook-id does not match event.event_id")
-    return event
+    return event, webhook_id
 
 
 async def _receive_webhook(
@@ -147,25 +145,24 @@ async def _receive_webhook(
     idempotency_store: IdempotencyStore,
     processor: EventProcessor,
 ) -> Response:
-    event = await _validated_event(request)
-    event_id = str(event.event.event_id)
+    event, webhook_id = await _validated_event(request)
     try:
-        claimed = await idempotency_store.claim(event_id)
+        claimed = await idempotency_store.claim(webhook_id)
     except Exception as exc:
-        log.exception("Could not claim FastID webhook event_id=%s", event_id)
+        log.exception("Could not claim FastID webhook: webhook_id=%s", webhook_id)
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Webhook processing failed") from exc
     if not claimed:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     try:
         await processor(event)
-        await idempotency_store.complete(event_id)
+        await idempotency_store.complete(webhook_id)
     except Exception as exc:
-        log.exception("FastID webhook processing failed: event_id=%s", event_id)
+        log.exception("FastID webhook processing failed: webhook_id=%s", webhook_id)
         try:
-            await idempotency_store.release(event_id)
+            await idempotency_store.release(webhook_id)
         except Exception:
-            log.exception("Could not release FastID webhook claim: event_id=%s", event_id)
+            log.exception("Could not release FastID webhook claim: webhook_id=%s", webhook_id)
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Webhook processing failed") from exc
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

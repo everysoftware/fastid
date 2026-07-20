@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import pytest
 from fastapi.testclient import TestClient
@@ -42,14 +43,16 @@ def test_duplicate_is_acknowledged_once(monkeypatch: pytest.MonkeyPatch) -> None
     async def record(event: WebhookEnvelope) -> None:
         processed.append(str(event.event.event_id))
 
-    body, headers = signed_request(payload())
+    value = payload()
+    body, headers = signed_request(value)
     with TestClient(create_app(processor=record)) as client:
         first = client.post("/fastid-webhooks", content=body, headers=headers)
         duplicate = client.post("/fastid-webhooks", content=body, headers=headers)
 
     assert first.status_code == status.HTTP_204_NO_CONTENT
     assert duplicate.status_code == status.HTTP_204_NO_CONTENT
-    assert processed == [headers["webhook-id"]]
+    assert processed == [value["event"]["event_id"]]
+    assert headers["webhook-id"] != value["event"]["event_id"]
 
 
 def test_rejects_declared_oversized_body(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -86,11 +89,11 @@ def test_rejects_invalid_envelope(monkeypatch: pytest.MonkeyPatch) -> None:
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_rejects_header_payload_id_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_rejects_stale_timestamp(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FASTID_WEBHOOK_SECRET", SECRET)
     value = payload()
     body, _ = signed_request(value)
-    headers = headers_for(body, "00000000-0000-0000-0000-000000000000")
+    headers = headers_for(body, "webhook-1", timestamp=int(time.time()) - 301)
 
     with TestClient(create_app()) as client:
         response = client.post("/fastid-webhooks", content=body, headers=headers)
