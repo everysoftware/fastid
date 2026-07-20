@@ -1,0 +1,138 @@
+# Webhook Receiver Examples Design
+
+## Context
+
+FastID now sends only Standard Webhooks authentication headers. The tutorial contains a short receiver fragment, but
+`examples/` does not contain a complete webhook consumer that users can run or copy. A single example cannot remain
+brief enough for a quick start while also teaching replay protection, concurrency, and durable idempotency.
+
+FastID will provide three standalone FastAPI applications. Each file intentionally repeats signature verification so a
+reader can copy it without importing another example or installing FastID as a library.
+
+## Files and audiences
+
+### `examples/webhook_quickstart.py`
+
+The quick-start application is the shortest safe receiver. It requires `FASTID_WEBHOOK_SECRET` at startup, reads the
+exact raw body, validates the three Standard Webhooks headers and timestamp, parses JSON only after authentication,
+logs the generic event, and returns `204 No Content`.
+
+It demonstrates authentication but not idempotency. A comment warns that production consumers must atomically record
+`webhook-id` before applying non-idempotent side effects.
+
+### `examples/webhook_advanced.py`
+
+The advanced application adds request-size enforcement, structural payload validation, header/payload event-ID
+matching, explicit error responses, and an asynchronous idempotency-store protocol. Its in-memory adapter uses an
+`asyncio.Lock` so concurrent requests in one process cannot claim the same event twice.
+
+The adapter is intentionally labeled as a reference implementation: it is not shared across processes and loses state
+on restart. The protocol boundary shows where a production consumer supplies durable storage without mixing database
+setup into this example.
+
+### `examples/webhook_sqlalchemy.py`
+
+The SQLAlchemy application is a standalone alternative to the advanced example. It implements an equivalent claim,
+complete, and release lifecycle with a table whose event ID is unique. A duplicate insert is the atomic concurrency
+boundary.
+
+`WEBHOOK_DATABASE_URL` configures the database and defaults to a local SQLite file so the example is runnable without
+external infrastructure. Synchronous SQLAlchemy work runs in a worker thread so the asynchronous FastAPI endpoint does
+not block the event loop. SQLite connections disable the same-thread check; other database URLs use their normal
+driver settings.
+
+## Configuration
+
+All three applications require a non-empty `FASTID_WEBHOOK_SECRET`. Startup fails with a clear message if it is absent.
+Secrets beginning with `whsec_` contain base64-encoded key bytes. Plain-text secrets remain accepted for compatibility
+with existing endpoints.
+
+The advanced and SQLAlchemy applications use these fixed reference limits:
+
+- maximum request body: 1 MiB;
+- timestamp tolerance: 300 seconds.
+
+The SQLAlchemy application additionally accepts `WEBHOOK_DATABASE_URL`, defaulting to
+`sqlite:///webhook-events.sqlite3`.
+
+## Authentication
+
+Each receiver reads:
+
+- `webhook-id` as the stable event and idempotency identifier;
+- `webhook-timestamp` as an integer Unix timestamp;
+- `webhook-signature` as one or more space-separated versioned signatures.
+
+The expected `v1` signature is base64-encoded HMAC-SHA256 over the exact byte sequence
+`webhook-id.webhook-timestamp.raw_body`. Verification compares signatures with `hmac.compare_digest`. The body is not
+parsed or re-serialized before verification.
+
+Unknown signature versions are ignored so a future FastID rotation can send old and new signatures together. A request
+is authenticated when any supplied `v1` signature matches.
+
+## Payload model
+
+The examples are event-type agnostic. After signature verification, they require a JSON object with:
+
+- `event.event_id`: a UUID string equal to `webhook-id`;
+- `event.event_type`: a non-empty string;
+- `event.timestamp`: an integer;
+- `data`: a JSON object.
+
+They log the event ID and event type but do not dispatch business-specific handlers.
+
+The quick-start keeps payload checks minimal to stay concise. The advanced examples validate the complete generic
+envelope before claiming the event.
+
+## Advanced request flow
+
+1. Reject a declared `Content-Length` greater than 1 MiB.
+2. Read the raw body and reject an actual body greater than 1 MiB.
+3. Validate required headers, integer timestamp, timestamp tolerance, secret encoding, and HMAC.
+4. Parse and validate the generic JSON envelope.
+5. Require `event.event_id` to equal `webhook-id`.
+6. Atomically claim the event ID.
+7. If already claimed or completed, return `204` without processing it again.
+8. Log receipt and mark the claim complete.
+9. If processing raises, release the claim and return `500` so FastID retries.
+
+The claim lifecycle prevents simultaneous duplicate processing in the demonstrated execution model. It does not promise
+exactly-once side effects across a crash between the side effect and completion; production applications must make the
+business change idempotent or commit an inbox record and business state in one transaction.
+
+## Error responses
+
+- `400 Bad Request`: missing or malformed webhook headers, stale timestamp, malformed JSON, invalid event envelope, or
+  header/payload event-ID mismatch;
+- `401 Unauthorized`: a well-formed request with no matching signature;
+- `413 Content Too Large`: declared or actual body exceeds 1 MiB;
+- `500 Internal Server Error`: processing or idempotency storage fails, allowing FastID to retry;
+- `204 No Content`: a new event was accepted or a duplicate was already claimed.
+
+Error bodies use FastAPI's normal JSON `detail` shape. Error messages do not include secrets, signatures, or raw body
+contents.
+
+## Testing
+
+Tests import each standalone application with controlled environment variables and exercise it through FastAPI's test
+client. Shared test-only helpers generate valid Standard Webhooks signatures; examples do not import those helpers.
+
+Coverage includes:
+
+- valid request acceptance for all three applications;
+- exact-body signature tampering;
+- missing, malformed, and non-matching signatures;
+- stale timestamps;
+- malformed JSON and invalid envelope fields;
+- header/payload event-ID mismatch;
+- declared and actual oversized bodies in advanced applications;
+- repeated delivery acknowledgement without repeated processing;
+- concurrent claims against the in-memory adapter;
+- SQLAlchemy duplicate claims and persistence across store instances.
+
+Ruff, mypy, focused example tests, and the complete project suite must pass.
+
+## Documentation
+
+The webhook tutorial will link to the quick-start, advanced, and SQLAlchemy files and describe their intended audiences.
+The examples remain source files rather than embedded copies so documentation cannot drift from runnable code.

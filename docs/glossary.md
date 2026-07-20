@@ -5,6 +5,17 @@
 **Delivery attempt**
 : One HTTP request made for a webhook event. Retries are separate attempts with a new timestamp and signature.
 
+**Claim**
+: An atomic operation that reserves an event ID for processing. Only the request that creates the claim may apply the
+event's side effects.
+
+**Complete**
+: Mark a claimed event as successfully processed so later deliveries are acknowledged without repeating work.
+
+**Duplicate delivery**
+: A delivery whose event ID has already been claimed or completed. Consumers acknowledge it without applying the event
+again.
+
 **Endpoint**
 : A consumer-owned URL registered to receive one FastID webhook event type.
 
@@ -17,6 +28,13 @@
 **Idempotency key**
 : A stable identifier atomically recorded by a consumer to prevent repeated side effects when an event is delivered
 more than once.
+
+**Idempotency store**
+: A component that atomically claims event IDs and records their processing state. A production implementation must be
+shared by all receiver processes and survive restarts.
+
+**Release**
+: Remove or expire an incomplete claim after processing fails, allowing a later FastID retry to claim the event again.
 
 **Raw body**
 : The exact request bytes received before JSON parsing or re-serialization. These bytes are part of the signed content.
