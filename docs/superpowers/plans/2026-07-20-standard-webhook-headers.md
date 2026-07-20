@@ -4,13 +4,13 @@
 
 **Goal:** Remove FastID's legacy `X-Webhook-*` authentication protocol so every delivery uses only Standard Webhooks headers.
 
-**Architecture:** Keep one signing path in `fastid.security.webhooks`: serialize the payload once, sign the exact bytes with the stable event ID, and send only the three standard authentication headers. Remove the legacy configurable protocol from settings and schemas, then update the worker and tutorial to the smaller contract.
+**Architecture:** Keep one signing path in `fastid.security.webhooks`: serialize the payload once, sign the exact bytes with the stable Webhook ID, and send only the three standard authentication headers. Remove the legacy configurable protocol from settings and schemas, then update the worker and tutorial to the smaller contract.
 
 **Tech Stack:** Python 3.12, FastAPI, Pydantic Settings, pytest, Ruff, mypy
 
 ## Global Constraints
 
-- Preserve `webhook-id` as the stable logical event ID and consumer idempotency key.
+- Preserve `webhook-id` as the stable Webhook ID and consumer idempotency key.
 - Sign the exact bytes `webhook-id.webhook-timestamp.raw_body` with HMAC-SHA256.
 - Keep the `v1,<base64>` signature representation and `whsec_<base64>` secrets.
 - Do not change payload fields, retry behavior, persisted deliveries, or endpoint secret generation.
@@ -22,7 +22,7 @@
 - `fastid/security/webhooks.py`: the sole standard signing and verification implementation.
 - `fastid/webhooks/config.py`: delivery policy settings; no consumer-controlled authentication protocol settings.
 - `fastid/webhooks/schemas.py`: webhook payload schemas; no obsolete signing algorithm enum.
-- `fastid/webhooks/worker.py`: signs a claimed delivery with its stable event ID and exact body.
+- `fastid/webhooks/worker.py`: signs a claimed delivery with its stable Webhook ID and exact body.
 - `tests/security/test_webhooks.py`: standard header generation and verification behavior.
 - `tests/mocks.py`: shared webhook payload, timestamp, and event ID fixtures only.
 - `tests/api/webhooks/test_worker_delivery.py`: existing end-to-end worker/header contract test.
@@ -38,7 +38,7 @@
 - Modify: `fastid/security/webhooks.py`
 
 **Interfaces:**
-- Produces: `generate_delivery_headers(body: bytes, event_id: str, timestamp: int, secret_key: str) -> dict[str, str]`
+- Produces: `generate_delivery_headers(body: bytes, webhook_id: str, timestamp: int, secret_key: str) -> dict[str, str]`
 - Preserves: `verify_standard_headers(body: bytes, headers: Mapping[str, str], secret_key: str, tolerance_seconds: int = 300) -> bool`
 - Preserves: `serialize_payload(payload: dict[str, Any]) -> bytes`
 
@@ -176,11 +176,11 @@ def generate_standard_signature(body: bytes, webhook_id: str, timestamp: int, se
     return f"v1,{base64.b64encode(digest).decode()}"
 
 
-def generate_delivery_headers(body: bytes, event_id: str, timestamp: int, secret_key: str) -> dict[str, str]:
+def generate_delivery_headers(body: bytes, webhook_id: str, timestamp: int, secret_key: str) -> dict[str, str]:
     return {
-        STANDARD_ID_HEADER: event_id,
+        STANDARD_ID_HEADER: webhook_id,
         STANDARD_TIMESTAMP_HEADER: str(timestamp),
-        STANDARD_SIGNATURE_HEADER: generate_standard_signature(body, event_id, timestamp, secret_key),
+        STANDARD_SIGNATURE_HEADER: generate_standard_signature(body, webhook_id, timestamp, secret_key),
         "Content-Type": "application/json",
         "User-Agent": webhook_settings.user_agent,
     }
@@ -336,7 +336,7 @@ Expected: commit succeeds without staging `docker/Dockerfile`.
 - Modify: `docs/docs/tutorial/webhooks.md:7-18`
 
 **Interfaces:**
-- Consumes: `generate_delivery_headers(body: bytes, event_id: str, timestamp: int, secret_key: str)` from Task 1.
+- Consumes: `generate_delivery_headers(body: bytes, webhook_id: str, timestamp: int, secret_key: str)` from Task 1.
 - Preserves: worker delivery requests contain a valid signature for the exact body and endpoint secret.
 
 - [ ] **Step 1: Run the existing worker contract test against the narrowed function**
@@ -349,14 +349,14 @@ rtk pytest tests/api/webhooks/test_worker_delivery.py::test_worker_records_deliv
 
 Expected: FAIL with a `TypeError` because the worker still passes the payload and internal delivery ID.
 
-- [ ] **Step 2: Update the worker to sign only the stable event ID and raw body**
+- [ ] **Step 2: Update the worker to sign only the stable Webhook ID and raw body**
 
 Replace the header-generation block in `WebhookWorker._process()` with:
 
 ```python
         headers = generate_delivery_headers(
             body,
-            str(delivery.event_id),
+            str(delivery.id),
             timestamp,
             delivery.endpoint_secret,
         )
@@ -383,7 +383,7 @@ Replace the opening of the request-format section in `docs/docs/tutorial/webhook
 
 Each request is a JSON `POST` with Standard Webhooks headers:
 
-- `webhook-id`: logical event UUID, unchanged for retries.
+- `webhook-id`: Webhook ID, unchanged for retries of the same delivery.
 - `webhook-timestamp`: Unix timestamp for the delivery attempt.
 - `webhook-signature`: `v1,<base64 HMAC-SHA256>` signature.
 ```

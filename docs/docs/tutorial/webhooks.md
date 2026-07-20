@@ -1,14 +1,14 @@
 # Webhooks
 
 FastID sends user lifecycle events to every active endpoint subscribed to the event type. Delivery is asynchronous,
-durable, and at least once: consumers must treat `webhook-id` as an idempotency key because a request can be repeated
+durable, and at least once: consumers must treat `webhook-id` as an idempotency key because a delivery can be repeated
 after a timeout or worker crash. Delivery order is not guaranteed.
 
 ## Request format
 
 Each request is a JSON `POST` with Standard Webhooks headers:
 
-- `webhook-id`: logical event UUID, unchanged for retries.
+- `webhook-id`: Webhook ID, unchanged for retries of the same delivery.
 - `webhook-timestamp`: Unix timestamp for the delivery attempt.
 - `webhook-signature`: `v1,<base64 HMAC-SHA256>` signature.
 
@@ -29,11 +29,11 @@ async def receive(request: Request) -> dict[str, bool]:
     if not verify_standard_headers(body, request.headers, "whsec_..."):
         return {"accepted": False}
     event = await request.json()
-    # Atomically record event["event"]["event_id"] before applying side effects.
+    # Atomically record request.headers["webhook-id"] before applying side effects.
     return {"accepted": True}
 ```
 
-The payload remains backward compatible:
+The payload contains a separate logical event ID that can be shared by deliveries to multiple endpoints:
 
 ```json
 {
@@ -53,6 +53,20 @@ The payload remains backward compatible:
 
 User events that historically exposed user fields directly in `data` continue to include those fields during the
 compatibility period; use `data.user` in new consumers.
+
+## Receiver examples
+
+Runnable receivers are available for different integration stages:
+
+- [`webhook_quickstart.py`](../../../examples/webhook_quickstart.py) verifies a signature and logs the event. It does
+  not check timestamp freshness or provide replay protection and idempotency.
+- [`webhook_advanced.py`](../../../examples/webhook_advanced.py) adds freshness checks, validation, request limits, and
+  an in-memory Webhook-ID idempotency boundary.
+- [`webhook_sqlalchemy.py`](../../../examples/webhook_sqlalchemy.py) persists atomic Webhook-ID claims with async
+  SQLAlchemy. Install its SQLite driver with `poetry install --with examples`.
+
+The in-memory example is a concurrency reference, not durable storage. Use the SQLAlchemy example or another shared
+persistent idempotency store before applying non-idempotent production side effects.
 
 ## Delivery behavior
 
