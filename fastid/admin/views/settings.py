@@ -7,9 +7,9 @@ from fastid.database.models import (
     EmailTemplate,
     OAuthProvider,
     TelegramTemplate,
-    Webhook,
     WebhookAttempt,
     WebhookDelivery,
+    WebhookEndpoint,
 )
 
 
@@ -97,26 +97,26 @@ class TelegramTemplateAdmin(BaseView, model=TelegramTemplate):
     ]
 
 
-class WebhookAdmin(BaseView, model=Webhook):
-    name = "Webhook"
-    name_plural = "Webhooks"
+class WebhookEndpointAdmin(BaseView, model=WebhookEndpoint):
+    name = "Webhook Endpoint"
+    name_plural = "Webhook Endpoints"
     icon = "fa-solid fa-globe"
     category = "Settings"
 
     column_list = [
-        Webhook.id,
-        Webhook.app,
-        Webhook.url,
-        Webhook.is_active,
-        Webhook.disabled_reason,
-        Webhook.created_at,
-        Webhook.updated_at,
+        WebhookEndpoint.id,
+        WebhookEndpoint.app,
+        WebhookEndpoint.url,
+        WebhookEndpoint.is_active,
+        WebhookEndpoint.disabled_reason,
+        WebhookEndpoint.created_at,
+        WebhookEndpoint.updated_at,
     ]
     column_filters = [
-        OperationColumnFilter(Webhook.app_id),
-        AllUniqueStringValuesFilter(Webhook.type),
-        OperationColumnFilter(Webhook.url),
-        BooleanFilter(Webhook.is_active),
+        OperationColumnFilter(WebhookEndpoint.app_id),
+        AllUniqueStringValuesFilter(WebhookEndpoint.type),
+        OperationColumnFilter(WebhookEndpoint.url),
+        BooleanFilter(WebhookEndpoint.is_active),
     ]
 
 
@@ -133,8 +133,8 @@ class WebhookDeliveryAdmin(BaseView, model=WebhookDelivery):
     column_list = [
         WebhookDelivery.id,
         WebhookDelivery.event_id,
-        WebhookDelivery.webhook,
-        "webhook.type",
+        WebhookDelivery.endpoint,
+        "endpoint.type",
         WebhookDelivery.status,
         WebhookDelivery.attempt_count,
         WebhookDelivery.status_code,
@@ -144,7 +144,7 @@ class WebhookDeliveryAdmin(BaseView, model=WebhookDelivery):
         WebhookDelivery.created_at,
     ]
     column_filters = [
-        OperationColumnFilter(WebhookDelivery.webhook_id),
+        OperationColumnFilter(WebhookDelivery.endpoint_id),
         OperationColumnFilter(WebhookDelivery.status_code),
         AllUniqueStringValuesFilter(WebhookDelivery.status),
     ]

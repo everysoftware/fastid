@@ -4,7 +4,7 @@ from fastid.apps.models import App
 from fastid.auth.models import User
 from fastid.notify.models import EmailTemplate, TelegramTemplate
 from fastid.oauth.models import OAuthAccount, OAuthProvider
-from fastid.webhooks.models import Webhook
+from fastid.webhooks.models import WebhookEndpoint
 
 Transaction = transaction_class(User)
 
@@ -14,4 +14,4 @@ AppVersion = version_class(App)
 OAuthProviderVersion = version_class(OAuthProvider)
 EmailTemplateVersion = version_class(EmailTemplate)
 TelegramTemplateVersion = version_class(TelegramTemplate)
-WebhookVersion = version_class(Webhook)
+WebhookEndpointVersion = version_class(WebhookEndpoint)

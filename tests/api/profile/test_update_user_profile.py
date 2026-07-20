@@ -5,13 +5,17 @@ from starlette import status
 from fastid.auth.schemas import TokenResponse, UserDTO
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
-from fastid.webhooks.models import Webhook
-from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
+from fastid.webhooks.models import WebhookEndpoint
+from fastid.webhooks.repositories import WebhookDeliveryEndpointIDSpecification
 from tests import mocks
 
 
 async def test_update_user_profile(
-    client: AsyncClient, user: UserDTO, user_token: TokenResponse, webhook_profile_update: Webhook, uow: SQLAlchemyUOW
+    client: AsyncClient,
+    user: UserDTO,
+    user_token: TokenResponse,
+    webhook_profile_update: WebhookEndpoint,
+    uow: SQLAlchemyUOW,
 ) -> None:
     response = await client.patch(
         "/users/me/profile",
@@ -24,6 +28,6 @@ async def test_update_user_profile(
     assert user.last_name == mocks.USER_UPDATE.last_name
 
     try:
-        await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_profile_update.id))
+        await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(webhook_profile_update.id))
     except NoResultFoundError:
         pytest.fail("No webhook delivery created")

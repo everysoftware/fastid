@@ -10,7 +10,7 @@ from fastid.database.versioning import (
     TelegramTemplateVersion,
     Transaction,
     UserVersion,
-    WebhookVersion,
+    WebhookEndpointVersion,
 )
 
 
@@ -93,6 +93,6 @@ class TelegramTemplateVersionAdmin(BaseVersionView, model=TelegramTemplateVersio
     name_plural = "Telegram Template Versions"
 
 
-class WebhookVersionAdmin(BaseVersionView, model=WebhookVersion):
-    name = "Webhook Version"
-    name_plural = "Webhook Versions"
+class WebhookEndpointVersionAdmin(BaseVersionView, model=WebhookEndpointVersion):
+    name = "Webhook Endpoint Version"
+    name_plural = "Webhook Endpoint Versions"

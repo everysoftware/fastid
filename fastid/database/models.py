@@ -6,7 +6,7 @@ from fastid.auth.models import User
 from fastid.database.base import BaseOrm
 from fastid.notify.models import EmailTemplate, Notification, TelegramTemplate
 from fastid.oauth.models import OAuthAccount, OAuthProvider
-from fastid.webhooks.models import Webhook, WebhookAttempt, WebhookDelivery
+from fastid.webhooks.models import WebhookAttempt, WebhookDelivery, WebhookEndpoint
 
 configure_mappers()
 
@@ -19,7 +19,7 @@ from fastid.database.versioning import (  # noqa: E402
     TelegramTemplateVersion,
     Transaction,
     UserVersion,
-    WebhookVersion,
+    WebhookEndpointVersion,
 )
 
 __all__ = [
@@ -36,8 +36,8 @@ __all__ = [
     "EmailTemplateVersion",
     "TelegramTemplateVersion",
     "Transaction",
-    "WebhookVersion",
-    "Webhook",
+    "WebhookEndpointVersion",
+    "WebhookEndpoint",
     "WebhookAttempt",
     "WebhookDelivery",
     "OAuthAccountVersion",

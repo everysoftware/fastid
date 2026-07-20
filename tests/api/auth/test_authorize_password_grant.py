@@ -7,8 +7,8 @@ from fastid.auth.schemas import UserDTO
 from fastid.core.config import core_settings
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
-from fastid.webhooks.models import Webhook
-from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
+from fastid.webhooks.models import WebhookEndpoint
+from fastid.webhooks.repositories import WebhookDeliveryEndpointIDSpecification
 from tests import mocks
 from tests.mocks import faker
 from tests.utils.auth import (
@@ -17,7 +17,7 @@ from tests.utils.auth import (
 
 
 async def test_authorize_password_grant(
-    client: AsyncClient, user: UserDTO, webhook_login: Webhook, uow: SQLAlchemyUOW
+    client: AsyncClient, user: UserDTO, webhook_login: WebhookEndpoint, uow: SQLAlchemyUOW
 ) -> None:
     assert user.email is not None
     token = await authorize_password_grant(client, user.email, mocks.USER_CREATE.password)
@@ -25,7 +25,7 @@ async def test_authorize_password_grant(
     assert token.refresh_token is not None
 
     try:
-        await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_login.id))
+        await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(webhook_login.id))
     except NoResultFoundError:
         pytest.fail("No webhook delivery created")
 

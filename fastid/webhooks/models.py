@@ -38,8 +38,8 @@ class WebhookDeliveryStatus(BaseEnum):
     cancelled = auto()
 
 
-class Webhook(VersionedEntity):
-    __tablename__ = "webhooks"
+class WebhookEndpoint(VersionedEntity):
+    __tablename__ = "webhook_endpoints"
 
     app_id: Mapped[UUID] = mapped_column(ForeignKey("apps.id"), index=True)
     type: Mapped[WebhookType]
@@ -49,14 +49,14 @@ class Webhook(VersionedEntity):
     disabled_at: Mapped[datetime.datetime | None]
     disabled_reason: Mapped[str | None]
 
-    app: Mapped[App] = relationship(back_populates="webhooks")
-    deliveries: Mapped[list[WebhookDelivery]] = relationship(back_populates="webhook", cascade="delete")
+    app: Mapped[App] = relationship(back_populates="webhook_endpoints")
+    deliveries: Mapped[list[WebhookDelivery]] = relationship(back_populates="endpoint", cascade="delete")
 
 
 class WebhookDelivery(Entity):
     __tablename__ = "webhook_deliveries"
 
-    webhook_id: Mapped[UUID] = mapped_column(ForeignKey("webhooks.id"), index=True)
+    endpoint_id: Mapped[UUID] = mapped_column(ForeignKey("webhook_endpoints.id"), index=True)
     event_id: Mapped[UUID] = mapped_column(index=True)
     event_type: Mapped[WebhookType]
     payload: Mapped[dict[str, Any]]
@@ -70,7 +70,7 @@ class WebhookDelivery(Entity):
     response: Mapped[dict[str, Any] | None]
     error: Mapped[str | None]
 
-    webhook: Mapped[Webhook] = relationship(back_populates="deliveries")
+    endpoint: Mapped[WebhookEndpoint] = relationship(back_populates="deliveries")
     attempts: Mapped[list[WebhookAttempt]] = relationship(back_populates="delivery", cascade="delete")
 
 

@@ -9,8 +9,8 @@ import fastid.webhooks.worker as worker_module
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.database.utils import naive_utc
 from fastid.security.webhooks import verify_standard_headers
-from fastid.webhooks.models import Webhook, WebhookDeliveryStatus
-from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
+from fastid.webhooks.models import WebhookDeliveryStatus, WebhookEndpoint
+from fastid.webhooks.repositories import WebhookDeliveryEndpointIDSpecification
 from fastid.webhooks.senders.httpx import WebhookResponse, WebhookSender
 from fastid.webhooks.worker import WebhookWorker
 from tests.dependencies import get_test_uow
@@ -46,7 +46,7 @@ class StubSender(WebhookSender):
 )
 async def test_worker_records_delivery_outcome(  # noqa: PLR0913
     client: AsyncClient,
-    webhook_registration: Webhook,
+    webhook_registration: WebhookEndpoint,
     uow: SQLAlchemyUOW,
     monkeypatch: pytest.MonkeyPatch,
     status_code: int,
@@ -61,7 +61,7 @@ async def test_worker_records_delivery_outcome(  # noqa: PLR0913
 
     assert await WebhookWorker(sender=sender).run_once() == 1
 
-    delivery = await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_registration.id))
+    delivery = await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(webhook_registration.id))
     assert delivery.status == expected_status
     assert delivery.attempt_count == 1
     assert delivery.status_code == status_code
@@ -75,7 +75,7 @@ async def test_worker_records_delivery_outcome(  # noqa: PLR0913
 
 async def test_workers_do_not_claim_the_same_delivery(
     client: AsyncClient,
-    webhook_registration: Webhook,
+    webhook_registration: WebhookEndpoint,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     response = await client.post("/register", json=USER_CREATE.model_dump(mode="json"))
@@ -91,13 +91,13 @@ async def test_workers_do_not_claim_the_same_delivery(
 
 async def test_worker_recovers_an_expired_lease(
     client: AsyncClient,
-    webhook_registration: Webhook,
+    webhook_registration: WebhookEndpoint,
     uow: SQLAlchemyUOW,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     response = await client.post("/register", json=USER_CREATE.model_dump(mode="json"))
     assert response.status_code == status.HTTP_201_CREATED
-    delivery = await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_registration.id))
+    delivery = await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(webhook_registration.id))
     delivery.status = WebhookDeliveryStatus.processing
     delivery.leased_until = naive_utc() - timedelta(seconds=1)
     await uow.commit()

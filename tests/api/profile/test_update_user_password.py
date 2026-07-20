@@ -6,8 +6,8 @@ from fastid.auth.dependencies import vt_transport
 from fastid.auth.schemas import TokenResponse, UserDTO
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
-from fastid.webhooks.models import Webhook
-from fastid.webhooks.repositories import WebhookDeliveryWebhookIDSpecification
+from fastid.webhooks.models import WebhookEndpoint
+from fastid.webhooks.repositories import WebhookDeliveryEndpointIDSpecification
 from tests.mocks import faker
 
 
@@ -16,7 +16,7 @@ async def test_update_user_password(  # noqa: PLR0913
     user: UserDTO,
     user_token: TokenResponse,
     verify_token: str,
-    webhook_change_password: Webhook,
+    webhook_change_password: WebhookEndpoint,
     uow: SQLAlchemyUOW,
 ) -> None:
     new_password = faker.password()
@@ -31,7 +31,7 @@ async def test_update_user_password(  # noqa: PLR0913
     UserDTO.model_validate_json(response.content)
 
     try:
-        await uow.webhook_deliveries.find(WebhookDeliveryWebhookIDSpecification(webhook_change_password.id))
+        await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(webhook_change_password.id))
     except NoResultFoundError:
         pytest.fail("No webhook delivery created")
 

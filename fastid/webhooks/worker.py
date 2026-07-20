@@ -16,7 +16,7 @@ from fastid.database.utils import naive_utc
 from fastid.security.webhooks import generate_delivery_headers, get_timestamp, serialize_payload
 from fastid.webhooks.config import webhook_settings
 from fastid.webhooks.metrics import ATTEMPT_DURATION, ATTEMPTS, DISABLED_ENDPOINTS, DUE_DELIVERIES
-from fastid.webhooks.models import Webhook, WebhookAttempt, WebhookDelivery, WebhookDeliveryStatus
+from fastid.webhooks.models import WebhookAttempt, WebhookDelivery, WebhookDeliveryStatus, WebhookEndpoint
 from fastid.webhooks.senders.dependencies import client
 from fastid.webhooks.senders.httpx import WebhookResponse, WebhookSender
 
@@ -75,7 +75,7 @@ class WebhookWorker:
         async with uow:
             stmt = (
                 select(WebhookDelivery)
-                .options(joinedload(WebhookDelivery.webhook))
+                .options(joinedload(WebhookDelivery.endpoint))
                 .where(
                     WebhookDelivery.next_attempt_at <= now,
                     or_(
@@ -104,7 +104,7 @@ class WebhookWorker:
             DUE_DELIVERIES.set(due_count or 0)
             claimed: list[ClaimedDelivery] = []
             for delivery in rows:
-                if not delivery.webhook.is_active:
+                if not delivery.endpoint.is_active:
                     delivery.status = WebhookDeliveryStatus.cancelled
                     delivery.completed_at = now
                     delivery.error = "endpoint disabled"
@@ -117,8 +117,8 @@ class WebhookWorker:
                         event_id=delivery.event_id,
                         event_type=str(delivery.event_type),
                         payload=delivery.payload,
-                        endpoint_url=delivery.webhook.url,
-                        endpoint_secret=delivery.webhook.secret,
+                        endpoint_url=delivery.endpoint.url,
+                        endpoint_secret=delivery.endpoint.secret,
                     )
                 )
             return claimed
@@ -152,7 +152,7 @@ class WebhookWorker:
         uow = get_uow_raw()
         async with uow:
             delivery = await uow.webhook_deliveries.get(delivery_id)
-            endpoint = await uow.webhooks.get(delivery.webhook_id)
+            endpoint = await uow.webhook_endpoints.get(delivery.endpoint_id)
             attempt_number = delivery.attempt_count + 1
             stored_headers = {
                 key: "[redacted]" if "signature" in key.lower() else value for key, value in headers.items()
@@ -207,7 +207,7 @@ class WebhookWorker:
 
     @staticmethod
     async def _disable(
-        uow: SQLAlchemyUOW, endpoint: Webhook, delivery: WebhookDelivery, now: datetime, reason: str
+        uow: SQLAlchemyUOW, endpoint: WebhookEndpoint, delivery: WebhookDelivery, now: datetime, reason: str
     ) -> None:
         delivery.status = (
             WebhookDeliveryStatus.exhausted if delivery.status_code != HTTP_GONE else WebhookDeliveryStatus.cancelled
@@ -219,7 +219,7 @@ class WebhookWorker:
         await uow.session.execute(
             update(WebhookDelivery)
             .where(
-                WebhookDelivery.webhook_id == endpoint.id,
+                WebhookDelivery.endpoint_id == endpoint.id,
                 WebhookDelivery.id != delivery.id,
                 WebhookDelivery.status.in_((WebhookDeliveryStatus.pending, WebhookDeliveryStatus.processing)),
             )

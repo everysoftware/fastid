@@ -9,7 +9,7 @@ from fastid.apps.repositories import AppRepository
 from fastid.auth.repositories import UserRepository
 from fastid.notify.repositories import EmailTemplateRepository, NotificationRepository, TelegramTemplateRepository
 from fastid.oauth.repositories import OAuthAccountRepository, OAuthProviderRepository
-from fastid.webhooks.repositories import WebhookAttemptRepository, WebhookDeliveryRepository, WebhookRepository
+from fastid.webhooks.repositories import WebhookAttemptRepository, WebhookDeliveryRepository, WebhookEndpointRepository
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -28,7 +28,7 @@ class SQLAlchemyUOW:
     email_templates: EmailTemplateRepository
     telegram_templates: TelegramTemplateRepository
     notifications: NotificationRepository
-    webhooks: WebhookRepository
+    webhook_endpoints: WebhookEndpointRepository
     webhook_deliveries: WebhookDeliveryRepository
     webhook_attempts: WebhookAttemptRepository
 
@@ -47,7 +47,7 @@ class SQLAlchemyUOW:
         self.email_templates = EmailTemplateRepository(self.session)
         self.telegram_templates = TelegramTemplateRepository(self.session)
         self.notifications = NotificationRepository(self.session)
-        self.webhooks = WebhookRepository(self.session)
+        self.webhook_endpoints = WebhookEndpointRepository(self.session)
         self.webhook_deliveries = WebhookDeliveryRepository(self.session)
         self.webhook_attempts = WebhookAttemptRepository(self.session)
 
