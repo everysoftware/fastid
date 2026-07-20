@@ -132,10 +132,8 @@ class WebhookWorker:
         timestamp = get_timestamp()
         body = serialize_payload(delivery.payload)
         headers = generate_delivery_headers(
-            delivery.payload,
             body,
             str(delivery.event_id),
-            str(delivery.id),
             timestamp,
             delivery.endpoint_secret,
         )
