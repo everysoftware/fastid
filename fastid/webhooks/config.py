@@ -1,14 +1,9 @@
 from pydantic_settings import SettingsConfigDict
 
 from fastid.core.schemas import ENV_PREFIX, BaseSettings
-from fastid.webhooks.schemas import SignatureAlgorithm
 
 
 class WebhookSettings(BaseSettings):
-    signature_algorithm: SignatureAlgorithm = SignatureAlgorithm.sha256
-    signature_header: str = "X-Webhook-Signature"
-    timestamp_header: str = "X-Webhook-Timestamp"
-    id_header: str = "X-Webhook-Id"
     tolerance_seconds: int = 300
     page_expires_in_seconds: int = 60
     retry_delays_seconds: tuple[int, ...] = (0, 5, 300, 1800, 7200, 18000, 36000, 50400, 72000, 86400)
