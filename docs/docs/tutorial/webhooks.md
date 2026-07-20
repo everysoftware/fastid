@@ -6,8 +6,7 @@ after a timeout or worker crash. Delivery order is not guaranteed.
 
 ## Request format
 
-Each request is a JSON `POST`. The existing `X-Webhook-*` headers remain available, and new integrations should verify
-the Standard Webhooks headers:
+Each request is a JSON `POST` with Standard Webhooks headers:
 
 - `webhook-id`: logical event UUID, unchanged for retries.
 - `webhook-timestamp`: Unix timestamp for the delivery attempt.
