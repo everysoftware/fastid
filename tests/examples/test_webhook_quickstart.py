@@ -1,5 +1,3 @@
-import time
-
 import pytest
 from fastapi.testclient import TestClient
 from starlette import status
@@ -48,27 +46,17 @@ def test_rejects_missing_header(monkeypatch: pytest.MonkeyPatch, header: str) ->
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_rejects_non_integer_timestamp(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("FASTID_WEBHOOK_SECRET", SECRET)
-    body, headers = signed_request(payload())
-    headers["webhook-timestamp"] = "invalid"
-
-    with TestClient(app) as client:
-        response = client.post("/fastid-webhooks", content=body, headers=headers)
-
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-def test_rejects_stale_timestamp(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_treats_webhook_id_and_timestamp_as_opaque_signature_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FASTID_WEBHOOK_SECRET", SECRET)
     value = payload()
     body, _ = signed_request(value)
-    headers = headers_for(body, str(value["event"]["event_id"]), timestamp=int(time.time()) - 301)
+    headers = headers_for(body, "opaque-webhook-id", timestamp="opaque-timestamp")
 
     with TestClient(app) as client:
         response = client.post("/fastid-webhooks", content=body, headers=headers)
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert headers["webhook-id"] != value["event"]["event_id"]
 
 
 def test_rejects_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -86,18 +74,6 @@ def test_rejects_invalid_envelope(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FASTID_WEBHOOK_SECRET", SECRET)
     body = b"{}"
     headers = headers_for(body, "event-1")
-
-    with TestClient(app) as client:
-        response = client.post("/fastid-webhooks", content=body, headers=headers)
-
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-def test_rejects_header_payload_id_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("FASTID_WEBHOOK_SECRET", SECRET)
-    value = payload()
-    body, _ = signed_request(value)
-    headers = headers_for(body, "different-event")
 
     with TestClient(app) as client:
         response = client.post("/fastid-webhooks", content=body, headers=headers)

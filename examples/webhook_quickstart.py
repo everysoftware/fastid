@@ -5,7 +5,6 @@ import hmac
 import json
 import logging
 import os
-import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
@@ -13,8 +12,6 @@ from uuid import UUID
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
-
-TIMESTAMP_TOLERANCE_SECONDS = 300
 
 log = logging.getLogger(__name__)
 
@@ -29,8 +26,8 @@ def _secret_bytes(secret: str) -> bytes:
         raise ValueError(msg) from exc
 
 
-def verify_signature(body: bytes, webhook_id: str, timestamp: int, signatures: str, secret: str) -> bool:
-    signed = b".".join((webhook_id.encode(), str(timestamp).encode(), body))
+def verify_signature(body: bytes, webhook_id: str, timestamp: str, signatures: str, secret: str) -> bool:
+    signed = b".".join((webhook_id.encode(), timestamp.encode(), body))
     expected = base64.b64encode(hmac.new(_secret_bytes(secret), signed, hashlib.sha256).digest()).decode()
     return any(
         version == "v1" and hmac.compare_digest(value, expected)
@@ -47,7 +44,7 @@ def _required_header(request: Request, name: str) -> str:
     return value
 
 
-def _validate_payload(value: Any, webhook_id: str) -> tuple[str, str]:
+def _validate_payload(value: Any) -> tuple[str, str]:
     if not isinstance(value, dict):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid webhook payload")
     event = value.get("event")
@@ -65,8 +62,6 @@ def _validate_payload(value: Any, webhook_id: str) -> tuple[str, str]:
         normalized_event_id = str(UUID(event_id))
     except ValueError as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid webhook event ID") from exc
-    if normalized_event_id != webhook_id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "webhook-id does not match event.event_id")
     return normalized_event_id, event_type
 
 
@@ -91,23 +86,17 @@ app = FastAPI(lifespan=lifespan)
 async def receive_webhook(request: Request) -> Response:
     body = await request.body()
     webhook_id = _required_header(request, "webhook-id")
-    timestamp_value = _required_header(request, "webhook-timestamp")
+    timestamp = _required_header(request, "webhook-timestamp")
     signatures = _required_header(request, "webhook-signature")
-    try:
-        timestamp = int(timestamp_value)
-    except ValueError as exc:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid webhook-timestamp header") from exc
-    if abs(int(time.time()) - timestamp) > TIMESTAMP_TOLERANCE_SECONDS:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Webhook timestamp is outside the allowed tolerance")
     if not verify_signature(body, webhook_id, timestamp, signatures, request.app.state.webhook_secret):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid webhook signature")
     try:
         payload = json.loads(body)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid JSON body") from exc
-    event_id, event_type = _validate_payload(payload, webhook_id)
+    event_id, event_type = _validate_payload(payload)
 
-    # Production consumers must atomically record event_id before applying non-idempotent side effects.
+    # Before production side effects, use an advanced receiver that checks freshness and claims webhook-id.
     log.info("Received FastID webhook: event_id=%s event_type=%s", event_id, event_type)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

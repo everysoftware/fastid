@@ -19,17 +19,17 @@ def payload(event_id: str | None = None) -> dict[str, Any]:
 
 def headers_for(
     body: bytes,
-    event_id: str,
+    webhook_id: str,
     *,
     secret: str = SECRET,
-    timestamp: int | None = None,
+    timestamp: int | str | None = None,
 ) -> dict[str, str]:
     timestamp = timestamp or int(time.time())
     key = base64.b64decode(secret.removeprefix("whsec_"), validate=True)
-    signed = b".".join((event_id.encode(), str(timestamp).encode(), body))
+    signed = b".".join((webhook_id.encode(), str(timestamp).encode(), body))
     signature = base64.b64encode(hmac.new(key, signed, hashlib.sha256).digest()).decode()
     return {
-        "webhook-id": event_id,
+        "webhook-id": webhook_id,
         "webhook-timestamp": str(timestamp),
         "webhook-signature": f"v1,{signature}",
         "content-type": "application/json",
@@ -38,5 +38,4 @@ def headers_for(
 
 def signed_request(value: dict[str, Any], secret: str = SECRET) -> tuple[bytes, dict[str, str]]:
     body = json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode()
-    event_id = str(value["event"]["event_id"])
-    return body, headers_for(body, event_id, secret=secret)
+    return body, headers_for(body, str(uuid4()), secret=secret)
