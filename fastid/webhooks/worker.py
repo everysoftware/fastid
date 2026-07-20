@@ -40,7 +40,7 @@ def get_retry_delay(attempt_number: int, retry_after_seconds: int | None, *, jit
 
 @dataclass(frozen=True)
 class ClaimedDelivery:
-    id: UUID
+    webhook_id: UUID
     event_id: UUID
     event_type: str
     payload: dict[str, object]
@@ -113,7 +113,7 @@ class WebhookWorker:
                 delivery.leased_until = lease
                 claimed.append(
                     ClaimedDelivery(
-                        id=delivery.id,
+                        webhook_id=delivery.id,
                         event_id=delivery.event_id,
                         event_type=str(delivery.event_type),
                         payload=delivery.payload,
@@ -133,16 +133,16 @@ class WebhookWorker:
         body = serialize_payload(delivery.payload)
         headers = generate_delivery_headers(
             body,
-            str(delivery.event_id),
+            str(delivery.webhook_id),
             timestamp,
             delivery.endpoint_secret,
         )
         response = await self.sender.send(delivery.endpoint_url, body, headers)
-        await self._record(delivery.id, delivery.event_type, timestamp, headers, response)
+        await self._record(delivery.webhook_id, delivery.event_type, timestamp, headers, response)
 
     async def _record(
         self,
-        delivery_id: UUID,
+        webhook_id: UUID,
         event_type: str,
         timestamp: int,
         headers: dict[str, str],
@@ -151,7 +151,7 @@ class WebhookWorker:
         now = naive_utc()
         uow = get_uow_raw()
         async with uow:
-            delivery = await uow.webhook_deliveries.get(delivery_id)
+            delivery = await uow.webhook_deliveries.get(webhook_id)
             endpoint = await uow.webhook_endpoints.get(delivery.endpoint_id)
             attempt_number = delivery.attempt_count + 1
             stored_headers = {
@@ -196,7 +196,7 @@ class WebhookWorker:
             ATTEMPTS.labels(event_type=event_type, outcome=outcome).inc()
             ATTEMPT_DURATION.labels(event_type=event_type).observe(response.duration_ms / 1000)
             log.info(
-                "Webhook attempt completed: delivery_id=%s event_id=%s attempt=%d status_code=%d state=%s duration_ms=%d",
+                "Webhook attempt completed: webhook_id=%s event_id=%s attempt=%d status_code=%d state=%s duration_ms=%d",
                 delivery.id,
                 delivery.event_id,
                 attempt_number,

@@ -68,6 +68,8 @@ async def test_worker_records_delivery_outcome(  # noqa: PLR0913
     attempts = (await uow.webhook_attempts.get_many()).items
     assert len(attempts) == 1
     body, headers = sender.calls[0]
+    assert headers["webhook-id"] == str(delivery.id)
+    assert headers["webhook-id"] != str(delivery.event_id)
     assert verify_standard_headers(body, headers, webhook_registration.secret)
     await uow.session.refresh(webhook_registration)
     assert webhook_registration.is_active is active

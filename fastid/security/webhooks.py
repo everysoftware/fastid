@@ -39,11 +39,11 @@ def generate_standard_signature(body: bytes, webhook_id: str, timestamp: int, se
     return f"v1,{base64.b64encode(digest).decode()}"
 
 
-def generate_delivery_headers(body: bytes, event_id: str, timestamp: int, secret_key: str) -> dict[str, str]:
+def generate_delivery_headers(body: bytes, webhook_id: str, timestamp: int, secret_key: str) -> dict[str, str]:
     return {
-        STANDARD_ID_HEADER: event_id,
+        STANDARD_ID_HEADER: webhook_id,
         STANDARD_TIMESTAMP_HEADER: str(timestamp),
-        STANDARD_SIGNATURE_HEADER: generate_standard_signature(body, event_id, timestamp, secret_key),
+        STANDARD_SIGNATURE_HEADER: generate_standard_signature(body, webhook_id, timestamp, secret_key),
         "Content-Type": "application/json",
         "User-Agent": webhook_settings.user_agent,
     }
