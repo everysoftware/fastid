@@ -14,7 +14,7 @@ reader can copy it without importing another example or installing FastID as a l
 ### `examples/webhook_quickstart.py`
 
 The quick-start application is the shortest safe receiver. It requires `FASTID_WEBHOOK_SECRET` at startup, reads the
-exact raw body, validates the three Standard Webhooks headers and timestamp, parses JSON only after authentication,
+exact raw body, uses the three Standard Webhooks headers to verify the signature, parses JSON only after authentication,
 logs the generic event, and returns `204 No Content`.
 
 It demonstrates authentication but not replay protection or idempotency. It reads `webhook-id` and
@@ -23,9 +23,9 @@ Webhook ID. A comment directs production consumers to the advanced examples befo
 
 ### `examples/webhook_advanced.py`
 
-The advanced application adds request-size enforcement, structural payload validation, header/payload event-ID
-matching, explicit error responses, and an asynchronous idempotency-store protocol. Its in-memory adapter uses an
-`asyncio.Lock` so concurrent requests in one process cannot claim the same event twice.
+The advanced application adds request-size enforcement, structural payload validation, timestamp freshness, explicit
+error responses, and an asynchronous idempotency-store protocol. Its in-memory adapter uses an `asyncio.Lock` so
+concurrent requests in one process cannot claim the same Webhook ID twice.
 
 The adapter is intentionally labeled as a reference implementation: it is not shared across processes and loses state
 on restart. The protocol boundary shows where a production consumer supplies durable storage without mixing database
@@ -38,9 +38,9 @@ complete, and release lifecycle with a table whose Webhook ID is unique. A dupli
 boundary.
 
 `WEBHOOK_DATABASE_URL` configures the database and defaults to a local SQLite file so the example is runnable without
-external infrastructure. Synchronous SQLAlchemy work runs in a worker thread so the asynchronous FastAPI endpoint does
-not block the event loop. SQLite connections disable the same-thread check; other database URLs use their normal
-driver settings.
+external infrastructure. The example uses SQLAlchemy's async engine, async session factory, and `AsyncSession` for all
+schema and claim operations; it does not bridge synchronous database work through a worker thread. The default driver
+is `aiosqlite`, installed from Poetry's optional `examples` dependency group.
 
 ## Configuration
 
@@ -54,7 +54,8 @@ The advanced and SQLAlchemy applications use these fixed reference limits:
 - timestamp tolerance: 300 seconds.
 
 The SQLAlchemy application additionally accepts `WEBHOOK_DATABASE_URL`, defaulting to
-`sqlite:///webhook-events.sqlite3`.
+`sqlite+aiosqlite:///webhook-events.sqlite3`. Install its optional driver with
+`poetry install --with examples`.
 
 ## Authentication
 
@@ -129,6 +130,7 @@ Coverage includes:
 - repeated delivery acknowledgement without repeated processing;
 - concurrent claims against the in-memory adapter;
 - SQLAlchemy duplicate claims and persistence across store instances.
+- async SQLAlchemy schema creation, claim, completion, release, and engine disposal without thread-pool calls.
 
 Ruff, mypy, focused example tests, and the complete project suite must pass.
 

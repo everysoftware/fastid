@@ -19,6 +19,8 @@ FastID will provide three standalone FastAPI receiver applications:
 
 Each application will independently implement Standard Webhooks verification using Python's standard library. Advanced
 examples will share the same conceptual claim, complete, and release lifecycle but will not import each other.
+The SQLAlchemy example will use SQLAlchemy's async APIs with `aiosqlite` supplied by an optional Poetry `examples`
+dependency group.
 
 ## Consequences
 

@@ -6,7 +6,7 @@
 
 **Architecture:** FastID models a configured destination as `WebhookEndpoint`, a delivered webhook as `WebhookDelivery`, and a domain event as `Event`. `WebhookDelivery.id` is the Webhook ID signed into `webhook-id`; `WebhookDelivery.endpoint_id` links to the endpoint; `event.event_id` remains independent. Every example contains its own Standard Webhooks verifier so it can be copied without importing FastID.
 
-**Tech Stack:** Python 3.12, FastAPI, Pydantic, SQLAlchemy 2, Alembic, Starlette TestClient, pytest, Ruff, mypy
+**Tech Stack:** Python 3.12, FastAPI, Pydantic, SQLAlchemy 2 async APIs, aiosqlite, Alembic, Starlette TestClient, pytest, Ruff, mypy
 
 ## Global Constraints
 
@@ -23,6 +23,8 @@
 - Keep all three example files standalone; they must not import each other or `fastid.*`.
 - Keep event processing generic: validate and log receipt, but do not dispatch event-specific handlers.
 - Do not demonstrate a FastID application database in the quick-start or in-memory examples.
+- Put `aiosqlite` in an optional Poetry `examples` dependency group; do not add it to FastID's runtime dependencies.
+- Use async SQLAlchemy end-to-end in the SQLAlchemy example; do not use `run_in_threadpool` or synchronous sessions.
 - Prefix every shell command with `rtk`.
 
 ## File structure
@@ -479,42 +481,67 @@ rtk proxy git commit -m "docs: use webhook IDs for receiver idempotency"
 ### Task 5: Add the standalone SQLAlchemy receiver
 
 **Files:**
+- Modify: `pyproject.toml`
+- Modify: `poetry.lock`
 - Create: `examples/webhook_sqlalchemy.py`
 - Modify: `tests/examples/test_webhook_sqlalchemy.py`
 
 **Interfaces:**
 - Produces: `WebhookReceipt` with unique string `webhook_id`, `status`, `created_at`, and `updated_at` columns.
-- Produces: `SQLAlchemyIdempotencyStore(engine: Engine)` with synchronous `claim`, `complete`, and `release` methods.
+- Produces: `SQLAlchemyIdempotencyStore(session_factory: async_sessionmaker[AsyncSession])` with async `claim`,
+  `complete`, and `release` methods.
 - Produces: `create_app(database_url: str | None = None, processor: EventProcessor = process_event) -> FastAPI`.
 - Endpoint: `POST /fastid-webhooks -> 204 | 400 | 401 | 413 | 500`.
 
-- [ ] **Step 1: Finish the failing SQLAlchemy store tests**
+- [ ] **Step 1: Add the optional async SQLite driver group**
+
+Run:
+
+```powershell
+rtk proxy poetry add --group examples --optional "aiosqlite@^0.21.0"
+```
+
+Expected `pyproject.toml` entries:
+
+```toml
+[tool.poetry.group.examples]
+optional = true
+
+[tool.poetry.group.examples.dependencies]
+aiosqlite = "^0.21.0"
+```
+
+- [ ] **Step 2: Finish the failing async SQLAlchemy store tests**
 
 Use `tmp_path / "webhooks.sqlite3"` and two store instances:
 
 ```python
-def test_claim_persists_across_store_instances(tmp_path: Path) -> None:
-    database_url = f"sqlite:///{tmp_path / 'webhooks.sqlite3'}"
-    first = SQLAlchemyIdempotencyStore(create_store_engine(database_url))
-    second = SQLAlchemyIdempotencyStore(create_store_engine(database_url))
-    first.create_schema()
-    assert first.claim("webhook-1")
-    first.complete("webhook-1")
-    assert not second.claim("webhook-1")
+async def test_claim_persists_across_store_instances(tmp_path: Path) -> None:
+    database_url = f"sqlite+aiosqlite:///{tmp_path / 'webhooks.sqlite3'}"
+    first_engine = create_store_engine(database_url)
+    second_engine = create_store_engine(database_url)
+    first = SQLAlchemyIdempotencyStore(async_sessionmaker(first_engine, expire_on_commit=False))
+    second = SQLAlchemyIdempotencyStore(async_sessionmaker(second_engine, expire_on_commit=False))
+    await create_schema(first_engine)
+    assert await first.claim("webhook-1")
+    await first.complete("webhook-1")
+    assert not await second.claim("webhook-1")
+    await first_engine.dispose()
+    await second_engine.dispose()
 ```
 
 Add concurrent claim, release/reclaim, valid/duplicate HTTP delivery, processing-failure retry, and parameterized
 `400`/`401`/`413` coverage. Use independent Webhook IDs and Event IDs throughout.
 
-- [ ] **Step 2: Run the SQLAlchemy tests and verify RED**
+- [ ] **Step 3: Run the SQLAlchemy tests and verify RED**
 
 ```powershell
 rtk proxy poetry run pytest tests/examples/test_webhook_sqlalchemy.py -q
 ```
 
-Expected: collection fails because `examples.webhook_sqlalchemy` does not exist.
+Expected: tests fail because the draft store accepts a synchronous engine and returns non-awaitable values.
 
-- [ ] **Step 3: Implement the durable claim store**
+- [ ] **Step 4: Implement the durable async claim store**
 
 Create a local declarative model:
 
@@ -532,38 +559,38 @@ class WebhookReceipt(Base):
     updated_at: Mapped[datetime] = mapped_column(default=utc_now, onupdate=utc_now)
 ```
 
-`claim(webhook_id)` inserts `processing` in `Session.begin()` and returns `False` on `IntegrityError`.
+`claim(webhook_id)` inserts `processing` in `AsyncSession.begin()` and returns `False` on `IntegrityError`.
 `complete(webhook_id)` updates the row to `completed`. `release(webhook_id)` deletes only a `processing` row.
-`create_schema()` calls `Base.metadata.create_all(engine)`. `create_store_engine()` sets
-`connect_args={"check_same_thread": False}` only for SQLite.
+`create_schema(engine)` uses `async with engine.begin()` and `await connection.run_sync(Base.metadata.create_all)`.
+`create_store_engine()` returns an `AsyncEngine` from `create_async_engine()`.
 
-- [ ] **Step 4: Implement the standalone FastAPI receiver**
+- [ ] **Step 5: Implement the standalone FastAPI receiver**
 
 Repeat the advanced example's verifier, envelope, freshness, size, and error behavior without importing another example
 or `fastid.*`. Lifespan selects the explicit argument, then `WEBHOOK_DATABASE_URL`, then
-`sqlite:///webhook-events.sqlite3`; it creates the schema and disposes the engine at shutdown. Run every synchronous
-store call through `starlette.concurrency.run_in_threadpool`:
+`sqlite+aiosqlite:///webhook-events.sqlite3`; it creates the schema and awaits engine disposal at shutdown. Await every
+store call directly:
 
 ```python
-claimed = await run_in_threadpool(store.claim, webhook_id)
+claimed = await store.claim(webhook_id)
 if not claimed:
     return Response(status_code=204)
 try:
     await processor(event)
-    await run_in_threadpool(store.complete, webhook_id)
+    await store.complete(webhook_id)
 except Exception as exc:
-    await run_in_threadpool(store.release, webhook_id)
+    await store.release(webhook_id)
     raise HTTPException(status_code=500, detail="Webhook processing failed") from exc
 return Response(status_code=204)
 ```
 
-- [ ] **Step 5: Verify GREEN and commit**
+- [ ] **Step 6: Verify GREEN and commit**
 
 ```powershell
 rtk proxy poetry run pytest tests/examples/test_webhook_sqlalchemy.py -q
 rtk proxy poetry run ruff check examples/webhook_sqlalchemy.py tests/examples/test_webhook_sqlalchemy.py
 rtk proxy poetry run mypy examples/webhook_sqlalchemy.py tests/examples/test_webhook_sqlalchemy.py
-rtk proxy git add examples/webhook_sqlalchemy.py tests/examples/test_webhook_sqlalchemy.py
+rtk proxy git add pyproject.toml poetry.lock examples/webhook_sqlalchemy.py tests/examples/test_webhook_sqlalchemy.py
 rtk proxy git commit -m "docs: add SQLAlchemy webhook receiver example"
 ```
 
