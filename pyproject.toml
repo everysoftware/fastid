@@ -57,6 +57,13 @@ mdx-include = "^1.4.2"
 mkdocs-markdownextradata-plugin = "^0.2.6"
 markdown-include-variants = "^0.0.4"
 
+
+[tool.poetry.group.examples]
+optional = true
+
+[tool.poetry.group.examples.dependencies]
+aiosqlite = "^0.21.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

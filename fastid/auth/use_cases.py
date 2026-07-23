@@ -25,7 +25,7 @@ class AuthUseCases(UseCase):
             raise UserAlreadyExistsError
         user = User.from_create(dto)
         user = await self.uow.users.add(user)
-        await self.uow.commit()
+        await self.uow.flush()
         return user
 
     async def get_userinfo(self, token: str, *, token_type: str = "access") -> User:  # noqa: S107

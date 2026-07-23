@@ -6,8 +6,8 @@ from fastid.auth.dependencies import vt_transport
 from fastid.auth.schemas import TokenResponse, UserDTO
 from fastid.database.exceptions import NoResultFoundError
 from fastid.database.uow import SQLAlchemyUOW
-from fastid.webhooks.models import Webhook
-from fastid.webhooks.repositories import WebhookEventWebhookIDSpecification
+from fastid.webhooks.models import WebhookEndpoint
+from fastid.webhooks.repositories import WebhookDeliveryEndpointIDSpecification
 
 
 async def test_delete_user(  # noqa: PLR0913
@@ -15,7 +15,7 @@ async def test_delete_user(  # noqa: PLR0913
     user: UserDTO,
     user_token: TokenResponse,
     verify_token: str,
-    webhook_delete: Webhook,
+    webhook_delete: WebhookEndpoint,
     uow: SQLAlchemyUOW,
 ) -> None:
     client.cookies.set(vt_transport.name, verify_token)
@@ -28,9 +28,9 @@ async def test_delete_user(  # noqa: PLR0913
     UserDTO.model_validate_json(response.content)
 
     try:
-        await uow.webhook_events.find(WebhookEventWebhookIDSpecification(webhook_delete.id))
+        await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(webhook_delete.id))
     except NoResultFoundError:
-        pytest.fail("No webhook event created")
+        pytest.fail("No webhook delivery created")
 
 
 async def test_delete_user_not_verified(client: AsyncClient, user: UserDTO, user_token: TokenResponse) -> None:

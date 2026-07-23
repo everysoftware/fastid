@@ -164,3 +164,6 @@ cython_debug/
 .dev.env
 !.env.example
 certs
+
+# Git worktrees
+.worktrees/

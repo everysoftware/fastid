@@ -1,18 +1,11 @@
-from enum import auto
 from typing import Any
 from uuid import UUID
 
 from pydantic import Field
 
 from fastid.auth.schemas import UserDTO
-from fastid.core.schemas import BaseEnum, BaseModel
+from fastid.core.schemas import BaseModel
 from fastid.webhooks.models import WebhookType
-
-
-class SignatureAlgorithm(BaseEnum):
-    sha256 = auto()
-    sha512 = auto()
-    sha1 = auto()
 
 
 class SendWebhookRequest(BaseModel):

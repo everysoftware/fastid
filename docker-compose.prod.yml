@@ -4,3 +4,8 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       target: prod
+  fastid-webhook-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: prod

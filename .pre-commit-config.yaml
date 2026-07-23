@@ -59,7 +59,9 @@ repos:
     hooks:
       - id: detect-secrets
         args: [
-          '--baseline', '.secrets.baseline',
+          '--exclude-files', 'docs',
+          '--exclude-files', 'migrations',
+          '--exclude-files', 'alembic.ini',
         ]
         exclude: package.lock.json
         stages: [ pre-commit, pre-merge-commit, manual ]

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from fastid.apps.exceptions import InvalidClientCredentialsError, InvalidRedirectURIError
 from fastid.database.base import VersionedEntity
 from fastid.database.utils import uuid_hex
-from fastid.webhooks.models import Webhook
+from fastid.webhooks.models import WebhookEndpoint
 
 
 class App(VersionedEntity):
@@ -18,7 +18,7 @@ class App(VersionedEntity):
     redirect_uris: Mapped[str] = mapped_column(default="")
     is_active: Mapped[bool] = mapped_column(default=True)
 
-    webhooks: Mapped[list[Webhook]] = relationship(back_populates="app", cascade="delete")
+    webhook_endpoints: Mapped[list[WebhookEndpoint]] = relationship(back_populates="app", cascade="delete")
 
     def verify_redirect_uri(self, redirect_uri: str) -> None:
         if redirect_uri not in self.redirect_uris.split(";"):

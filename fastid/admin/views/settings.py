@@ -2,7 +2,15 @@ from sqladmin.filters import AllUniqueStringValuesFilter, BooleanFilter, Operati
 
 from fastid.admin.views.base import BaseView
 from fastid.admin.views.utils import json_format
-from fastid.database.models import App, EmailTemplate, OAuthProvider, TelegramTemplate, Webhook, WebhookEvent
+from fastid.database.models import (
+    App,
+    EmailTemplate,
+    OAuthProvider,
+    TelegramTemplate,
+    WebhookAttempt,
+    WebhookDelivery,
+    WebhookEndpoint,
+)
 
 
 class AppAdmin(BaseView, model=App):
@@ -89,48 +97,78 @@ class TelegramTemplateAdmin(BaseView, model=TelegramTemplate):
     ]
 
 
-class WebhookAdmin(BaseView, model=Webhook):
-    name = "Webhook"
-    name_plural = "Webhooks"
+class WebhookEndpointAdmin(BaseView, model=WebhookEndpoint):
+    name = "Webhook Endpoint"
+    name_plural = "Webhook Endpoints"
     icon = "fa-solid fa-globe"
     category = "Settings"
 
     column_list = [
-        Webhook.id,
-        Webhook.app,
-        Webhook.url,
-        Webhook.created_at,
-        Webhook.updated_at,
+        WebhookEndpoint.id,
+        WebhookEndpoint.app,
+        WebhookEndpoint.url,
+        WebhookEndpoint.is_active,
+        WebhookEndpoint.disabled_reason,
+        WebhookEndpoint.created_at,
+        WebhookEndpoint.updated_at,
     ]
     column_filters = [
-        OperationColumnFilter(Webhook.app_id),
-        AllUniqueStringValuesFilter(Webhook.type),
-        OperationColumnFilter(Webhook.url),
+        OperationColumnFilter(WebhookEndpoint.app_id),
+        AllUniqueStringValuesFilter(WebhookEndpoint.type),
+        OperationColumnFilter(WebhookEndpoint.url),
+        BooleanFilter(WebhookEndpoint.is_active),
     ]
 
 
-class WebhookEventAdmin(BaseView, model=WebhookEvent):
+class WebhookDeliveryAdmin(BaseView, model=WebhookDelivery):
     can_create = False
     can_edit = False
     can_delete = False
 
-    name = "Webhook Event"
-    name_plural = "Webhook Events"
+    name = "Webhook Delivery"
+    name_plural = "Webhook Deliveries"
     icon = "fa-solid fa-book-atlas"
     category = "Settings"
 
     column_list = [
-        WebhookEvent.id,
-        WebhookEvent.webhook,
-        "webhook.type",
-        WebhookEvent.status_code,
-        WebhookEvent.request,
-        WebhookEvent.response,
-        WebhookEvent.created_at,
-        WebhookEvent.updated_at,
+        WebhookDelivery.id,
+        WebhookDelivery.event_id,
+        WebhookDelivery.endpoint,
+        "endpoint.type",
+        WebhookDelivery.status,
+        WebhookDelivery.attempt_count,
+        WebhookDelivery.status_code,
+        WebhookDelivery.response,
+        WebhookDelivery.next_attempt_at,
+        WebhookDelivery.completed_at,
+        WebhookDelivery.created_at,
     ]
     column_filters = [
-        OperationColumnFilter(WebhookEvent.webhook_id),
-        OperationColumnFilter(WebhookEvent.status_code),
+        OperationColumnFilter(WebhookDelivery.endpoint_id),
+        OperationColumnFilter(WebhookDelivery.status_code),
+        AllUniqueStringValuesFilter(WebhookDelivery.status),
     ]
-    column_formatters = {WebhookEvent.response: json_format, WebhookEvent.request: json_format}
+    column_formatters = {WebhookDelivery.response: json_format, WebhookDelivery.request: json_format}
+
+
+class WebhookAttemptAdmin(BaseView, model=WebhookAttempt):
+    can_create = False
+    can_edit = False
+    can_delete = False
+
+    name = "Webhook Attempt"
+    name_plural = "Webhook Attempts"
+    icon = "fa-solid fa-clock-rotate-left"
+    category = "Settings"
+
+    column_list = [
+        WebhookAttempt.id,
+        WebhookAttempt.delivery,
+        WebhookAttempt.attempt_number,
+        WebhookAttempt.status_code,
+        WebhookAttempt.error,
+        WebhookAttempt.duration_ms,
+        WebhookAttempt.created_at,
+    ]
+    column_filters = [OperationColumnFilter(WebhookAttempt.delivery_id)]
+    column_formatters = {WebhookAttempt.response: json_format, WebhookAttempt.request: json_format}

@@ -32,7 +32,7 @@ class ProfileUseCases(UseCase):
         dto: UserUpdate,
     ) -> User:
         user.merge_model(dto)
-        await self.uow.commit()
+        await self.uow.flush()
         return user
 
     async def change_email(self, user: User, dto: UserChangeEmail) -> User:
@@ -43,17 +43,17 @@ class ProfileUseCases(UseCase):
         else:
             raise UserAlreadyExistsError
         user.change_email(dto.new_email)
-        await self.uow.commit()
+        await self.uow.flush()
         return user
 
     async def change_password(self, user: User, dto: UserChangePassword) -> User:
         user.set_password(dto.password)
-        await self.uow.commit()
+        await self.uow.flush()
         return user
 
     async def delete_account(self, user: User) -> User:
         user = await self.uow.users.delete(user)
-        await self.uow.commit()
+        await self.uow.flush()
         return user
 
     async def get_many(self, pagination: Pagination, sorting: Sorting) -> Page[User]:
