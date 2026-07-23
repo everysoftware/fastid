@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from fastapi.testclient import TestClient
 from starlette import status
@@ -46,7 +48,7 @@ def test_rejects_missing_header(monkeypatch: pytest.MonkeyPatch, header: str) ->
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_treats_webhook_id_and_timestamp_as_opaque_signature_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_rejects_malformed_timestamp(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FASTID_WEBHOOK_SECRET", SECRET)
     value = payload()
     body, _ = signed_request(value)
@@ -55,8 +57,25 @@ def test_treats_webhook_id_and_timestamp_as_opaque_signature_inputs(monkeypatch:
     with TestClient(app) as client:
         response = client.post("/fastid-webhooks", content=body, headers=headers)
 
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    assert headers["webhook-id"] != value["event"]["event_id"]
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {"detail": "Invalid webhook-timestamp header"}
+
+
+@pytest.mark.parametrize("offset", [-3600, 3600])
+def test_rejects_timestamp_outside_tolerance(
+    monkeypatch: pytest.MonkeyPatch,
+    offset: int,
+) -> None:
+    monkeypatch.setenv("FASTID_WEBHOOK_SECRET", SECRET)
+    value = payload()
+    body, _ = signed_request(value)
+    headers = headers_for(body, "event-1", timestamp=int(time.time()) + offset)
+
+    with TestClient(app) as client:
+        response = client.post("/fastid-webhooks", content=body, headers=headers)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {"detail": "Webhook timestamp is outside the allowed tolerance"}
 
 
 def test_rejects_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:

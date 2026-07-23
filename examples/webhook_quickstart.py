@@ -5,6 +5,7 @@ import hmac
 import json
 import logging
 import os
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
@@ -14,6 +15,8 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
 
 log = logging.getLogger(__name__)
+
+TIMESTAMP_TOLERANCE_SECONDS = 300
 
 
 def _secret_bytes(secret: str) -> bytes:
@@ -86,9 +89,15 @@ app = FastAPI(lifespan=lifespan)
 async def receive_webhook(request: Request) -> Response:
     body = await request.body()
     webhook_id = _required_header(request, "webhook-id")
-    timestamp = _required_header(request, "webhook-timestamp")
+    timestamp_value = _required_header(request, "webhook-timestamp")
     signatures = _required_header(request, "webhook-signature")
-    if not verify_signature(body, webhook_id, timestamp, signatures, request.app.state.webhook_secret):
+    try:
+        timestamp = int(timestamp_value)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid webhook-timestamp header") from exc
+    if abs(int(time.time()) - timestamp) > TIMESTAMP_TOLERANCE_SECONDS:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Webhook timestamp is outside the allowed tolerance")
+    if not verify_signature(body, webhook_id, timestamp_value, signatures, request.app.state.webhook_secret):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid webhook signature")
     try:
         payload = json.loads(body)
