@@ -628,7 +628,7 @@ Runnable receiver examples are available for different integration stages:
 - [`webhook_quickstart.py`](../../../examples/webhook_quickstart.py) verifies a signature and logs the event.
 - [`webhook_advanced.py`](../../../examples/webhook_advanced.py) adds freshness checks, validation, limits, and an
   in-memory Webhook-ID idempotency boundary.
-- [`webhook_sqlalchemy.py`](../../../examples/webhook_sqlalchemy.py) persists atomic Webhook-ID claims with SQLAlchemy.
+- [`webhook_sqlalchemy.py`](../../../examples/webhook_advanced.py) persists atomic Webhook-ID claims with SQLAlchemy.
 
 The quick-start authenticates the request but does not provide replay protection or idempotency. The in-memory example
 is a concurrency reference, not durable storage. Use the SQLAlchemy example or another shared persistent store before

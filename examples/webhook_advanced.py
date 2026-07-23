@@ -1,4 +1,3 @@
-import asyncio
 import base64
 import binascii
 import hashlib
@@ -8,63 +7,93 @@ import os
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import Any, Literal, Protocol
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import Field, ValidationError
+from sqlalchemy import delete, update
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 MAX_BODY_BYTES = 1024 * 1024
 TIMESTAMP_TOLERANCE_SECONDS = 300
-ClaimStatus = Literal["processing", "completed"]
+DEFAULT_DATABASE_URL = "sqlite+aiosqlite:///webhook-events.sqlite3"
 EventProcessor = Callable[["WebhookEnvelope"], Awaitable[None]]
 
 log = logging.getLogger(__name__)
 
 
-class EventMetadata(BaseModel):
+class EventMetadata(PydanticBaseModel):
     event_id: UUID
     event_type: str = Field(min_length=1)
     timestamp: int
 
 
-class WebhookEnvelope(BaseModel):
+class WebhookEnvelope(PydanticBaseModel):
     event: EventMetadata
     data: dict[str, Any]
 
 
-class IdempotencyStore(Protocol):
-    async def claim(self, webhook_id: str) -> bool: ...
-
-    async def complete(self, webhook_id: str) -> None: ...
-
-    async def release(self, webhook_id: str) -> None: ...
+class Base(DeclarativeBase):
+    pass
 
 
-class InMemoryIdempotencyStore:
-    """Concurrency-safe within one process, but neither shared nor durable."""
+def utc_now() -> datetime:
+    return datetime.now(UTC)
 
-    def __init__(self) -> None:
-        self._claims: dict[str, ClaimStatus] = {}
-        self._lock = asyncio.Lock()
+
+class WebhookReceipt(Base):
+    __tablename__ = "webhook_receipts"
+
+    webhook_id: Mapped[str] = mapped_column(primary_key=True)
+    status: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(default=utc_now, onupdate=utc_now)
+
+
+def create_store_engine(database_url: str) -> AsyncEngine:
+    return create_async_engine(database_url)
+
+
+async def create_schema(engine: AsyncEngine) -> None:
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
+
+
+class SQLAlchemyIdempotencyStore:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+        self.session_factory = session_factory
 
     async def claim(self, webhook_id: str) -> bool:
-        async with self._lock:
-            if webhook_id in self._claims:
-                return False
-            self._claims[webhook_id] = "processing"
-            return True
+        try:
+            async with self.session_factory() as session, session.begin():
+                session.add(WebhookReceipt(webhook_id=webhook_id, status="processing"))
+                await session.flush()
+        except IntegrityError:
+            return False
+        return True
 
     async def complete(self, webhook_id: str) -> None:
-        async with self._lock:
-            if webhook_id in self._claims:
-                self._claims[webhook_id] = "completed"
+        async with self.session_factory() as session, session.begin():
+            await session.execute(
+                update(WebhookReceipt)
+                .where(WebhookReceipt.webhook_id == webhook_id)
+                .values(status="completed", updated_at=utc_now())
+            )
 
     async def release(self, webhook_id: str) -> None:
-        async with self._lock:
-            if self._claims.get(webhook_id) == "processing":
-                del self._claims[webhook_id]
+        async with self.session_factory() as session, session.begin():
+            await session.execute(
+                delete(WebhookReceipt).where(
+                    WebhookReceipt.webhook_id == webhook_id,
+                    WebhookReceipt.status == "processing",
+                )
+            )
 
 
 def _secret_bytes(secret: str) -> bytes:
@@ -140,14 +169,11 @@ async def _validated_event(request: Request) -> tuple[WebhookEnvelope, str]:
     return event, webhook_id
 
 
-async def _receive_webhook(
-    request: Request,
-    idempotency_store: IdempotencyStore,
-    processor: EventProcessor,
-) -> Response:
+async def _receive_webhook(request: Request, processor: EventProcessor) -> Response:
     event, webhook_id = await _validated_event(request)
+    store: SQLAlchemyIdempotencyStore = request.app.state.idempotency_store
     try:
-        claimed = await idempotency_store.claim(webhook_id)
+        claimed = await store.claim(webhook_id)
     except Exception as exc:
         log.exception("Could not claim FastID webhook: webhook_id=%s", webhook_id)
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Webhook processing failed") from exc
@@ -156,11 +182,11 @@ async def _receive_webhook(
 
     try:
         await processor(event)
-        await idempotency_store.complete(webhook_id)
+        await store.complete(webhook_id)
     except Exception as exc:
         log.exception("FastID webhook processing failed: webhook_id=%s", webhook_id)
         try:
-            await idempotency_store.release(webhook_id)
+            await store.release(webhook_id)
         except Exception:
             log.exception("Could not release FastID webhook claim: webhook_id=%s", webhook_id)
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Webhook processing failed") from exc
@@ -168,11 +194,9 @@ async def _receive_webhook(
 
 
 def create_app(
-    store: IdempotencyStore | None = None,
+    database_url: str | None = None,
     processor: EventProcessor = process_event,
 ) -> FastAPI:
-    idempotency_store = store or InMemoryIdempotencyStore()
-
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         secret = os.getenv("FASTID_WEBHOOK_SECRET")
@@ -183,14 +207,23 @@ def create_app(
             _secret_bytes(secret)
         except ValueError as exc:
             raise RuntimeError(str(exc)) from exc
+
+        selected_url = database_url or os.getenv("WEBHOOK_DATABASE_URL") or DEFAULT_DATABASE_URL
+        engine = create_store_engine(selected_url)
+        store = SQLAlchemyIdempotencyStore(async_sessionmaker(engine, expire_on_commit=False))
+        await create_schema(engine)
         app.state.webhook_secret = secret
-        yield
+        app.state.idempotency_store = store
+        try:
+            yield
+        finally:
+            await engine.dispose()
 
     webhook_app = FastAPI(lifespan=lifespan)
 
     @webhook_app.post("/fastid-webhooks", status_code=status.HTTP_204_NO_CONTENT)
     async def receive_webhook(request: Request) -> Response:
-        return await _receive_webhook(request, idempotency_store, processor)
+        return await _receive_webhook(request, processor)
 
     return webhook_app
 
@@ -199,4 +232,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    uvicorn.run("examples.webhook_advanced:app", host="127.0.0.1", port=8000)
+    uvicorn.run("examples.webhook_sqlalchemy:app", host="127.0.0.1", port=8000)

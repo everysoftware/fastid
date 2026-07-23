@@ -60,9 +60,7 @@ Runnable receivers are available for different integration stages:
 
 - [`webhook_quickstart.py`](../../../examples/webhook_quickstart.py) verifies a signature and logs the event. It does
   not check timestamp freshness or provide replay protection and idempotency.
-- [`webhook_advanced.py`](../../../examples/webhook_advanced.py) adds freshness checks, validation, request limits, and
-  an in-memory Webhook-ID idempotency boundary.
-- [`webhook_sqlalchemy.py`](../../../examples/webhook_sqlalchemy.py) persists atomic Webhook-ID claims with async
+- [`webhook_sqlalchemy.py`](../../../examples/webhook_advanced.py) persists atomic Webhook-ID claims with async
   SQLAlchemy. Install its SQLite driver with `poetry install --with examples`.
 
 The in-memory example is a concurrency reference, not durable storage. Use the SQLAlchemy example or another shared
