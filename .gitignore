@@ -164,3 +164,4 @@ cython_debug/
 .dev.env
 !.env.example
 certs
+.codegraph/
