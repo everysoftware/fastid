@@ -47,6 +47,8 @@ codespell = "^2.4.1"
 detect-secrets = "^1.5.0"
 coverage = {extras = ["html"], version = "^7.13.1"}
 smokeshow = "^0.5.0"
+aiosqlite = "^0.22.1"
+fastlink = "^0.1.6"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs-material = "^9.6.14"
@@ -55,13 +57,6 @@ mdx-include = "^1.4.2"
 mkdocs-markdownextradata-plugin = "^0.2.6"
 markdown-include-variants = "^0.0.4"
 
-
-[tool.poetry.group.examples]
-optional = true
-
-[tool.poetry.group.examples.dependencies]
-aiosqlite = "^0.21.0"
-fastlink = "^0.1.6"
 
 [build-system]
 requires = ["poetry-core"]
