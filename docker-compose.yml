@@ -71,7 +71,7 @@ services:
     env_file:
       - .env
     image: everysoftware/fastid:latest
-    entrypoint: ["python", "-m", "fastid.webhooks.worker"]
+    entrypoint: ["python", "-m", "fastid.background.runner", "--queues", "webhooks"]
     depends_on:
       fastid-app:
         condition: service_healthy

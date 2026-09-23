@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from prometheus_client import start_http_server
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import joinedload
 
@@ -271,13 +270,9 @@ class WebhookWorker:
 
 
 async def run_worker() -> None:
-    if webhook_settings.worker_metrics_port > 0:
-        start_http_server(webhook_settings.worker_metrics_port)
-    worker = WebhookWorker()
-    try:
-        await worker.run()
-    finally:
-        await client.aclose()
+    from fastid.background.runner import run_selected
+
+    await run_selected("webhooks")
 
 
 def main() -> None:

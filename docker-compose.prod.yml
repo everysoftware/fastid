@@ -9,3 +9,4 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       target: prod
+    entrypoint: ["python", "-m", "fastid.background.runner", "--queues", "webhooks"]

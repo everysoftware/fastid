@@ -86,7 +86,7 @@ services:
       dockerfile: docker/Dockerfile
       target: dev
     env_file: .env
-    entrypoint: ["poetry", "run", "python", "-m", "fastid.webhooks.worker"]
+    entrypoint: ["poetry", "run", "python", "-m", "fastid.background.runner", "--queues", "webhooks"]
     depends_on:
       fastid-app:
         condition: service_healthy

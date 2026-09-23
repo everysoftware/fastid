@@ -75,11 +75,13 @@ endpoint immediately after `410 Gone`, and disables it after all attempts are ex
 The API transaction stores delivery records; a separate worker sends them:
 
 ```console
-python -m fastid.webhooks.worker
+python -m fastid.background.runner --queues webhooks
 ```
 
-Docker Compose starts this worker automatically. Its Prometheus metrics are exposed on port `9101` inside the Compose
-network. Delivery and attempt history is also visible in the FastID admin application.
+Docker Compose starts this webhook-only worker automatically. The legacy `python -m fastid.webhooks.worker` command
+remains available as a compatibility wrapper. Its Prometheus metrics are exposed on port `9101` inside the Compose
+network. Delivery and attempt history is also visible in the FastID admin application. See
+[Background workers](background-workers.md) for combined and CPU-only deployment modes.
 
 ## Endpoint security
 
