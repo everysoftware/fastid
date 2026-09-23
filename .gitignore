@@ -167,3 +167,9 @@ certs
 
 # Git worktrees
 .worktrees/
+
+# AI agents
+.codegraph/
+docs/adr/
+docs/superpowers/
+docs/glossary.md
