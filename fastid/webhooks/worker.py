@@ -64,6 +64,9 @@ class WebhookWorker:
                     await asyncio.wait_for(self.stopping.wait(), timeout=webhook_settings.worker_poll_seconds)
         log.info("Webhook worker stopped")
 
+    def stop(self) -> None:
+        self.stopping.set()
+
     async def run_once(self) -> int:
         deliveries = await self._claim()
         await asyncio.gather(*(self._process_with_limit(delivery) for delivery in deliveries))
@@ -134,7 +137,14 @@ class WebhookWorker:
 
     async def _process_with_limit(self, delivery: ClaimedDelivery) -> None:
         async with self.semaphore:
-            await self._process(delivery)
+            try:
+                await self._process(delivery)
+            except Exception:
+                log.exception(
+                    "Unexpected webhook delivery error: webhook_id=%s event_id=%s",
+                    delivery.webhook_id,
+                    delivery.event_id,
+                )
 
     async def _process(self, delivery: ClaimedDelivery) -> None:
         timestamp = get_timestamp()

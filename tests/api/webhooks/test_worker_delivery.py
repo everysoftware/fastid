@@ -39,6 +39,18 @@ class StubSender(WebhookSender):
         )
 
 
+class SelectiveFailureSender(StubSender):
+    def __init__(self, failing_url: str) -> None:
+        super().__init__(204)
+        self.failing_url = failing_url
+
+    async def send(self, url: str, body: bytes, headers: dict[str, str]) -> WebhookResponse:
+        if url == self.failing_url:
+            msg = "unexpected sender failure"
+            raise RuntimeError(msg)
+        return await super().send(url, body, headers)
+
+
 @pytest.mark.parametrize(
     ("status_code", "expected_status", "active"),
     [
@@ -165,3 +177,58 @@ async def test_stale_worker_cannot_record_after_delivery_is_reclaimed(
     assert delivery.lease_token == second_claim.lease_token
     assert delivery.attempt_count == 0
     assert (await uow.webhook_attempts.get_many()).total == 0
+
+
+async def test_unexpected_sender_error_is_isolated_from_sibling_delivery(
+    client: AsyncClient,
+    webhook_registration: WebhookEndpoint,
+    oauth_app: AppDTO,
+    uow: SQLAlchemyUOW,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    webhook_registration.url = "https://example.com/webhooks/failure"
+    successful_endpoint = WebhookEndpoint(
+        app_id=oauth_app.id,
+        type=WebhookType.user_registration,
+        url="https://example.com/webhooks/success",
+    )
+    await uow.webhook_endpoints.add(successful_endpoint)
+    await uow.commit()
+    response = await client.post("/register", json=USER_CREATE.model_dump(mode="json"))
+    assert response.status_code == status.HTTP_201_CREATED
+    monkeypatch.setattr(worker_module, "get_uow_raw", get_test_uow)
+    sender = SelectiveFailureSender(webhook_registration.url)
+
+    assert await WebhookWorker(sender=sender).run_once() == WORKER_CONCURRENCY
+
+    failed = await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(webhook_registration.id))
+    succeeded = await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(successful_endpoint.id))
+    await uow.session.refresh(failed)
+    await uow.session.refresh(succeeded)
+    assert failed.status == WebhookDeliveryStatus.processing
+    assert failed.attempt_count == 0
+    assert failed.leased_until is not None
+    assert succeeded.status == WebhookDeliveryStatus.succeeded
+    assert succeeded.attempt_count == 1
+
+
+async def test_stop_exits_poll_loop_without_another_claim(monkeypatch: pytest.MonkeyPatch) -> None:
+    worker = WebhookWorker(sender=StubSender(204))
+    claim_started = asyncio.Event()
+    claim_count = 0
+
+    async def controlled_claim(limit: int | None = None) -> list[object]:
+        nonlocal claim_count
+        del limit
+        claim_count += 1
+        claim_started.set()
+        return []
+
+    monkeypatch.setattr(worker, "_claim", controlled_claim)
+    running = asyncio.create_task(worker.run())
+    await asyncio.wait_for(claim_started.wait(), timeout=1)
+
+    worker.stop()
+    await asyncio.wait_for(running, timeout=1)
+
+    assert claim_count == 1
