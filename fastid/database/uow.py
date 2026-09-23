@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from fastid.apps.repositories import AppRepository
 from fastid.auth.repositories import UserRepository
+from fastid.background.repositories import CPUJobRepository
 from fastid.notify.repositories import EmailTemplateRepository, NotificationRepository, TelegramTemplateRepository
 from fastid.oauth.repositories import OAuthAccountRepository, OAuthProviderRepository
 from fastid.webhooks.repositories import WebhookAttemptRepository, WebhookDeliveryRepository, WebhookEndpointRepository
@@ -31,6 +32,7 @@ class SQLAlchemyUOW:
     webhook_endpoints: WebhookEndpointRepository
     webhook_deliveries: WebhookDeliveryRepository
     webhook_attempts: WebhookAttemptRepository
+    cpu_jobs: CPUJobRepository
 
     session_factory: async_sessionmaker[AsyncSession]
     session: AsyncSession
@@ -50,6 +52,7 @@ class SQLAlchemyUOW:
         self.webhook_endpoints = WebhookEndpointRepository(self.session)
         self.webhook_deliveries = WebhookDeliveryRepository(self.session)
         self.webhook_attempts = WebhookAttemptRepository(self.session)
+        self.cpu_jobs = CPUJobRepository(self.session)
 
     @property
     def is_active(self) -> bool:

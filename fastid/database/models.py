@@ -3,6 +3,7 @@ from sqlalchemy.orm import configure_mappers
 
 from fastid.apps.models import App
 from fastid.auth.models import User
+from fastid.background.models import CPUJob
 from fastid.database.base import BaseOrm
 from fastid.notify.models import EmailTemplate, Notification, TelegramTemplate
 from fastid.oauth.models import OAuthAccount, OAuthProvider
@@ -25,6 +26,7 @@ from fastid.database.versioning import (  # noqa: E402
 __all__ = [
     "App",
     "BaseOrm",
+    "CPUJob",
     "OAuthAccount",
     "OAuthProvider",
     "User",
