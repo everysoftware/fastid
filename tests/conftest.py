@@ -12,6 +12,7 @@ from fastid.api.app import api_app
 from fastid.cache.config import redis_settings
 from fastid.cache.dependencies import get_cache
 from fastid.cache.storage import CacheStorage, RedisStorage
+from fastid.core.app import core_app
 from fastid.core.dependencies import log_provider
 from fastid.database.dependencies import get_uow_raw
 from fastid.database.uow import SQLAlchemyUOW
@@ -94,6 +95,24 @@ async def frontend_client() -> AsyncIterator[AsyncClient]:
         yield client
 
     frontend_app.dependency_overrides = {}
+
+
+@pytest.fixture
+async def core_client() -> AsyncIterator[AsyncClient]:
+    core_app.dependency_overrides[get_uow_raw] = get_test_uow
+    core_app.dependency_overrides[get_cache] = get_test_cache
+    core_app.dependency_overrides[get_smtp] = lambda: MagicMock()
+    core_app.dependency_overrides[get_bot] = lambda: AsyncMock()
+
+    transport = ASGITransport(app=core_app)
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://testserver",
+        headers={"Content-Type": "application/json"},
+    ) as client:
+        yield client
+
+    core_app.dependency_overrides = {}
 
 
 @pytest.fixture

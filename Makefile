@@ -7,15 +7,19 @@ certs:
 
 .PHONY: deps
 deps:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up postgres redis -d --build --remove-orphans --wait
+	docker compose -f compose.yml -f compose-dev.yml up postgres redis -d --build --remove-orphans --wait
 
 .PHONY: up
 up:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build --remove-orphans --wait
+	docker compose -f compose.yml -f compose-dev.yml up --build --remove-orphans --wait
+
+.PHONY: recreate
+recreate:
+	docker compose -f compose.yml -f compose-dev.yml up --build --force-recreate --remove-orphans --wait
 
 .PHONY: start
 start:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml start
+	docker compose -f compose.yml -f compose-dev.yml start
 
 .PHONY: build
 build:
@@ -23,15 +27,15 @@ build:
 
 .PHONY: up-obs
 up-obs:
-	docker compose -f docker-compose.dev.yml -f docker-compose.observability.yml up --build --remove-orphans --wait
+	docker compose -f compose-dev.yml -f compose-observability.yml up --build --remove-orphans --wait
 
 .PHONY: up-prod
 up-prod:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.prod.yml up --build --remove-orphans --wait
+	docker compose -f compose.yml -f compose-dev.yml -f compose-prod.yml up --build --remove-orphans --wait
 
 .PHONY: up-prod-obs
 up-prod-obs:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.prod.yml -f docker-compose.observability.yml up --build --remove-orphans --wait
+	docker compose -f compose.yml -f compose-dev.yml -f compose-prod.yml -f compose-obs.yml up --build --remove-orphans --wait
 
 .PHONY: test
 test:
@@ -47,15 +51,15 @@ testcov:
 
 .PHONY: stop
 stop:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml stop
+	docker compose -f compose.yml -f compose-dev.yml stop
 
 .PHONY: down
 down:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+	docker compose -f compose.yml -f compose-dev.yml down
 
 .PHONY: restart
 restart:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml restart
+	docker compose -f compose.yml -f compose-dev.yml restart
 
 .PHONY: lint
 lint:

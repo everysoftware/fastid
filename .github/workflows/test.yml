@@ -60,8 +60,8 @@ jobs:
       - name: Setup test environment
         run: |
           touch .env
-          docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v --remove-orphans
-          docker compose -f docker-compose.yml -f docker-compose.dev.yml up postgres redis -d --wait --remove-orphans
+          docker compose -f compose.yml -f compose-dev.yml down -v --remove-orphans
+          docker compose -f compose.yml -f compose-dev.yml up postgres redis -d --wait --remove-orphans
           poetry run make certs
 
       - name: Run tests
@@ -77,7 +77,7 @@ jobs:
 
       - name: Teardown test environment
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v --remove-orphans
+          docker compose -f compose.yml -f compose-dev.yml down -v --remove-orphans
 
       - name: Store coverage files
         uses: actions/upload-artifact@v4
