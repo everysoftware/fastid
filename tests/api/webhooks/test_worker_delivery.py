@@ -138,3 +138,30 @@ async def test_worker_claim_does_not_exceed_concurrency(
     claimed = await WebhookWorker(sender=StubSender(204))._claim()  # noqa: SLF001
 
     assert len(claimed) == WORKER_CONCURRENCY
+
+
+async def test_stale_worker_cannot_record_after_delivery_is_reclaimed(
+    client: AsyncClient,
+    webhook_registration: WebhookEndpoint,
+    uow: SQLAlchemyUOW,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response = await client.post("/register", json=USER_CREATE.model_dump(mode="json"))
+    assert response.status_code == status.HTTP_201_CREATED
+    monkeypatch.setattr(worker_module, "get_uow_raw", get_test_uow)
+    worker = WebhookWorker(sender=StubSender(204))
+
+    first_claim = (await worker._claim(limit=1))[0]  # noqa: SLF001
+    delivery = await uow.webhook_deliveries.find(WebhookDeliveryEndpointIDSpecification(webhook_registration.id))
+    delivery.leased_until = naive_utc() - timedelta(seconds=1)
+    await uow.commit()
+    second_claim = (await worker._claim(limit=1))[0]  # noqa: SLF001
+
+    assert first_claim.lease_token != second_claim.lease_token
+    await worker._process(first_claim)  # noqa: SLF001
+
+    await uow.session.refresh(delivery)
+    assert delivery.status == WebhookDeliveryStatus.processing
+    assert delivery.lease_token == second_claim.lease_token
+    assert delivery.attempt_count == 0
+    assert (await uow.webhook_attempts.get_many()).total == 0

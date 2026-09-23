@@ -12,7 +12,7 @@ from sqlalchemy.orm import joinedload
 
 from fastid.database.dependencies import get_uow_raw
 from fastid.database.uow import SQLAlchemyUOW
-from fastid.database.utils import naive_utc
+from fastid.database.utils import naive_utc, uuid
 from fastid.security.webhooks import generate_delivery_headers, get_timestamp, serialize_payload
 from fastid.webhooks.config import webhook_settings
 from fastid.webhooks.metrics import ATTEMPT_DURATION, ATTEMPTS, DISABLED_ENDPOINTS, DUE_DELIVERIES
@@ -41,6 +41,7 @@ def get_retry_delay(attempt_number: int, retry_after_seconds: int | None, *, jit
 @dataclass(frozen=True)
 class ClaimedDelivery:
     webhook_id: UUID
+    lease_token: UUID
     event_id: UUID
     event_type: str
     payload: dict[str, object]
@@ -110,12 +111,17 @@ class WebhookWorker:
                     delivery.status = WebhookDeliveryStatus.cancelled
                     delivery.completed_at = now
                     delivery.error = "endpoint disabled"
+                    delivery.leased_until = None
+                    delivery.lease_token = None
                     continue
+                lease_token = uuid()
                 delivery.status = WebhookDeliveryStatus.processing
                 delivery.leased_until = lease
+                delivery.lease_token = lease_token
                 claimed.append(
                     ClaimedDelivery(
                         webhook_id=delivery.id,
+                        lease_token=lease_token,
                         event_id=delivery.event_id,
                         event_type=str(delivery.event_type),
                         payload=delivery.payload,
@@ -140,20 +146,36 @@ class WebhookWorker:
             delivery.endpoint_secret,
         )
         response = await self.sender.send(delivery.endpoint_url, body, headers)
-        await self._record(delivery.webhook_id, delivery.event_type, timestamp, headers, response)
+        await self._record(
+            delivery,
+            timestamp,
+            headers,
+            response,
+        )
 
     async def _record(
         self,
-        webhook_id: UUID,
-        event_type: str,
+        claimed: ClaimedDelivery,
         timestamp: int,
         headers: dict[str, str],
         response: WebhookResponse,
-    ) -> None:
+    ) -> bool:
         now = naive_utc()
         uow = get_uow_raw()
         async with uow:
-            delivery = await uow.webhook_deliveries.get(webhook_id)
+            stmt = (
+                select(WebhookDelivery)
+                .where(
+                    WebhookDelivery.id == claimed.webhook_id,
+                    WebhookDelivery.status == WebhookDeliveryStatus.processing,
+                    WebhookDelivery.lease_token == claimed.lease_token,
+                )
+                .with_for_update()
+            )
+            delivery = await uow.session.scalar(stmt)
+            if delivery is None:
+                log.warning("Discarding stale webhook result: webhook_id=%s", claimed.webhook_id)
+                return False
             endpoint = await uow.webhook_endpoints.get(delivery.endpoint_id)
             attempt_number = delivery.attempt_count + 1
             stored_headers = {
@@ -177,6 +199,7 @@ class WebhookWorker:
             delivery.response = response.content
             delivery.error = response.error
             delivery.leased_until = None
+            delivery.lease_token = None
 
             if HTTP_OK <= response.status_code < HTTP_MULTIPLE_CHOICES:
                 delivery.status = WebhookDeliveryStatus.succeeded
@@ -195,8 +218,8 @@ class WebhookWorker:
                 delivery.status = WebhookDeliveryStatus.pending
                 delivery.next_attempt_at = now + timedelta(seconds=delay)
                 outcome = "retry"
-            ATTEMPTS.labels(event_type=event_type, outcome=outcome).inc()
-            ATTEMPT_DURATION.labels(event_type=event_type).observe(response.duration_ms / 1000)
+            ATTEMPTS.labels(event_type=claimed.event_type, outcome=outcome).inc()
+            ATTEMPT_DURATION.labels(event_type=claimed.event_type).observe(response.duration_ms / 1000)
             log.info(
                 "Webhook attempt completed: webhook_id=%s event_id=%s attempt=%d status_code=%d state=%s duration_ms=%d",
                 delivery.id,
@@ -206,6 +229,8 @@ class WebhookWorker:
                 delivery.status,
                 response.duration_ms,
             )
+            return True
+        return False  # pragma: no cover - the unit of work context always enters
 
     @staticmethod
     async def _disable(
@@ -225,7 +250,13 @@ class WebhookWorker:
                 WebhookDelivery.id != delivery.id,
                 WebhookDelivery.status.in_((WebhookDeliveryStatus.pending, WebhookDeliveryStatus.processing)),
             )
-            .values(status=WebhookDeliveryStatus.cancelled, completed_at=now, error="endpoint disabled")
+            .values(
+                status=WebhookDeliveryStatus.cancelled,
+                completed_at=now,
+                error="endpoint disabled",
+                leased_until=None,
+                lease_token=None,
+            )
         )
 
 

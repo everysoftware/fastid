@@ -64,6 +64,7 @@ class WebhookDelivery(Entity):
     attempt_count: Mapped[int] = mapped_column(default=0)
     next_attempt_at: Mapped[datetime.datetime] = mapped_column(index=True)
     leased_until: Mapped[datetime.datetime | None] = mapped_column(index=True)
+    lease_token: Mapped[UUID | None] = mapped_column(index=True)
     completed_at: Mapped[datetime.datetime | None]
     request: Mapped[dict[str, Any] | None]
     status_code: Mapped[int | None]
