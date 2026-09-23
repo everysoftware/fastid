@@ -4,6 +4,13 @@ set -e
 
 alembic upgrade head
 
+PROMETHEUS_MULTIPROC_DIR=${PROMETHEUS_MULTIPROC_DIR:-/tmp/prometheus_multiproc}
+
+rm -rf "$PROMETHEUS_MULTIPROC_DIR"
+mkdir -p "$PROMETHEUS_MULTIPROC_DIR"
+
+export PROMETHEUS_MULTIPROC_DIR
+
 if [ -z "$FASTID_GUNICORN_WORKERS" ]; then
     CPU_COUNT=$(nproc --all 2>/dev/null || grep -c ^processor /proc/cpuinfo 2>/dev/null || echo 1)
     WORKERS=$CPU_COUNT
@@ -40,6 +47,7 @@ exec gunicorn \
     -k "$WORKER_CLASS" \
     "$APP" \
     -b "$BIND" \
+    --config gunicorn.conf.py \
     --worker-connections "$WORKER_CONNECTIONS" \
     --backlog "$BACKLOG" \
     --timeout "$TIMEOUT" \
@@ -47,5 +55,4 @@ exec gunicorn \
     --keep-alive "$KEEP_ALIVE" \
     --max-requests "$MAX_REQUESTS" \
     --max-requests-jitter "$MAX_REQUESTS_JITTER" \
-    --preload \
     "$@"

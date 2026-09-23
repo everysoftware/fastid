@@ -17,7 +17,6 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp, *, app_name: str = "fastid") -> None:
         super().__init__(app)
         self.app_name = app_name
-        panels.INFO.labels(app_name=self.app_name).inc()
 
     @staticmethod
     def get_path(request: Request) -> tuple[str, bool]:

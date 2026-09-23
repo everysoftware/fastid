@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import FastAPI
-from prometheus_client import REGISTRY
+from prometheus_client import CollectorRegistry, multiprocess
 from prometheus_client.openmetrics.exposition import (
     CONTENT_TYPE_LATEST,
     generate_latest,
@@ -34,7 +34,10 @@ class MetricsPlugin(Plugin):
 
 
 def get_metrics(_request: Request) -> Response:
+    registry = CollectorRegistry()
+    multiprocess.MultiProcessCollector(registry)  # type: ignore[no-untyped-call]
+
     return Response(
-        generate_latest(REGISTRY),  # type: ignore[no-untyped-call]
+        generate_latest(registry),  # type: ignore[no-untyped-call]
         headers={"Content-Type": CONTENT_TYPE_LATEST},
     )

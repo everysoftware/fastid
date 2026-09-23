@@ -77,6 +77,7 @@ COPY ./migrations ./migrations
 COPY ./alembic.ini ./
 COPY ./templates ./templates
 COPY ./static ./static
+COPY ./gunicorn.conf.py ./gunicorn.conf.py
 
 # Entrypoint script
 COPY ./docker/entrypoint.sh /entrypoint.sh
