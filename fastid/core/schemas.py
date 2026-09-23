@@ -8,7 +8,7 @@ from pydantic import ConfigDict
 from pydantic_settings import BaseSettings as PydanticBaseSettings
 from pydantic_settings import SettingsConfigDict
 
-ENV_FILE = ".env"
+ENV_FILE = (".env", ".env.local")
 ENV_PREFIX = "fastid_"
 
 

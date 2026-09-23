@@ -16,7 +16,8 @@ if observability_settings.metrics_enabled:
 if observability_settings.tracing_enabled:
     tracing_plugin = TracingPlugin(
         app_name=branding_settings.service_name,
-        export_url=observability_settings.tempo_url,
+        environment=observability_settings.environment,
+        otlp_endpoint=observability_settings.otlp_endpoint,
         instrument=["logger", "httpx", "sqlalchemy"],
         engine=engine,
     )

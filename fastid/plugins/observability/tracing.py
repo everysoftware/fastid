@@ -52,12 +52,14 @@ class TracingPlugin(Plugin):
         self,
         *,
         app_name: str = "fastid",
-        export_url: str = "http://localhost:4317",
+        environment: str = "development",
+        otlp_endpoint: str = "http://127.0.0.1:4317",
         instrument: Sequence[Instrument] = ("logger", "httpx"),
         **extra: Any,
     ) -> None:
         self.app_name = app_name
-        self.export_url = export_url
+        self.environment = environment
+        self.otlp_endpoint = otlp_endpoint
         self.instrument = instrument
         self.extra = extra
 
@@ -66,12 +68,19 @@ class TracingPlugin(Plugin):
         resource = Resource.create(
             attributes={
                 "service.name": self.app_name,
-                "compose_service": self.app_name,
+                "deployment.environment.name": self.environment,
             },
         )
         tracer = TracerProvider(resource=resource)
         trace.set_tracer_provider(tracer)
-        tracer.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=self.export_url)))
+        tracer.add_span_processor(
+            BatchSpanProcessor(
+                OTLPSpanExporter(
+                    endpoint=self.otlp_endpoint,
+                    insecure=True,
+                )
+            )
+        )
         if "logger" in self.instrument:
             LoggingInstrumentor().instrument(tracer_provider=tracer, set_logging_format=True)
         if "httpx" in self.instrument:

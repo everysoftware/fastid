@@ -1,0 +1,24 @@
+services:
+  postgres:
+    ports:
+      - "5412:5432"
+  redis:
+    ports:
+      - "6312:6379"
+  mailpit:
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+  fastid-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: dev
+    volumes:
+      - "./migrations:/opt/fastid/migrations"
+      - "./fastid:/opt/fastid/fastid"
+      - "./templates:/opt/fastid/templates"
+      - "./static:/opt/fastid/static"
+
+volumes:
+  pg_data:

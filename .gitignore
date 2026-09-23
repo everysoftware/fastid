@@ -160,8 +160,16 @@ cython_debug/
 .idea/
 
 # Environments
-*.env
-.dev.env
-!.env.example
-certs
+*.env*
+certs/
+
+# Git worktrees
+.worktrees/
+
+# AI agents
 .codegraph/
+docs/adr/
+docs/superpowers/
+docs/glossary.md
+compose-obs.yml
+compose-prod.yml
