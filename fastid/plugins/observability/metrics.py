@@ -15,7 +15,7 @@ from fastid.plugins.observability.prometheus import PrometheusMiddleware
 
 class EndpointFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return record.getMessage().find("GET /metrics") == -1 and record.getMessage().find("GET /api/v1/metrics") == -1
+        return record.getMessage().find("GET /metrics") == -1
 
 
 class MetricsPlugin(Plugin):
@@ -31,7 +31,6 @@ class MetricsPlugin(Plugin):
             PrometheusMiddleware,
             app_name=self.app_name,
         )
-        app.add_route("/metrics", get_metrics)
 
 
 def get_metrics(_request: Request) -> Response:

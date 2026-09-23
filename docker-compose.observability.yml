@@ -1,25 +1,35 @@
 x-logging: &default-logging
-  driver: loki
+  driver: json-file
   options:
-    loki-url: '${LOKI_URL:-http://localhost:3100/api/prom/push}'
-    loki-pipeline-stages: |
-      - multiline:
-          firstline: '^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}'
-          max_wait_time: 3s
-      - regex:
-          expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},d{3}) (?P<message>(?s:.*))$$'
+    max-size: "10m"
+    max-file: "3"
+
+x-observability: &observability
+  evsoft.observability.enabled: "true"
+  evsoft.observability.project: "${APP_PROJECT:-fastid}"
+  evsoft.observability.environment: "${APP_ENVIRONMENT:-development}"
 
 services:
   postgres:
     logging: *default-logging
+    labels:
+      <<: *observability
+      evsoft.observability.service: "postgres"
+
   redis:
     logging: *default-logging
+    labels:
+      <<: *observability
+      evsoft.observability.service: "redis"
+
   mailpit:
     logging: *default-logging
+    labels:
+      <<: *observability
+      evsoft.observability.service: "mailpit"
+
   fastid-app:
     logging: *default-logging
-
-networks:
-  default:
-    name: observability_net
-    external: true
+    labels:
+      <<: *observability
+      evsoft.observability.service: "${APP_SERVICE:-fastid}"
