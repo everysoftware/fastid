@@ -173,3 +173,5 @@ certs
 docs/adr/
 docs/superpowers/
 docs/glossary.md
+docker-compose.observability.yml
+docker-compose.prod.yml
