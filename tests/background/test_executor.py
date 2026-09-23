@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 
 import pytest
 
@@ -70,3 +71,15 @@ async def test_executor_enforces_timeout() -> None:
             await executor.execute(sleeps, {"seconds": 0.3}, timeout_seconds=0.05)
     finally:
         await executor.aclose()
+
+
+async def test_executor_close_terminates_running_timed_out_work() -> None:
+    executor = ProcessExecutor(max_workers=1)
+    await executor.execute(process_id, {}, timeout_seconds=5)
+    started = time.monotonic()
+
+    with pytest.raises(CPUExecutionTimeoutError):
+        await executor.execute(sleeps, {"seconds": 2}, timeout_seconds=0.05)
+    await executor.aclose()
+
+    assert time.monotonic() - started < 1

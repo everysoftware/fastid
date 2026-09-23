@@ -7,6 +7,16 @@ from typing import Any
 type CPUHandler = Callable[[dict[str, Any]], dict[str, Any]]
 
 
+def _terminate_pool(pool: ProcessPoolExecutor) -> None:
+    processes = tuple(pool._processes.values())  # noqa: SLF001 - no public termination API before Python 3.14
+    pool.shutdown(wait=False, cancel_futures=True)
+    for process in processes:
+        if process.is_alive():
+            process.terminate()
+    for process in processes:
+        process.join(timeout=1)
+
+
 class UnknownCPUHandlerError(LookupError):
     pass
 
@@ -72,4 +82,4 @@ class ProcessExecutor:
         if pool is None:
             return
         self._pool = None
-        await asyncio.to_thread(pool.shutdown, wait=True, cancel_futures=True)
+        await asyncio.to_thread(_terminate_pool, pool)

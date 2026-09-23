@@ -1,3 +1,6 @@
+from typing import Self
+
+from pydantic import model_validator
 from pydantic_settings import SettingsConfigDict
 
 from fastid.core.schemas import ENV_PREFIX, BaseSettings
@@ -14,6 +17,13 @@ class CPUWorkerSettings(BaseSettings):
     retry_delays_seconds: tuple[int, ...] = (5, 30, 300)
 
     model_config = SettingsConfigDict(env_prefix=f"{ENV_PREFIX}cpu_worker_")
+
+    @model_validator(mode="after")
+    def validate_heartbeat_interval(self) -> Self:
+        if self.heartbeat_seconds >= self.lease_seconds:
+            msg = "heartbeat_seconds must be shorter than lease_seconds"
+            raise ValueError(msg)
+        return self
 
 
 cpu_worker_settings = CPUWorkerSettings()
