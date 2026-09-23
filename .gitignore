@@ -164,4 +164,12 @@ cython_debug/
 .dev.env
 !.env.example
 certs
+
+# Git worktrees
+.worktrees/
+
+# AI agents
 .codegraph/
+docs/adr/
+docs/superpowers/
+docs/glossary.md
