@@ -54,7 +54,7 @@
 ### Download the Compose file
 
 ```bash
-wget https://raw.githubusercontent.com/everysoftware/fastid/refs/heads/master/docker-compose.yml
+wget https://raw.githubusercontent.com/everysoftware/fastid/refs/heads/master/compose.yml
 ```
 
 ### Generate keys

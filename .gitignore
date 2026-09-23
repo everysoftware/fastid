@@ -160,10 +160,8 @@ cython_debug/
 .idea/
 
 # Environments
-*.env
-.dev.env
-!.env.example
-certs
+*.env*
+certs/
 
 # Git worktrees
 .worktrees/
