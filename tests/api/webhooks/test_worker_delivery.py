@@ -6,10 +6,12 @@ from httpx import AsyncClient
 from starlette import status
 
 import fastid.webhooks.worker as worker_module
+from fastid.apps.schemas import AppDTO
 from fastid.database.uow import SQLAlchemyUOW
 from fastid.database.utils import naive_utc
 from fastid.security.webhooks import verify_standard_headers
-from fastid.webhooks.models import WebhookDeliveryStatus, WebhookEndpoint
+from fastid.webhooks.config import webhook_settings
+from fastid.webhooks.models import WebhookDeliveryStatus, WebhookEndpoint, WebhookType
 from fastid.webhooks.repositories import WebhookDeliveryEndpointIDSpecification
 from fastid.webhooks.senders.httpx import WebhookResponse, WebhookSender
 from fastid.webhooks.worker import WebhookWorker
@@ -17,6 +19,7 @@ from tests.dependencies import get_test_uow
 from tests.mocks import USER_CREATE
 
 HTTP_MULTIPLE_CHOICES = 300
+WORKER_CONCURRENCY = 2
 
 
 class StubSender(WebhookSender):
@@ -109,3 +112,29 @@ async def test_worker_recovers_an_expired_lease(
 
     await uow.session.refresh(delivery)
     assert delivery.status == WebhookDeliveryStatus.succeeded
+
+
+async def test_worker_claim_does_not_exceed_concurrency(
+    client: AsyncClient,
+    oauth_app: AppDTO,
+    uow: SQLAlchemyUOW,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for index in range(5):
+        await uow.webhook_endpoints.add(
+            WebhookEndpoint(
+                app_id=oauth_app.id,
+                type=WebhookType.user_registration,
+                url=f"https://example.com/webhooks/{index}",
+            )
+        )
+    await uow.commit()
+    response = await client.post("/register", json=USER_CREATE.model_dump(mode="json"))
+    assert response.status_code == status.HTTP_201_CREATED
+    monkeypatch.setattr(worker_module, "get_uow_raw", get_test_uow)
+    monkeypatch.setattr(webhook_settings, "worker_batch_size", 100)
+    monkeypatch.setattr(webhook_settings, "worker_concurrency", WORKER_CONCURRENCY)
+
+    claimed = await WebhookWorker(sender=StubSender(204))._claim()  # noqa: SLF001
+
+    assert len(claimed) == WORKER_CONCURRENCY

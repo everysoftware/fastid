@@ -1,4 +1,7 @@
+from collections.abc import Sequence
 from typing import Any
+
+from sqlalchemy import select
 
 from fastid.database.repository import SQLAlchemyRepository
 from fastid.database.specification import Specification
@@ -8,6 +11,11 @@ from fastid.webhooks.models import WebhookAttempt, WebhookDelivery, WebhookEndpo
 
 class WebhookEndpointRepository(SQLAlchemyRepository[WebhookEndpoint]):
     model_type = WebhookEndpoint
+
+    async def get_active_for_type(self, webhook_type: WebhookType) -> Sequence[WebhookEndpoint]:
+        stmt = WebhookEndpointTypeSpecification(webhook_type).apply(select(WebhookEndpoint))
+        result = await self.session.scalars(stmt)
+        return result.all()
 
 
 class WebhookEndpointTypeSpecification(Specification):

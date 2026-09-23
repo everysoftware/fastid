@@ -68,9 +68,11 @@ class WebhookWorker:
         await asyncio.gather(*(self._process_with_limit(delivery) for delivery in deliveries))
         return len(deliveries)
 
-    async def _claim(self) -> list[ClaimedDelivery]:
+    async def _claim(self, limit: int | None = None) -> list[ClaimedDelivery]:
         now = naive_utc()
         lease = now + timedelta(seconds=webhook_settings.worker_lease_seconds)
+        if limit is None:
+            limit = min(webhook_settings.worker_batch_size, webhook_settings.worker_concurrency)
         uow = get_uow_raw()
         async with uow:
             stmt = (
@@ -85,7 +87,7 @@ class WebhookWorker:
                     ),
                 )
                 .order_by(WebhookDelivery.next_attempt_at, WebhookDelivery.created_at)
-                .limit(webhook_settings.worker_batch_size)
+                .limit(limit)
                 .with_for_update(skip_locked=True, of=WebhookDelivery)
             )
             rows = list((await uow.session.scalars(stmt)).all())
