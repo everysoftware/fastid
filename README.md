@@ -25,7 +25,7 @@
 
 ---
 
-**Live Demo:** [https://fastid.evsoft.dev](https://fastid.croce.ru)
+**Live Demo:** [https://fastid.evsoft.dev](https://fastid.evsoft.dev)
 
 **Documentation:** [https://everysoftware.github.io/fastid](https://everysoftware.github.io/fastid)
 
