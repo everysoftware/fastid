@@ -8,3 +8,7 @@ class KeyNotFoundError(CacheError):
 
 class LockError(CacheError):
     pass
+
+
+class LockLostError(LockError):
+    pass

@@ -7,7 +7,7 @@ from fastid.core.config import CoreSettings
 from fastid.core.dependencies import get_core_settings
 
 
-def get_server_url(
+async def get_server_url(
     request: Request,
     settings: CoreSettings = Depends(get_core_settings),
 ) -> str:

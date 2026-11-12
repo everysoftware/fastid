@@ -5,12 +5,12 @@ from fastapi import FastAPI
 
 from fastid.admin.app import admin_app
 from fastid.api.app import api_app
-from fastid.cache.dependencies import get_cache
+from fastid.cache.dependencies import create_cache
 from fastid.core.config import core_settings
 from fastid.core.debug import debug_router
 from fastid.core.health import health_router
 from fastid.core.lifespan import LifespanTasks
-from fastid.database.dependencies import get_uow_raw
+from fastid.database.dependencies import create_uow, engine
 from fastid.frontend.app import frontend_app
 from fastid.plugins.observability.metrics import get_metrics
 
@@ -18,13 +18,16 @@ from fastid.plugins.observability.metrics import get_metrics
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     # Startup tasks
-    tasks = LifespanTasks(uow_factory=get_uow_raw, cache_factory=get_cache)
-    async with tasks:
-        await tasks.on_startup()
-    yield
-    # Shutdown tasks
-    async with tasks:
-        await tasks.on_shutdown()
+    tasks = LifespanTasks(uow_factory=create_uow, cache_factory=create_cache)
+    try:
+        async with tasks:
+            await tasks.on_startup()
+        yield
+    finally:
+        try:
+            await tasks.on_shutdown()
+        finally:
+            await engine.dispose()
 
 
 core_app = FastAPI(lifespan=lifespan)

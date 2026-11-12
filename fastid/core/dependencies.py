@@ -6,5 +6,5 @@ log_provider = LogProvider(config_dict)
 log = log_provider.logger(branding_settings.service_name)
 
 
-def get_core_settings() -> CoreSettings:
+async def get_core_settings() -> CoreSettings:
     return core_settings

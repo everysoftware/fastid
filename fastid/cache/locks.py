@@ -5,7 +5,7 @@ from typing import Self
 
 from redis.asyncio import Redis
 
-from fastid.cache.exceptions import LockError
+from fastid.cache.exceptions import LockError, LockLostError
 
 UNLOCK_SCRIPT = """
     if redis.call("get", KEYS[1]) == ARGV[1] then
@@ -61,6 +61,27 @@ class DistributedLock:
                     ex=self._lock_timeout,
                 )
             )
+
+    async def set_if_owned(self, key: str, value: str, expire: int | None) -> None:
+        # Check ownership and publish in one Redis operation. A delayed holder
+        # must never publish after expiry or a committed mutation invalidates it.
+        script = """
+            if redis.call('get', KEYS[1]) ~= ARGV[1] then return 0 end
+            if ARGV[3] == '' then
+                redis.call('set', KEYS[2], ARGV[2])
+            else
+                redis.call('set', KEYS[2], ARGV[2], 'EX', ARGV[3])
+            end
+            return 1
+        """
+        publish = self._redis.register_script(script)
+        published = await publish(
+            keys=[self._name, key],
+            args=[self._token, value, "" if expire is None else str(expire)],
+        )
+        if not published:
+            msg = "Cache fill lost its lock before publication"
+            raise LockLostError(msg)
 
     async def release(self) -> None:
         if not self._token:

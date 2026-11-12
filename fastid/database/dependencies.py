@@ -24,11 +24,13 @@ def build_connect_args(settings: DBSettings) -> dict[str, Any]:
     return args
 
 
+pool_size, max_overflow = db_settings.pool_limits
+
 engine = create_async_engine(
     db_settings.url,
     echo=db_settings.echo,
-    pool_size=db_settings.pool_size,
-    max_overflow=db_settings.max_overflow,
+    pool_size=pool_size,
+    max_overflow=max_overflow,
     pool_recycle=db_settings.pool_recycle,
     pool_timeout=db_settings.pool_timeout,
     pool_pre_ping=db_settings.pool_pre_ping,
@@ -37,8 +39,12 @@ engine = create_async_engine(
 session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
 
-def get_uow_raw() -> SQLAlchemyUOW:
+def create_uow() -> SQLAlchemyUOW:
     return SQLAlchemyUOW(session_factory)
+
+
+async def get_uow_raw() -> SQLAlchemyUOW:
+    return create_uow()
 
 
 async def get_uow(uow: Annotated[SQLAlchemyUOW, Depends(get_uow_raw)]) -> AsyncIterator[SQLAlchemyUOW]:

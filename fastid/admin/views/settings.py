@@ -1,7 +1,12 @@
+from typing import Any
+
 from sqladmin.filters import AllUniqueStringValuesFilter, BooleanFilter, OperationColumnFilter
+from sqlalchemy.ext.asyncio import async_object_session
+from starlette.requests import Request
 
 from fastid.admin.views.base import BaseView
 from fastid.admin.views.utils import json_format
+from fastid.cache.dependencies import create_cache
 from fastid.database.models import App, EmailTemplate, OAuthProvider, TelegramTemplate, Webhook, WebhookEvent
 
 
@@ -24,6 +29,30 @@ class AppAdmin(BaseView, model=App):
         OperationColumnFilter(App.client_id),
         OperationColumnFilter(App.redirect_uris),
     ]
+
+    async def on_model_change(self, data: dict[str, Any], model: App, is_created: bool, request: Request) -> None:  # noqa: ARG002, FBT001 - SQLAdmin callback signature
+        if not is_created:
+            session = async_object_session(model)
+            assert session is not None
+            await session.refresh(model, with_for_update=True)
+            request.state.old_client_id = model.client_id
+
+    async def after_model_change(self, data: dict[str, Any], model: App, is_created: bool, request: Request) -> None:  # noqa: ARG002, FBT001 - SQLAdmin callback signature
+        client_ids = {model.client_id}
+        if not is_created:
+            client_ids.add(request.state.old_client_id)
+        cache = create_cache()
+        for client_id in client_ids:
+            await cache.invalidate(f"apps:{client_id}")
+
+    async def on_model_delete(self, model: App, request: Request) -> None:
+        session = async_object_session(model)
+        assert session is not None
+        await session.refresh(model, with_for_update=True)
+        request.state.old_client_id = model.client_id
+
+    async def after_model_delete(self, _model: App, request: Request) -> None:
+        await create_cache().invalidate(f"apps:{request.state.old_client_id}")
 
 
 class OAuthProviderAdmin(BaseView, model=OAuthProvider):

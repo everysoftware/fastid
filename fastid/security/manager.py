@@ -36,12 +36,17 @@ class JWTManager:  # pragma: nocover
         if config.expires_in is not None:
             claims["exp"] = now + config.expires_in
         assert config.private_key is not None
-        token = await anyio.to_thread.run_sync(
-            jwt.encode,
-            claims,
-            config.private_key,
-            config.algorithm,
-        )
+        if config.algorithm.startswith("HS"):
+            # HMAC signing is a small CPU operation; avoiding a worker-thread
+            # handoff reduces per-token overhead on the async hot path.
+            token = jwt.encode(claims, config.private_key, algorithm=config.algorithm)
+        else:
+            token = await anyio.to_thread.run_sync(
+                jwt.encode,
+                claims,
+                config.private_key,
+                config.algorithm,
+            )
         return token, claims
 
     def create(

@@ -8,7 +8,7 @@ from fastid.webhooks.senders.httpx import WebhookSender
 client = httpx.AsyncClient()
 
 
-def get_sender() -> WebhookSender:
+async def get_sender() -> WebhookSender:
     return WebhookSender(client)
 
 

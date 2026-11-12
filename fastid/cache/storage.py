@@ -15,7 +15,14 @@ class CacheStorage(ABC):
     async def keys(self, pattern: str = "*") -> set[str]: ...
 
     @abstractmethod
-    async def set(self, key: str, value: Any, *, expire: int | None = None) -> str: ...
+    async def set(
+        self,
+        key: str,
+        value: Any,
+        *,
+        expire: int | None = None,
+        lock: DistributedLock | None = None,
+    ) -> str: ...
 
     @abstractmethod
     async def get(self, key: str) -> str: ...
@@ -45,11 +52,21 @@ class RedisStorage(CacheStorage):
         keys = await self.client.keys(f"{self.key}:{pattern}")
         return {key.decode().split(":")[-1] for key in keys}
 
-    async def set(self, key: str, value: Any, *, expire: int | None = None) -> str:
+    async def set(
+        self,
+        key: str,
+        value: Any,
+        *,
+        expire: int | None = None,
+        lock: DistributedLock | None = None,
+    ) -> str:
         json_str = orjson.dumps(value).decode()
         if expire == 0:
             return json_str
-        await self.client.set(f"{self.key}:{key}", json_str, ex=expire)
+        if lock is None:
+            await self.client.set(f"{self.key}:{key}", json_str, ex=expire)
+        else:
+            await lock.set_if_owned(f"{self.key}:{key}", json_str, expire)
         return json_str
 
     async def get(self, key: str) -> Any:
@@ -61,6 +78,14 @@ class RedisStorage(CacheStorage):
 
     async def delete(self, key: str) -> None:
         await self.client.delete(f"{self.key}:{key}")
+
+    async def invalidate(self, key: str) -> None:
+        # Revoking an in-flight fill is essential even if its original lease
+        # expired and another reader acquired it before the DB commit.
+        async with self.client.pipeline(transaction=True) as pipeline:
+            pipeline.delete(f"{self.key}:{key}")
+            pipeline.delete(f"lock:{key}")
+            await pipeline.execute()
 
     async def pop(self, key: str) -> str:
         value = await self.client.getdel(f"{self.key}:{key}")

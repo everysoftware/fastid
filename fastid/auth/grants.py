@@ -1,3 +1,4 @@
+import asyncio
 from abc import abstractmethod
 from typing import Any
 
@@ -5,9 +6,8 @@ from fastid.apps.exceptions import (
     InvalidAuthorizationCodeError,
     InvalidClientCredentialsError,
 )
-from fastid.apps.models import App
 from fastid.apps.repositories import AppClientIDSpecification
-from fastid.apps.schemas import AppDTO
+from fastid.apps.schemas import AppDTO, ClientSnapshot
 from fastid.auth.config import auth_settings
 from fastid.auth.exceptions import (
     EmailNotFoundError,
@@ -32,15 +32,21 @@ from fastid.auth.schemas import (
 )
 from fastid.auth.server import ServerURLDep
 from fastid.cache.dependencies import CacheDep
-from fastid.cache.exceptions import KeyNotFoundError
+from fastid.cache.exceptions import KeyNotFoundError, LockError, LockLostError
+from redis.exceptions import ConnectionError as RedisConnectionError
+from redis.exceptions import TimeoutError as RedisTimeoutError
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWDep
 from fastid.database.exceptions import NoResultFoundError
+from fastid.database.uow import SQLAlchemyUOW
 from fastid.database.utils import UUIDv7, uuid
 from fastid.security.crypto import generate_otp
 from fastid.security.exceptions import JWTError
 from fastid.security.jwt import jwt_backend
 from fastid.security.schemas import JWTPayload
+
+
+_CLIENT_CACHE_LOCKS: dict[str, asyncio.Lock] = {}
 
 
 class Grant(UseCase):
@@ -53,26 +59,81 @@ class Grant(UseCase):
     @abstractmethod
     async def authorize(self, form: Any) -> AuthorizationResponse: ...
 
-    async def validate_client(self, client_id: str) -> App:
+    async def validate_client(self, client_id: str) -> ClientSnapshot:
         cache_key = f"apps:{client_id}"
         try:
-            cached = await self.cache.get(cache_key)
+            return ClientSnapshot.model_validate(await self.cache.get(cache_key))
         except KeyNotFoundError:
-            try:
-                app = await self.uow.apps.find(AppClientIDSpecification(client_id))
-            except NoResultFoundError as e:
-                raise InvalidClientCredentialsError from e
-            app_dict = app.dump()
-            await self.cache.set(
-                cache_key,
-                app_dict,
-                expire=auth_settings.app_expires_in_seconds,
-            )
-        else:
-            app = App(**cached)
-        return app
+            pass
+        except (RedisConnectionError, RedisTimeoutError) as exc:
+            if not self._redis_pool_exhausted(exc):
+                raise
+            return await self._read_client_fresh(client_id)
+        # Caller-owned transactions may contain uncommitted state; use them
+        # directly rather than waiting for a distributed cache-fill lock.
+        if self.uow.is_active and self.uow.session.in_transaction():
+            return await self._read_client(self.uow, client_id)
 
-    async def authenticate_client(self, client_id: str, client_secret: str) -> App:
+        # Coalesce cold/expired cache misses inside this worker before they
+        # reach Redis, so a burst performs one lock acquisition and DB read.
+        local_lock = _CLIENT_CACHE_LOCKS.setdefault(cache_key, asyncio.Lock())
+        async with local_lock:
+            try:
+                return ClientSnapshot.model_validate(await self.cache.get(cache_key))
+            except KeyNotFoundError:
+                pass
+            except (RedisConnectionError, RedisTimeoutError) as exc:
+                if not self._redis_pool_exhausted(exc):
+                    raise
+                return await self._read_client_fresh(client_id)
+            try:
+                async with self.cache.lock(cache_key, blocking=True, blocking_timeout=10, timeout=120) as lock:
+                    try:
+                        return ClientSnapshot.model_validate(await self.cache.get(cache_key))
+                    except KeyNotFoundError:
+                        pass
+                    except (RedisConnectionError, RedisTimeoutError) as exc:
+                        if not self._redis_pool_exhausted(exc):
+                            raise
+                        return await self._read_client_fresh(client_id)
+                    async with SQLAlchemyUOW(self.uow.session_factory) as read_uow:
+                        snapshot = await self._read_client(read_uow, client_id)
+                    try:
+                        await self.cache.set(
+                            cache_key,
+                            snapshot.model_dump(mode="json"),
+                            expire=auth_settings.app_expires_in_seconds,
+                            lock=lock,
+                        )
+                    except LockLostError:
+                        return await self._read_client_fresh(client_id)
+                    return snapshot
+            except LockError:
+                # Another worker may be filling this key. Preserve token
+                # issuance if its distributed lock exceeds our bounded wait.
+                return await self._read_client_fresh(client_id)
+            except (RedisConnectionError, RedisTimeoutError) as exc:
+                if not self._redis_pool_exhausted(exc):
+                    raise
+                return await self._read_client_fresh(client_id)
+
+    @staticmethod
+    def _redis_pool_exhausted(error: RedisConnectionError | RedisTimeoutError) -> bool:
+        return isinstance(error, RedisTimeoutError) or str(error) == "No connection available."
+
+    async def _read_client_fresh(self, client_id: str) -> ClientSnapshot:
+        async with SQLAlchemyUOW(self.uow.session_factory) as read_uow:
+            return await self._read_client(read_uow, client_id)
+
+    @staticmethod
+    async def _read_client(uow: SQLAlchemyUOW, client_id: str) -> ClientSnapshot:
+        try:
+            app = await uow.apps.find(AppClientIDSpecification(client_id))
+        except NoResultFoundError as e:
+            raise InvalidClientCredentialsError from e
+        return ClientSnapshot.model_validate(app)
+
+    async def authenticate_client(self, client_id: str, client_secret: str) -> ClientSnapshot:
         app = await self.validate_client(client_id)
         app.verify_secret(client_secret)
         return app
@@ -214,6 +275,12 @@ class RefreshTokenGrant(Grant):
 
 
 class ClientCredentialsGrant(Grant):
+    async def authorize_token(self, form: OAuth2ClientCredentialsRequest) -> TokenResponse:
+        app = await self.authenticate_client(form.client_id, form.client_secret)
+        self._check_app_scope(app, form.scope)
+        tokens = await self._issue_app_tokens(app, form.scope)
+        return self._get_token_response(form.scope, tokens)
+
     async def authorize(self, form: OAuth2ClientCredentialsRequest) -> AuthorizationResponse:
         app = await self.authenticate_client(form.client_id, form.client_secret)
         self._check_app_scope(app, form.scope)
@@ -221,10 +288,10 @@ class ClientCredentialsGrant(Grant):
         return self._get_app_auth_response(form.scope, tokens, app)
 
     @staticmethod
-    def _check_app_scope(app: App, scope: str) -> None:
+    def _check_app_scope(app: ClientSnapshot, scope: str) -> None:
         pass
 
-    async def _issue_app_tokens(self, app: App, scope: str) -> dict[str, dict[str, Any]]:
+    async def _issue_app_tokens(self, app: ClientSnapshot, scope: str) -> dict[str, dict[str, Any]]:
         tokens: dict[str, Any] = {
             token_type: {"is_issued": False, "token": None, "payload": None}
             for token_type in ["access", "refresh", "id"]
@@ -236,7 +303,7 @@ class ClientCredentialsGrant(Grant):
         tokens["access"]["payload"] = payload
         return tokens
 
-    def _get_app_auth_response(self, scope: str, tokens: dict[str, Any], app: App) -> AuthorizationResponse:
+    def _get_app_auth_response(self, scope: str, tokens: dict[str, Any], app: ClientSnapshot) -> AuthorizationResponse:
         app_dto = AppDTO.model_validate(app)
         payload = self._get_payload_response(tokens)
         token = self._get_token_response(scope, tokens)

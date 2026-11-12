@@ -18,6 +18,9 @@ else
     WORKERS=$FASTID_GUNICORN_WORKERS
 fi
 
+# Share the resolved worker count with each worker's database budget calculation.
+export FASTID_GUNICORN_WORKERS="$WORKERS"
+
 APP=${FASTID_GUNICORN_APP:-fastid.core.app:core_app}
 WORKER_CLASS=${FASTID_GUNICORN_WORKER_CLASS:-fastid.core.workers.MyUvicornWorker}
 WORKER_CONNECTIONS=${FASTID_GUNICORN_WORKER_CONNECTIONS:-1000}

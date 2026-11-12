@@ -1,7 +1,8 @@
 from fastid.cache.dependencies import CacheDep
 from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
-from fastid.database.dependencies import UOWRawDep, transactional
+from fastid.database.dependencies import UOWRawDep
+from fastid.database.uow import SQLAlchemyUOW
 from fastid.security.webhooks import (
     generate_headers,
     get_event_id,
@@ -17,18 +18,18 @@ from fastid.webhooks.senders.dependencies import SenderDep
 
 class WebhookUseCases(UseCase):
     def __init__(self, uow: UOWRawDep, cache: CacheDep, sender: SenderDep) -> None:
-        self.uow = uow  # Due to background nature of notification use cases, use raw dependency
+        self.uow = SQLAlchemyUOW(uow.session_factory)
         self.cache = cache
         self.sender = sender
 
-    @transactional
     async def send(self, dto: SendWebhookRequest) -> None:
         cache_key = f"webhooks:{dto.type}"
         try:
             cached = await self.cache.get(cache_key)
         except KeyNotFoundError:
-            webhook_page = await self.uow.webhooks.get_many(WebhookTypeSpecification(dto.type))
-            webhooks = webhook_page.items
+            async with self.uow:
+                webhook_page = await self.uow.webhooks.get_many(WebhookTypeSpecification(dto.type))
+                webhooks = webhook_page.items
             await self.cache.set(
                 cache_key,
                 [{"id": str(w.id), "secret": w.secret, "url": w.url} for w in webhooks],
@@ -53,4 +54,5 @@ class WebhookUseCases(UseCase):
                 status_code=data["status_code"],
                 response=data["content"],
             )
-            await self.uow.webhook_events.add(event)
+            async with self.uow:
+                await self.uow.webhook_events.add(event)

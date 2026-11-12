@@ -1,3 +1,6 @@
+import secrets
+
+from fastid.apps.exceptions import InvalidClientCredentialsError, InvalidRedirectURIError
 from fastid.core.schemas import BaseModel
 from fastid.database.schemas import EntityDTO
 
@@ -12,6 +15,18 @@ class AppBase(BaseModel):
 class AppDTO(EntityDTO, AppBase):
     client_id: str
     client_secret: str
+
+
+class ClientSnapshot(AppDTO):
+    def verify_secret(self, client_secret: str) -> None:
+        if not self.is_active or not secrets.compare_digest(client_secret, self.client_secret):
+            raise InvalidClientCredentialsError
+
+    def verify_redirect_uri(self, redirect_uri: str) -> None:
+        if not self.is_active:
+            raise InvalidClientCredentialsError
+        if redirect_uri not in self.redirect_uris.split(";"):
+            raise InvalidRedirectURIError
 
 
 class AppCreate(AppBase):

@@ -68,8 +68,10 @@ class LifespanTasks:
                 )
 
     async def on_shutdown(self) -> None:
-        await self.cache.client.aclose()
-        await webhooks_client.aclose()
+        try:
+            await self.cache.client.aclose()
+        finally:
+            await webhooks_client.aclose()
 
     async def __aenter__(self) -> Self:
         await self.uow.__aenter__()

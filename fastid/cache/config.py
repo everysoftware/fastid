@@ -15,7 +15,8 @@ class RedisSettings(BaseSettings):
     )
     major_key: str = branding_settings.service_name
     decode_responses: bool = True
-    pool_size: int = 20
+    pool_size: int = Field(default=20, gt=0)
+    pool_timeout: float = Field(default=5.0, gt=0, allow_inf_nan=False)
     socket_timeout: float = 5.0
     socket_connect_timeout: float = 5.0
     socket_keepalive: bool = True

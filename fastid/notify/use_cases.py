@@ -11,6 +11,7 @@ from fastid.cache.exceptions import KeyNotFoundError
 from fastid.core.base import UseCase
 from fastid.database.dependencies import UOWRawDep, transactional
 from fastid.database.exceptions import NoResultFoundError
+from fastid.database.uow import SQLAlchemyUOW
 from fastid.email.config import email_settings
 from fastid.email.dependencies import MailDep
 from fastid.integrations.config import integration_settings
@@ -46,13 +47,12 @@ class NotificationUseCases(UseCase):
         cache: CacheDep,
         server_url: ServerURLDep,
     ) -> None:
-        self.uow = uow
+        self.uow = SQLAlchemyUOW(uow.session_factory)
         self.mail = mail
         self.telegram = telegram
         self.cache = cache
         self.server_url = server_url
 
-    @transactional
     async def push_email(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
         if not email_settings.smtp_enabled:
             raise MethodDisabledError
@@ -63,21 +63,24 @@ class NotificationUseCases(UseCase):
                 raise NoEmailError from e
         assert contact.type == ContactType.email
 
-        base = await self.uow.email_templates.find(EmailTemplateSlugSpecification("base"))
-        base_template = jinja_env.from_string(base.source)
+        async with self.uow:
+            base = await self.uow.email_templates.find(EmailTemplateSlugSpecification("base"))
+            base_template = jinja_env.from_string(base.source)
 
-        try:
-            main = await self.uow.email_templates.find(EmailTemplateSlugSpecification(dto.template))
-        except NoResultFoundError as e:
-            raise TemplateNotFoundError from e
+            try:
+                main = await self.uow.email_templates.find(EmailTemplateSlugSpecification(dto.template))
+            except NoResultFoundError as e:
+                raise TemplateNotFoundError from e
 
         main_template = jinja_env.from_string(main.source)
         content = main_template.render(base=base_template, user=user, **dto.context)
         await self.mail.send(contact=contact, subject=main.subject, content=content)
-        notification = Notification(user=user, type=NotificationType.email, template=dto.template, context=dto.context)
-        await self.uow.notifications.add(notification)
+        notification = Notification(
+            user_id=user.id, type=NotificationType.email, template=dto.template, context=dto.context
+        )
+        async with self.uow:
+            await self.uow.notifications.add(notification)
 
-    @transactional
     async def push_telegram(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
         if not integration_settings.telegram_notification_enabled:
             raise MethodDisabledError
@@ -88,21 +91,23 @@ class NotificationUseCases(UseCase):
                 raise NoTelegramIDError from e
         assert contact.type == ContactType.telegram
 
-        try:
-            template = await self.uow.telegram_templates.find(TelegramTemplateSlugSpecification(dto.template))
-        except NoResultFoundError as e:
-            raise TemplateNotFoundError from e
+        async with self.uow:
+            try:
+                template = await self.uow.telegram_templates.find(TelegramTemplateSlugSpecification(dto.template))
+            except NoResultFoundError as e:
+                raise TemplateNotFoundError from e
 
         jinja_template = jinja_env.from_string(template.source)
         content = jinja_template.render(user=user, **dto.context)
         await self.telegram.send(contact=contact, content=content)
         notification = Notification(
-            user=user,
+            user_id=user.id,
             type=NotificationType.telegram,
             template=dto.template,
             context=dto.context,
         )
-        await self.uow.notifications.add(notification)
+        async with self.uow:
+            await self.uow.notifications.add(notification)
 
     async def push(self, user: User, dto: PushNotificationRequest, contact: Contact | None = None) -> None:
         if contact is None:
